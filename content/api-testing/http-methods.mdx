@@ -1,0 +1,48 @@
+---
+title: HTTP Methods
+description: GET, POST, PUT, PATCH, DELETE, and idempotency.
+category: api-testing
+lessonId: http-methods
+track: api
+order: 2
+---
+
+## What this lesson covers
+
+This module focuses on **HTTP methods** and the guarantees testers should verify.
+
+- Safe vs unsafe methods
+- Idempotency
+- Choosing assertions per verb
+
+## Outcome
+
+After this lesson you will be able to pick the right method checks for a given API call.
+
+<Quiz
+  title="HTTP methods check"
+  questions={[
+    {
+      question: "Which statement about GET is true?",
+      options: [
+        "GET must create a new resource",
+        "GET is safe and should not change server state",
+        "GET is never cacheable",
+        "GET requires a JSON body"
+      ],
+      correctAnswer: 1,
+      explanation: "Safe methods (GET, HEAD) are not supposed to cause side effects. Testers should fail builds that violate that."
+    },
+    {
+      question: "Idempotency means:",
+      options: [
+        "The first call always fails",
+        "Repeating the same request has the same effect as calling it once",
+        "The server ignores Authorization",
+        "The client must send cookies"
+      ],
+      correctAnswer: 1,
+      explanation: "PUT and DELETE are typically idempotent; repeating them should not keep creating extra side effects."
+    }
+  ]}
+/>

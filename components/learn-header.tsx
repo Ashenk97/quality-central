@@ -4,6 +4,7 @@ import { Fragment } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
+import { UserMenu } from "@/components/auth/user-menu"
 import { ModeToggle } from "@/components/mode-toggle"
 import {
   Breadcrumb,
@@ -15,16 +16,20 @@ import {
 } from "@/components/ui/breadcrumb"
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
-import { findSection, findTopic } from "@/lib/curriculum"
+import {
+  findSection,
+  findTopic,
+  type CurriculumSection,
+} from "@/lib/curriculum"
 
-export function LearnHeader() {
+export function LearnHeader({ email }: { email: string | null }) {
   const pathname = usePathname()
   const section = findSection(pathname)
   const match = findTopic(pathname)
-  const crumbs = buildCrumbs(pathname, section?.title, match?.topic.title)
+  const crumbs = buildCrumbs(pathname, section, match?.topic.title)
 
   return (
-    <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4">
+    <header className="flex h-14 shrink-0 items-center gap-2 border-b border-border/80 bg-background/80 px-4 backdrop-blur-md">
       <SidebarTrigger className="-ml-1" />
       <Separator orientation="vertical" className="mr-2 h-4" />
       <Breadcrumb className="min-w-0 flex-1">
@@ -53,6 +58,7 @@ export function LearnHeader() {
           })}
         </BreadcrumbList>
       </Breadcrumb>
+      <UserMenu email={email} />
       <ModeToggle />
     </header>
   )
@@ -60,19 +66,18 @@ export function LearnHeader() {
 
 function buildCrumbs(
   pathname: string,
-  sectionTitle?: string,
+  section?: CurriculumSection,
   topicTitle?: string
 ) {
   const crumbs = [{ href: "/", label: "Home" }]
 
-  if (!sectionTitle) {
+  if (!section) {
     return crumbs
   }
 
-  const sectionHref = `/${pathname.split("/").filter(Boolean)[0]}`
-  crumbs.push({ href: sectionHref, label: sectionTitle })
+  crumbs.push({ href: section.href, label: section.title })
 
-  if (topicTitle && pathname !== sectionHref) {
+  if (topicTitle && pathname !== section.href) {
     crumbs.push({ href: pathname, label: topicTitle })
   }
 

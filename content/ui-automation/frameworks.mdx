@@ -1,0 +1,48 @@
+---
+title: Frameworks
+description: Selecting and structuring UI automation tools.
+category: ui-automation
+lessonId: frameworks
+track: automation
+order: 1
+---
+
+## What this lesson covers
+
+This module compares **UI automation frameworks** and how to structure a maintainable suite.
+
+- Tool selection criteria
+- Page objects and fixtures
+- What not to automate first
+
+## Outcome
+
+After this lesson you will be able to justify a framework choice for a product under test.
+
+<Quiz
+  title="Frameworks check"
+  questions={[
+    {
+      question: "What should you automate first?",
+      options: [
+        "Every pixel of the marketing site",
+        "High-value, stable user journeys",
+        "Internal debug screens that change daily",
+        "Captchas and 2FA prompts"
+      ],
+      correctAnswer: 1,
+      explanation: "Early automation pays off on journeys that are both important and relatively stable."
+    },
+    {
+      question: "Page objects (or fixtures) exist to:",
+      options: [
+        "Hide locators and user actions behind reusable APIs",
+        "Replace assertions",
+        "Make tests slower on purpose",
+        "Store production passwords"
+      ],
+      correctAnswer: 0,
+      explanation: "A page object concentrates UI details so specs stay readable when the DOM changes."
+    }
+  ]}
+/>

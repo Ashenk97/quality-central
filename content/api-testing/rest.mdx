@@ -1,0 +1,48 @@
+---
+title: REST
+description: Resources, status codes, and API contracts.
+category: api-testing
+lessonId: rest
+track: api
+order: 1
+---
+
+## What this lesson covers
+
+This module introduces **REST** as a contract between clients and services.
+
+- Resources and representations
+- Status codes that testers should assert
+- How API contracts fail in the wild
+
+## Outcome
+
+After this lesson you will be able to describe a REST endpoint in testable terms.
+
+<Quiz
+  title="REST check"
+  questions={[
+    {
+      question: "A REST client should treat HTTP 404 as:",
+      options: [
+        "A successful create",
+        "The resource was not found at that URL",
+        "The server crashed",
+        "Authentication succeeded"
+      ],
+      correctAnswer: 1,
+      explanation: "404 means the requested resource does not exist (or is hidden) at the given identifier."
+    },
+    {
+      question: "What should an API test assert besides the status code?",
+      options: [
+        "Only that the response arrived",
+        "The payload shape and important field values",
+        "The browser theme",
+        "The number of CSS files"
+      ],
+      correctAnswer: 1,
+      explanation: "Contracts fail in the body as often as they fail in the status line — assert both."
+    }
+  ]}
+/>
