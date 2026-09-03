@@ -1,0 +1,66 @@
+---
+title: "{{title}}"
+description: "{{description}}"
+category: "{{category}}"
+lessonId: "{{lessonId}}"
+track: "{{track}}"
+order: {{order}}
+difficulty: "{{difficulty}}"
+readingTime: {{readingTime}}
+---
+
+## What this lesson covers
+
+State the skill this lesson trains and why a working tester should care.
+
+- Concept one
+- Concept two
+- A practical example you can reuse on a real project
+
+## Outcome
+
+After this lesson you will be able to **replace this sentence with a measurable skill**.
+
+<Info title="How to use this template">
+Keep theory short, show one worked example, then close with a quiz. Callouts use the shared MDX wrapper — Info for context, Warning for failure modes.
+</Info>
+
+## Theory
+
+Explain the idea in tester language. Prefer tables for comparisons.
+
+| Idea | What you assert |
+| --- | --- |
+| Example | Expected result |
+
+## Practical example
+
+Walk through a concrete product slice (checkout, API resource, locator). Put JSON and HTTP in fenced code blocks so MDX does not treat braces as JSX.
+
+```http
+GET /api/example
+Accept: application/json
+```
+
+<Warning title="MDX braces">
+Curly braces and angle brackets in lesson prose are parsed as JSX. Keep JSON, template variables, and generic types inside fenced code blocks.
+</Warning>
+
+## Knowledge check
+
+<Quiz
+  title="Lesson check"
+  questions={[
+    {
+      question: "Replace with a scenario the lesson actually taught.",
+      options: [
+        "Distractor that sounds related",
+        "The correct, specific answer",
+        "A joke option",
+        "An opposite-of-the-lesson option"
+      ],
+      correctAnswer: 1,
+      explanation: "Say why the correct option is correct and what a tester would do next."
+    }
+  ]}
+/>

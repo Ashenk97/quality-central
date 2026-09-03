@@ -6,8 +6,10 @@ import {
   type MDXRemoteOptions,
 } from "next-mdx-remote-client/rsc"
 import remarkGfm from "remark-gfm"
+import { ClockIcon } from "lucide-react"
 
 import { MarkCompleteButton } from "@/components/mark-complete-button"
+import { MDXWrapper } from "@/components/MDXWrapper"
 import { mdxComponents } from "@/components/mdx/mdx-components"
 import { MdxError } from "@/components/mdx/mdx-error"
 import { DifficultyBadge } from "@/components/difficulty-badge"
@@ -58,7 +60,8 @@ export default async function LessonPage({ params }: LessonPageProps) {
   }
 
   const topic = findTopic(`/courses/${category}/${lessonId}`)
-  const difficulty = topic?.topic.difficulty ?? topic?.section.difficulty
+  const difficulty =
+    lesson.difficulty ?? topic?.topic.difficulty ?? topic?.section.difficulty
 
   return (
     <article className="mx-auto flex w-full max-w-3xl flex-col gap-8">
@@ -68,22 +71,28 @@ export default async function LessonPage({ params }: LessonPageProps) {
             {lesson.track}
           </Badge>
           {difficulty ? <DifficultyBadge difficulty={difficulty} /> : null}
+          {lesson.readingTime ? (
+            <Badge variant="outline" className="gap-1 text-slate-600 dark:text-slate-300">
+              <ClockIcon className="size-3" />
+              {lesson.readingTime} min read
+            </Badge>
+          ) : null}
         </div>
-        <h1 className="font-heading text-3xl font-semibold tracking-tight">
+        <h1 className="font-heading text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-50">
           {lesson.title}
         </h1>
-        <p className="text-muted-foreground">{lesson.description}</p>
+        <p className="text-slate-600 dark:text-slate-400">{lesson.description}</p>
       </header>
 
       <Suspense fallback={<LessonBodySkeleton />}>
-        <div className="space-y-4">
+        <MDXWrapper>
           <MDXRemote
             source={lesson.content}
             components={mdxComponents}
             options={mdxOptions}
             onError={MdxError}
           />
-        </div>
+        </MDXWrapper>
       </Suspense>
 
       <MarkCompleteButton category={category} lessonId={lessonId} />

@@ -1,0 +1,219 @@
+---
+title: "Cracking the QA Intern Interview"
+description: "Whiteboard object testing, a calm answer when a developer rejects a bug, and the severity/priority plus smoke/sanity/regression pairs interviewers love."
+category: "Interview Prep"
+level: "Beginner"
+estimatedTime: "30 mins"
+order: 1
+lessonId: 01-cracking-the-qa-interview
+track: interview
+---
+
+## What this lesson covers
+
+Intern interviews rarely ask you to write Playwright on a whiteboard. They ask whether you can **structure a test**, **talk to a developer without a fight**, and **use the vocabulary** from [bug reports](/courses/foundation/03-bug-life-cycle) and [test cases](/courses/foundation/05-writing-test-cases) under a clock.
+
+- **Object testing:** "Test this vending machine" / "Test a login page" with **UI / Functional / Non-functional**
+- **Behavioral:** conflict when a developer rejects or closes your bug
+- **Technical screen:** Severity vs Priority, Smoke vs Sanity, Regression vs Retesting
+- What to do when the ticket is **Not Reproducible** (the quiz)
+
+## Outcome
+
+After this lesson you will be able to sketch a 10-minute whiteboard for a login page, answer "the developer says it is not a bug" without escalating first, and pick the right term from each pair on a screening call.
+
+<Info title="Think out loud">
+Interviewers grade your **structure**, not a complete encyclopedia of cases. Say your categories first, then two examples each, then what you would run in the first 30 minutes. Silence looks like a blank mind. A messy list with a map looks like a tester.
+</Info>
+
+## Object testing on the whiteboard
+
+**Definition:** *Object testing* (sometimes "test this thing") is an interview prompt where you are given an everyday object or a screen and asked how you would test it. There is no hidden product spec. You **ask clarifying questions**, then cover the object in layers.
+
+A reliable map:
+
+| Layer | Question | Login example | Vending example |
+| --- | --- | --- | --- |
+| **UI** | What does the user see and operate? | Labels, focus order, error text placement, contrast | Display, button legends, coin slot, item window |
+| **Functional** | What must happen when they act? | Valid login, wrong password, empty email, lockout | Pay, select, dispense, change, sold-out |
+| **Non-functional** | How well, how safe, how fast? | HTTPS, brute-force limits, time to dashboard | Dispense time, power loss mid-vend, forced door |
+
+Add **data and environment** as you talk: test user, browser, "out of stock" state, network drop. That is still the same three buckets (UI can include empty states; functional includes those states; non-functional includes reliability).
+
+### Step-by-step (use this every time)
+
+1. **Clarify** (60 seconds). Who is the user? Happy path? Constraints (cash only, SSO, intern build)?
+2. **Draw the three columns** on the board: UI, Functional, Non-functional.
+3. **Functional first for depth:** happy, negative, edge (same idea as [positive / negative / edge](/courses/foundation/05-writing-test-cases)).
+4. **Prioritize.** "If I had 30 minutes I would run valid login, invalid password, and empty submit. Overnight I would add lockout and rate limit."
+5. **Stop when they nod.** Offer "I can go deeper on security" instead of a 40-item dump.
+
+### Worked example: login page
+
+Clarify: email + password, no SSO, intern staging, Chrome.
+
+**UI**
+
+- Email and password fields visible, labels (or accessible names), Submit enabled/disabled rules
+- Error message appears next to the field vs a generic banner
+- Password mask / show-password; tab order; zoom at 200%
+- Empty and loading states (spinner on submit)
+
+**Functional**
+
+- Valid credentials → dashboard (or whatever the spec says)
+- Wrong password → generic error, stay on login, no user-enumeration if that is the rule
+- Empty fields → validation, no request (or 400 from API)
+- Unregistered email → same generic message as wrong password if anti-enumeration
+- Expired session / already logged in
+- Enter key submits; double-click submit does not create two sessions if that matters
+
+**Non-functional**
+
+- Page usable on a slow 3G-style throttle (time to interactive — you can say "I would measure," not invent a number)
+- HTTPS, no password in the URL or in server logs you can see
+- Rate limit after N failures
+- Screen reader can complete login (role and name — from [DOM locators](/courses/ui-automation/01-dom-and-locators) if you have that lesson)
+
+Close with priority: intern interviewers want **valid, invalid, empty** spoken first. Security and a11y show seniority without stealing the clock.
+
+### Worked example: vending machine
+
+Clarify: snacks + drinks, cash, one slot, no card. Physical object, same three columns.
+
+**UI** — can the shopper read prices, see "sold out," reach the coin slot, understand which button is which.
+
+**Functional** — exact change; overpay and change; wrong button; sold-out selection; coin return; jam; power cycle after coin insert.
+
+**Non-functional** — vend within a few seconds; machine stable if kicked; coins not easily fished; hygiene and electrical safety if they want "non-functional" in the real world.
+
+Say: "I would not boil the ocean. First I prove pay-and-vend, then sold-out, then change. Then I would ask about card payments if they exist."
+
+```json
+{
+  "prompt": "test-the-login-page",
+  "clarify": ["email+password", "no SSO", "staging"],
+  "ui": ["labels", "errors", "focus"],
+  "functional": ["valid", "wrong password", "empty"],
+  "nonFunctional": ["https", "rate limit", "a11y"],
+  "first30min": ["valid", "wrong password", "empty submit"]
+}
+```
+
+## Behavioral: when a developer rejects your bug
+
+Interview favorite: **"What if a developer rejects your bug?"** or **"They closed it as not a bug / not reproducible."**
+
+They are scoring **curiosity + evidence**, not volume.
+
+**Definition:** A *rejected* or *closed* defect is a disagreement about **impact, environment, or facts**. Your job is to turn it back into a shared experiment.
+
+A calm sequence you can memorize:
+
+1. **Assume good intent.** "Thanks for looking — I may have a different build or data."
+2. **Match environments.** Browser, URL, account, feature flag, time zone, "I used the preview for PR 412."
+3. **Re-run with a script they can copy.** Numbered steps, test user, exact payload if API.
+4. **Add artifacts.** Screenshot or short clip, console or network log, [SQL](/courses/technical-core/01-sql-for-qa) row if persistence is the claim.
+5. **Offer a 10-minute huddle** (screen share) if it still dies on their machine only — that is data (local vs CI), not a personality clash.
+6. **Escalate with a summary**, not a rant, only if the product risk is real and the thread is stuck. PO or lead sees *user impact*, not "dev was rude."
+
+What not to say in an interview (or on Slack):
+
+- "You are wrong" / "just fix it"
+- Reopen with zero new evidence
+- CC the whole company on the first bounce
+- Quietly drop a Critical issue because conflict is uncomfortable
+
+If they were **correct** (works on current `main`, you tested an old preview), say so and close or update the ticket. That is professionalism.
+
+<Warning title="Not Reproducible is a request for a better experiment">
+It is not a personal grade. The diplomatic move is: better steps, environment, screenshots, logs — then a short ask to retry. The quiz is this exact situation.
+</Warning>
+
+## Technical screen: three pairs
+
+Say the definition in **one sentence**, then a **tiny example**. Interviewers interrupt if you lecture.
+
+### Severity vs priority
+
+Covered in depth in the [defect lesson](/courses/foundation/03-bug-life-cycle). For the screen:
+
+| Term | One sentence | Intern-safe example |
+| --- | --- | --- |
+| **Severity** | How badly the **system** is broken (impact) | Checkout total goes negative: high severity |
+| **Priority** | How soon the **business** wants a fix (urgency) | Homepage typo during a launch: low severity, high priority |
+
+They can diverge. Do not say they are the same.
+
+### Smoke vs sanity
+
+| | Smoke | Sanity |
+| --- | --- | --- |
+| Shape | **Wide and shallow** | **Narrow and deep** |
+| When | New build: "is this even testable?" | After a small change or a fix in one area |
+| Example | Open login, open catalog, add one item — no deep payment matrix | Only the promo-code field after a SAVE20 fix |
+| Fail means | Reject the build; do not start a full cycle | This slice still does not make sense; maybe skip the huge pack |
+
+Smoke is a **build verification** gate. Sanity is a **focused confidence** check. Do not swap the words.
+
+### Regression vs retesting
+
+| | Retesting | Regression |
+| --- | --- | --- |
+| Question | Did **this** failed case pass after the fix? | Did **other** behavior still pass? |
+| Scope | The exact bug (or the exact failed tests) | Nearby journeys, smoke, or the agreed pack |
+| Example | Promo no longer stacks — rerun that case | After the promo fix, does guest checkout still pay? |
+
+Retesting is **confirmation**. Regression is **side-effect hunting**. You usually do **both** after a fix: confirm the bug, then a small regression around it.
+
+```text
+Screen cheat sheet
+Severity = impact on the system. Priority = urgency for the business.
+Smoke = wide shallow build check. Sanity = narrow deep check on a slice.
+Retest = rerun the failed thing. Regression = check neighbors did not break.
+```
+
+## Try this
+
+1. Time-box 8 minutes. Whiteboard "test a search bar" with UI / Functional / Non-functional and a first-30-minutes list.
+2. Write a three-sentence reply to "Not Reproducible" for a login error you invented (steps, screenshot, log).
+3. Quiz a friend: give them one pair (smoke vs sanity) and demand one sentence plus one example.
+
+## Knowledge check
+
+<Quiz
+  title="Intern interview"
+  question="A developer closes your bug as Not Reproducible. What is the diplomatic next step?"
+  options={[
+    "Reply that they are blocking the release and copy their manager in the first message",
+    "Re-verify on a named build, then add exact numbered steps, environment, screenshots, and logs, and ask them to retry or huddle",
+    "Reopen the ticket with the comment still broken and no new evidence",
+    "Delete the ticket so the board stays green"
+  ]}
+  correctIndex={1}
+  explanation="Not Reproducible means the experiment did not match. Stay respectful, tighten the repro (steps, env, screenshots, logs), and invite a short huddle if machines still disagree. Escalation without evidence looks like conflict, not quality."
+  questions={[
+    {
+      question: "On a whiteboard, Test this login page is best started by:",
+      options: [
+        "Listing only CSS colors for 20 minutes",
+        "Clarifying the login rules, then covering UI, functional, and non-functional checks, and saying what you would run first",
+        "Writing a full Playwright spec from memory with no categories",
+        "Refusing the question because objects cannot be tested"
+      ],
+      correctAnswer: 1,
+      explanation: "Object testing is a map: clarify, three layers, then prioritize. Depth comes after the map."
+    },
+    {
+      question: "Severity vs priority: which statement is accurate?",
+      options: [
+        "They are two names for how angry the tester feels",
+        "Severity is technical impact on the system; priority is business urgency of the fix",
+        "Priority is only used in SQL interviews",
+        "Smoke testing sets both fields automatically"
+      ],
+      correctAnswer: 1,
+      explanation: "Impact vs urgency. A cosmetic homepage typo can be low severity and high priority on launch day."
+    }
+  ]}
+/>

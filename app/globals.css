@@ -175,3 +175,21 @@
     background: color-mix(in oklch, var(--primary) 28%, transparent);
   }
 }
+
+@media print {
+  @page {
+    size: landscape;
+    margin: 0.35in;
+  }
+
+  html,
+  body {
+    background: #020617 !important;
+  }
+
+  #certificate,
+  #certificate * {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}

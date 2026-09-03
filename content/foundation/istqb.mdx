@@ -1,0 +1,164 @@
+---
+title: ISTQB Foundation
+description: ISTQB principles, test levels, and the language of QA.
+category: foundation
+lessonId: istqb
+track: manual
+order: 6
+difficulty: beginner
+readingTime: 12
+---
+
+## What this lesson covers
+
+The **ISTQB Foundation** syllabus is the shared vocabulary of professional testing. You do not need the certificate to use the ideas — you need the language so you can argue about risk with developers and product managers without talking past each other.
+
+- The difference between error, defect, and failure
+- Seven testing principles that still hold on agile teams
+- Test levels and test types
+- Independence, coverage, and when "done" is a judgment call
+
+## Outcome
+
+After this lesson you will be able to describe a testing activity in ISTQB terms and pick the right **level** and **type** of test for a risk.
+
+<Info title="Why this matters on the job">
+Hiring managers rarely quiz you on syllabus chapter numbers. They do listen for whether you can explain why a bug escaped, which tests would have caught it, and what you would skip under time pressure.
+</Info>
+
+## Error, defect, failure
+
+These three words get used interchangeably. They should not.
+
+| Term | Who owns it | What you observe |
+| --- | --- | --- |
+| Error | A human (requirement, design, or code) | A mistake in thinking |
+| Defect (bug, fault) | The product | The mistake, encoded |
+| Failure | A user, a test, or production | The defect becoming visible |
+
+A developer mistypes a discount rule (error). The cart applies `SAVE20` twice (defect). Checkout shows $0.00 to a customer (failure). Testers hunt **failures** to find **defects** so the team can prevent the next **error**.
+
+<Warning title="Do not report a feeling">
+"It looks broken" is not a defect report. Name the expected result, the observed result, and the smallest steps that produce the failure. ISTQB language only helps if the evidence is attached.
+</Warning>
+
+## Seven principles, in working order
+
+1. **Testing shows the presence of defects, not their absence.** A green run is evidence, not a proof.
+2. **Exhaustive testing is impossible.** You sample. The skill is choosing which sample.
+3. **Early testing saves time and money.** A wrong requirement is cheaper than a wrong release.
+4. **Defects cluster.** New code, integrations, and last-sprint patches deserve more of your budget.
+5. **Beware the pesticide paradox.** Repeating the same tests finds fewer new bugs. Refresh data, paths, and oracles.
+6. **Testing is context dependent.** A medical device and a marketing landing page do not share an exit strategy.
+7. **Absence-of-errors is a fallacy.** A product can be "correct" and still fail the user.
+
+### Practical example: clustering
+
+You are testing a checkout. Last week's production incidents were all payment and tax. ISTQB does not tell you to ignore the product gallery — it tells you to **weight** payment and tax more heavily this sprint, then rotate charters so the pesticide paradox does not set in.
+
+## Test levels
+
+Levels answer **where in the stack** you are looking.
+
+| Level | Typical owner | Typical question |
+| --- | --- | --- |
+| Component (unit) | Developer | Does this function keep its contract? |
+| Integration | Developer + QA | Do two units honor the seam between them? |
+| System | QA | Does the assembled product meet specified behavior? |
+| Acceptance | QA + product + users | Is this acceptable for the intended use? |
+
+Levels are not a waterfall. In continuous delivery you may run unit tests on every commit, contract tests on every merge, and a thin acceptance set before a canary.
+
+<Info title="ISTQB vs your sprint board">
+If the team says "QA will test it" after code-complete, you are treating system testing as a phase instead of a level. Levels can run in parallel. Phases are a schedule. Do not confuse them — STLC in the next lesson is the schedule.
+</Info>
+
+## Test types
+
+Types answer **what kind of risk** you are targeting. A single test case can serve more than one type, but you should know the primary goal.
+
+- **Functional** — does it do what the spec (or the user) expects?
+- **Non-functional** — performance, security, usability, reliability
+- **White-box** — designed with knowledge of structure (branches, APIs, schemas)
+- **Black-box** — designed from the outside (equivalence, boundaries, states)
+- **Confirmation** — did this fix actually fix it?
+- **Regression** — did this fix break a neighbor?
+- **Maintenance** — does the change still hold after a patch, migration, or retirement?
+
+### Practical example: choosing a type
+
+A story says "apply SAVE20 once per order." A functional black-box case places two applies and asserts the total. A white-box case reads the discount reducer and checks it keys off `orderId`. Both are useful. The first fails like a customer. The second fails like a code review.
+
+## Independence without isolation
+
+ISTQB argues that testers who did not write the code find different defects. Independence is a spectrum:
+
+1. Author tests their own work
+2. Another developer tests
+3. Independent tester in the team
+4. Independent test team
+5. External specialists
+
+Quality Central trains you for **level 3**: you sit with the team, you do not rubber-stamp the author's happy path, and you still share the same sprint goal.
+
+## Coverage is a question, not a number
+
+"We have 80% coverage" is incomplete until you name the **coverage item**: requirements, risks, branches, API operations, browsers. A useful sentence looks like this:
+
+> We covered 12 of 14 checkout requirements and all payment error codes. The two untested requirements are gift cards (deferred) and multi-currency (blocked on a sandbox).
+
+That is test monitoring in ISTQB clothes. You will reuse it in STLC when you write exit criteria.
+
+## Knowledge check
+
+Work these before you mark the lesson complete. They match how interviews and stand-ups actually sound.
+
+<Quiz
+  title="ISTQB Foundation check"
+  questions={[
+    {
+      question: "A tester enters an expired card and the UI shows 'Payment failed' as designed. Which ISTQB term describes the expired-card mistake by the user?",
+      options: [
+        "A defect in the payment service",
+        "A failure of the checkout",
+        "An error that may or may not reveal a defect",
+        "Proof that exhaustive testing happened"
+      ],
+      correctAnswer: 2,
+      explanation: "The user made an error. If the product handles it as specified, you observed correct behavior — not a product failure. A defect would be the product doing the wrong thing with that input."
+    },
+    {
+      question: "Which statement matches the principle 'testing shows presence of defects, not absence'?",
+      options: [
+        "A green regression pack proves production is safe",
+        "Passing tests increase confidence but never prove there are zero defects",
+        "If unit tests pass, system tests are optional",
+        "Coverage percent is a substitute for risk analysis"
+      ],
+      correctAnswer: 1,
+      explanation: "Green tests are evidence under a sample. They do not certify the untested space."
+    },
+    {
+      question: "Contract tests between a cart service and a payment service are primarily which test level?",
+      options: [
+        "Component testing of a single function",
+        "Integration testing of a seam between systems",
+        "User acceptance of the checkout UI",
+        "Maintenance testing after retirement"
+      ],
+      correctAnswer: 1,
+      explanation: "You are verifying the interface between two components or services — classic integration, even if no browser is involved."
+    },
+    {
+      question: "You rerun the exact same 40 UI scripts after every commit and find nothing new for three sprints. Which principle is biting you?",
+      options: [
+        "Early testing",
+        "Defect clustering",
+        "The pesticide paradox",
+        "Absence-of-errors fallacy"
+      ],
+      correctAnswer: 2,
+      explanation: "Unchanging tests lose power. Refresh data, paths, and oracles — or add charters that explore the new risk."
+    }
+  ]}
+/>

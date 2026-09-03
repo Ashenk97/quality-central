@@ -1,0 +1,184 @@
+---
+title: "DOM and Locators"
+description: "How the browser builds the DOM, locator strategies (id, CSS, XPath, roles), and why unique IDs and user-facing names beat full XPath."
+category: "UI Automation"
+level: "Advanced"
+estimatedTime: "20 mins"
+order: 1
+lessonId: 01-dom-and-locators
+track: automation
+---
+
+## What this lesson covers
+
+Automation does not click pixels on a screenshot. It queries a **tree of elements** the browser built from HTML, CSS, and scripts. That tree is the **DOM**. Locators are how your test finds a node in that tree without breaking on the next redesign.
+
+- What the **Document Object Model** is and how render works
+- Locator strategies: **id**, **CSS**, **XPath**, **accessibility** (`getByRole`, `getByText`)
+- Brittle vs resilient locators
+- Why unique IDs and user-facing attributes beat a full XPath from `html`
+
+## Outcome
+
+After this lesson you will be able to look at a checkout **Apply** button and choose a locator you would still trust after a designer wraps it in two extra `div`s.
+
+<Info title="The accessibility tree is your ally">
+Browsers expose roles and names to screen readers. Playwright and Testing Library query that same surface. A control with no accessible name is hard for users *and* for tests.
+</Info>
+
+## What the DOM is
+
+**Definition:** The *Document Object Model (DOM)* is the in-memory tree of nodes (elements, text, attributes) the browser creates from markup. JavaScript and CSS read and mutate this tree. What you *see* is a paint of that tree (layout + style), not a separate copy of the HTML file on disk.
+
+Rough pipeline:
+
+1. **Parse HTML** into a DOM tree (`html` → `body` → `form` → `button`).
+2. **Parse CSS** into rules; compute styles per node (the CSSOM).
+3. **Layout** (reflow): boxes, positions, overlap.
+4. **Paint** pixels. A button can be in the DOM and "enabled" but **covered** by another layer — the Sandbox Pay/CVC overlap is this class of bug.
+
+```html
+<form>
+  <label for="promo">Promo code</label>
+  <input id="promo" name="promo" />
+  <button type="submit" id="apply-promo">Apply</button>
+</form>
+```
+
+That HTML becomes a subtree: `form` has children `label`, `input`, `button`. Locators walk this tree. They do not "see red" unless you assert computed style on purpose.
+
+<Warning title="In the DOM is not the same as usable">
+`display: none` nodes still exist. Overlays can steal clicks. A good locator finds the *intended* control; a visual bug still needs an assertion or a manual report.
+</Warning>
+
+## Locator strategies
+
+Pick the **highest** strategy that is unique and stable. Playwright's recommended order is role/label/text, then test id, then CSS. XPath is a last resort.
+
+### IDs
+
+```html
+<button id="apply-promo">Apply</button>
+```
+
+```ts
+page.locator("#apply-promo")
+```
+
+**Good when** the id is unique, semantic, and owned by the team (`apply-promo`, not `ember-472`).
+
+**Bad when** frameworks generate `id="react-aria-9"` that changes every mount.
+
+### CSS selectors
+
+```css
+form.checkout button.primary
+#apply-promo
+[data-testid="apply-promo"]
+```
+
+CSS is powerful and easy to copy from DevTools. It becomes brittle when it encodes **layout**: `div > div:nth-child(2) > span.sc-a1b2`.
+
+`data-testid` (or `data-test`) is a CSS/attribute hook the team agrees to keep stable. Treat it as a contract, like an API field name.
+
+### XPath
+
+```text
+//button[@id='apply-promo']
+/html/body/div[1]/div[2]/form/div[3]/button[1]
+```
+
+The first XPath is an id query in disguise (fine). The second is a **full path from html**. One wrapper `div` from a CSS-in-JS change and the path is wrong. Absolute XPath is the classic interview "what did they do wrong?" answer.
+
+### Accessibility roles: `getByRole` and `getByText`
+
+These query how a **user** (and assistive tech) finds the control — not the class list.
+
+```ts
+page.getByRole("button", { name: "Apply" })
+page.getByText("Apply")
+page.getByLabel("Promo code")
+```
+
+| Helper | Finds |
+| --- | --- |
+| `getByRole` | Role (`button`, `textbox`, `link`) plus accessible **name** |
+| `getByText` | Visible (or accessible) text |
+| `getByLabel` | Form control wired to a `label` |
+
+`getByText("Apply")` fails if two Applies exist. **Scope** to the checkout form first, or prefer role + name.
+
+```ts
+page.getByRole("form").getByRole("button", { name: "Apply" })
+```
+
+## Brittle vs resilient
+
+| Brittle | Resilient |
+| --- | --- |
+| `/html/body/div[1]/div[2]/button[1]` | `getByRole` + name `Apply` |
+| `div.flex > span:nth-child(3)` | `#apply-promo` if the id is unique and stable |
+| `.sc-hAZoKl` (hashed CSS-in-JS) | `[data-testid="apply-promo"]` |
+| XPath that counts siblings | `getByLabel("Promo code")` |
+| First `button` on the whole page | Role + name **inside** the checkout region |
+
+**Definition:** A *resilient locator* is coupled to **meaning** (what the control is for) or to an **explicit test contract** (id / test id), not to incidental tree shape.
+
+### Step-by-step: choose a locator for Apply
+
+1. Inspect the button. Note tag, visible text, `id`, `name`, `aria-*`, `data-testid`.
+2. If `id="apply-promo"` is unique and human — use it.
+3. Else use role `button` and name `Apply`, scoped to the form.
+4. Else ask the team for a `data-testid` rather than writing a 12-step XPath.
+5. Run the spec twice. If it flakes, you were matching the wrong Apply or a hidden duplicate.
+
+```json
+{
+  "control": "apply-promo",
+  "prefer": ["id apply-promo", "role button name Apply"],
+  "avoid": "full XPath from html through nth-child divs"
+}
+```
+
+## Why not full XPath?
+
+Full XPath from the root encodes **today's** DOM shape. Product teams rearrange markup without changing the user story. Unique **ids** and **user-facing** attributes (visible name, label, role) survive that rearrange. That is why they are preferred.
+
+## Knowledge check
+
+<Quiz
+  title="DOM and locators"
+  question="Why are unique IDs or user-facing attributes preferred over a full XPath from the html root?"
+  options={[
+    "XPath cannot click buttons in any browser",
+    "Full XPath is tied to incidental DOM shape and breaks when wrappers or order change; ids and names follow meaning",
+    "IDs are slower so tests catch more races",
+    "User-facing text is illegal in Playwright"
+  ]}
+  correctIndex={1}
+  explanation="Absolute XPath counts divs from html. A designer adding one wrapper invalidates the path. Unique ids, labels, roles, and visible names stay coupled to the control's purpose."
+  questions={[
+    {
+      question: "What is the DOM?",
+      options: [
+        "A screenshot of the painted pixels only",
+        "The in-memory tree of nodes the browser builds from HTML, which scripts and locators query",
+        "A CSS file in the repo",
+        "The HTTP status code of the document"
+      ],
+      correctAnswer: 1,
+      explanation: "Locators query the DOM tree (and often the accessibility tree). Paint is a later step; overlap bugs can exist even when the node is in the tree."
+    },
+    {
+      question: "Which locator is the most resilient for a submit control labeled Apply?",
+      options: [
+        "html/body/div[1]/div[2]/div[3]/button[1] as XPath",
+        "getByRole button with name Apply, scoped to the checkout form",
+        "div:nth-child(2) > span.sc-a1b2",
+        "The first button on the page with no name"
+      ],
+      correctAnswer: 1,
+      explanation: "Role plus accessible name matches how users find the control. Scope avoids the other Apply on the page. Layout CSS and full XPath are brittle."
+    }
+  ]}
+/>

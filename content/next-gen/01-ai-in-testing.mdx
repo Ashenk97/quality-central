@@ -1,0 +1,181 @@
+---
+title: "AI in QA: Prompting & Test Generation"
+description: "Use LLMs to draft mock JSON and boundary sets, test probabilistic AI products without brittle exact-match asserts, and prompt Playwright boilerplate you still review."
+category: "Next-Gen QA"
+level: "Advanced"
+estimatedTime: "20 mins"
+order: 1
+lessonId: 01-ai-in-testing
+track: next-gen
+---
+
+## What this lesson covers
+
+Modern QA work now has two AI jobs at once. You **use** large language models to go faster on fixtures and first-draft specs. You also **test** products whose answers are not the same every run.
+
+- How testers prompt LLMs for mock JSON and exhaustive **boundary** lists
+- **Deterministic** vs **probabilistic** outputs when the product itself is a model
+- Prompt habits that produce usable Playwright boilerplate
+- A quiz on exact-match asserts versus judging AI text
+
+## Outcome
+
+After this lesson you will be able to ask a model for a BVA table and a JSON cart fixture, explain why `toHaveText` on one recorded chatbot sentence is a flake factory, and write a prompt that names locators, AAA, and the assertion you want.
+
+<Info title="Generated is a draft, not an oracle">
+An LLM will invent SKUs, totals, and locators that look confident. You still own the spec. Treat every fixture and every line of Playwright as a junior intern's first pass: useful, unchecked, not evidence.
+</Info>
+
+## 1. LLMs for mock JSON and boundary values
+
+Testers used to hand-type three promo codes and one happy-path body. That is slow when a GENKI hoodie checkout has length rules, stacking discounts, and a Failed order row. A well-scoped prompt can dump **partitions**, **boundaries**, and a **fixture file** in one sitting so you spend time on oracles, not typing.
+
+**What to ask for**
+
+- The **rule** in one sentence (example: discount codes are 5 to 10 characters)
+- The **shape** you need (table, CSV, or JSON schema)
+- **Valid**, **invalid**, and **boundary** rows called out by name
+- Constraints the model must not violate (no PII, no real card numbers, qty as integers)
+
+**Prompt shape (copy, then swap the rule)**
+
+```text
+You are assisting a QA intern on GENKI Wardrobe.
+Rule: promoCode length must be 5 through 10 inclusive.
+Return:
+1. A markdown table of Equivalence Partitions and BVA lengths (4, 5, 10, 11, empty).
+2. A JSON array of checkout fixtures with email, promoCode, items[].sku, items[].qty.
+Mark each fixture with expectedFormat: "valid" or "invalid".
+Do not invent prices. Leave total_cents as null.
+```
+
+Example fixture the model should be able to emit (you still verify lengths):
+
+```json
+[
+  {
+    "name": "valid min length",
+    "email": "qa@genki.test",
+    "promoCode": "SAVE2",
+    "items": [{ "sku": "GENKI-HOODIE", "qty": 1 }],
+    "expectedFormat": "valid"
+  },
+  {
+    "name": "invalid below min",
+    "email": "qa@genki.test",
+    "promoCode": "ABCD",
+    "items": [{ "sku": "GENKI-HOODIE", "qty": 1 }],
+    "expectedFormat": "invalid"
+  }
+]
+```
+
+Use the same trick for ages, qty, and currency. Ask for **just outside**, **on**, and **just inside** each limit — the [BVA lesson](/courses/foundation/02-test-design-techniques) still applies. The model is a typist with a checklist, not a replacement for ISTQB design.
+
+<Warning title="Hallucinated boundaries">
+If you forget to state the min and max, the model will guess. A guessed 3-to-12 rule will give you a beautiful table for the wrong product. Paste the acceptance criteria verbatim.
+</Warning>
+
+## 2. Testing AI systems: deterministic vs probabilistic
+
+A GENKI cart counter that goes from `0` to `1` is **deterministic**: the same click should produce the same number on the same build. A support chatbot that explains the return policy is **probabilistic**: the next token is sampled. Two runs can both be correct and still differ in wording, order, and politeness.
+
+| Kind | Same input | Typical product | Typical oracle |
+| --- | --- | --- | --- |
+| Deterministic | Same output (or a tiny, documented set) | Totals, HTTP 400, SQL `Failed`, button labels | Exact string, number, status, schema |
+| Probabilistic | A **distribution** of outputs | Chat, search summaries, image captions | Facts present, schema valid, safety, rubric / eval set |
+
+**Definitions**
+
+- **Deterministic:** given the same input and environment, the system yields the same result. Flakes here are usually races, data, or env — not "the model felt creative."
+- **Probabilistic:** the system draws from many acceptable replies. Exact-match on one golden sentence fails when the product is working.
+
+When you test an AI feature, split the contract:
+
+1. **Deterministic shell** — auth, 400 on empty body, JSON keys, latency budget, "I cannot help with that" for a blocked topic
+2. **Probabilistic core** — required facts (order id appears), forbidden claims, tone rubric, semantic similarity, or a human sample
+
+Do not throw away automation. Move the assert from "this exact paragraph" to "these properties hold."
+
+## 3. Prompting Playwright boilerplate
+
+LLMs write plausible `test()` blocks. They also invent `getByTestId("magic")` that does not exist on [GENKI's sandbox](/sandbox). Your prompt has to pin **route**, **roles**, **AAA**, and **what to assert**.
+
+**Best practices**
+
+- Name the **runner** (Playwright + TypeScript) and the **file shape** (`test`, `expect`, one journey)
+- Give **real locators** or visible names (`getByRole`, `page.locator`, test ids you have seen)
+- State **Arrange / Act / Assert** so the model does not bury `expect` in a helper you do not have
+- Ask for **no sleeps**; prefer auto-waiting expects (see [Your First Playwright Test](/courses/ui-automation/02-first-playwright-test))
+- Ban secrets: no tokens, no production URLs, no live cards
+- Demand a **review checklist** at the bottom (locators to verify, data to seed)
+
+**Prompt to reuse**
+
+```text
+Write a Playwright TypeScript spec only. No explanation.
+Journey: add a GENKI hoodie on /sandbox and assert the cart counter.
+Use: import { test, expect } from "@playwright/test"
+Use page.locator('[data-testid="add-to-cart"]') and page.locator('[data-testid="cart-count"]').
+Arrange: goto /sandbox, expect cart text "0".
+Act: click add to cart.
+Assert: cart text "1".
+Do not use waitForTimeout. Do not invent extra pages.
+```
+
+A model following that prompt should land close to:
+
+```ts
+import { test, expect } from "@playwright/test"
+
+test("GENKI hoodie increases the cart counter", async ({ page }) => {
+  await page.goto("/sandbox")
+  const cart = page.locator('[data-testid="cart-count"]')
+  await expect(cart).toHaveText("0")
+  await page.locator('[data-testid="add-to-cart"]').click()
+  await expect(cart).toHaveText("1")
+})
+```
+
+That counter assert is **deterministic**. If you later automate a "describe this hoodie" AI blurb, do not paste one recorded caption into `toHaveText`. Assert that the blurb is non-empty, mentions "hoodie" or "GENKI", and stays under a length cap — or score it with a rubric.
+
+## Knowledge check
+
+<Quiz
+  title="Exact-match vs probabilistic AI asserts"
+  questions={[
+    {
+      question: "A GENKI support bot answers the same refund question with different sentences each run, all factually correct. What is the weakest automation strategy?",
+      options: [
+        "Assert toHaveText against one sentence you copied from a single recorded run",
+        "Check that required facts appear, such as the 30-day window and the order id",
+        "Score a sample of replies against a rubric or similarity threshold",
+        "Keep a small human review set for tone and safety"
+      ],
+      correctAnswer: 0,
+      explanation: "Probabilistic text will drift. Pinning one golden sentence makes a flake, not a quality signal. Assert facts, schema, or a rubric instead."
+    },
+    {
+      question: "The GENKI cart total is a fixed $42.00 on this seeded hoodie. Which assertion belongs here?",
+      options: [
+        "Accept any number because language models are probabilistic",
+        "Assert the exact formatted total — this path is deterministic",
+        "Skip the total and only screenshot the page",
+        "Ask an LLM whether the total feels right and skip expect"
+      ],
+      correctAnswer: 1,
+      explanation: "Checkout math on a seeded cart is deterministic. Exact-match is the right tool. Probabilistic scoring is for generated language, not a known price."
+    },
+    {
+      question: "What is the core difference between deterministic and probabilistic outputs?",
+      options: [
+        "Deterministic systems never have bugs; probabilistic systems always do",
+        "Deterministic: same input yields the same result; probabilistic: the result is drawn from a range of acceptable replies",
+        "Deterministic means UI only; probabilistic means API only",
+        "They are two names for flaky locators"
+      ],
+      correctAnswer: 1,
+      explanation: "Deterministic contracts (status codes, totals, labels) support exact asserts. Probabilistic contracts (chat, summaries) need properties, evals, or humans — not one frozen string."
+    }
+  ]}
+/>

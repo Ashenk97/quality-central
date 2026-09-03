@@ -1,8 +1,12 @@
 import {
   BookOpen,
   Bug,
+  Database,
   Globe,
+  GraduationCap,
   MonitorPlay,
+  Sparkles,
+  Trophy,
   type LucideIcon,
 } from "lucide-react"
 
@@ -23,8 +27,12 @@ import {
 export type CatalogFilterId =
   | "foundation"
   | "api-testing"
+  | "technical-core"
   | "ui-automation"
+  | "interview-prep"
+  | "capstone"
   | "sandbox"
+  | "next-gen"
 
 export type ModuleStatus = "completed" | "in-progress" | "locked"
 
@@ -51,16 +59,40 @@ export const CATALOG_TABS: CatalogTab[] = [
     icon: Globe,
   },
   {
+    id: "technical-core",
+    label: "SQL",
+    href: "/technical-core",
+    icon: Database,
+  },
+  {
     id: "ui-automation",
     label: "UI Automation",
     href: "/ui-automation",
     icon: MonitorPlay,
   },
   {
+    id: "interview-prep",
+    label: "Interview",
+    href: "/interview-prep",
+    icon: GraduationCap,
+  },
+  {
     id: "sandbox",
     label: "Sandbox",
     href: "/sandbox",
     icon: Bug,
+  },
+  {
+    id: "capstone",
+    label: "Capstone",
+    href: "/capstone",
+    icon: Trophy,
+  },
+  {
+    id: "next-gen",
+    label: "Next-Gen",
+    href: "/next-gen",
+    icon: Sparkles,
   },
 ]
 

@@ -1,0 +1,135 @@
+---
+title: "Your First Playwright Test"
+description: "test and expect, auto-wait, a Nimbus checkout spec, and using the Automation Playground."
+category: "UI Automation"
+level: "Beginner"
+estimatedTime: "20 mins"
+order: 6
+lessonId: 04-playwright-first-test
+track: automation
+---
+
+## What this lesson covers
+
+**Playwright** is a Node library that drives Chromium, Firefox, and WebKit. A spec is a file of `test()` calls plus `expect()` assertions. This lesson is a first script you can paste into the [Automation Playground](/ui-automation/playground) (syntax only) or into a real repo later.
+
+- Anatomy of a spec
+- Auto-wait vs hard sleeps
+- A `SAVE10` checkout example
+- Failures: traces, not more `sleep`
+
+## Outcome
+
+After this lesson you will be able to read a Playwright spec, point at `test`, `page`, and `expect`, and say what the assertion is checking.
+
+<Info title="Playground limitation">
+The in-app playground checks that your file looks like Playwright tests. It does not open Chrome. Treat it as a syntax gym; run a real browser on your machine when you install Playwright.
+</Info>
+
+## Anatomy
+
+```ts
+import { test, expect } from "@playwright/test"
+
+test("guest can apply SAVE10 once", async ({ page }) => {
+  await page.goto("/sandbox")
+  await page.getByRole("button", { name: "Add to cart" }).first().click()
+  await page.getByLabel("Promo code").fill("SAVE10")
+  await page.getByRole("button", { name: "Apply" }).click()
+  await expect(page.getByTestId("order-total")).toBeVisible()
+})
+```
+
+| Piece | Job |
+| --- | --- |
+| `test("…")` | One scenario, one name you will read in CI |
+| `page` | The browser tab |
+| `getByRole` / `getByLabel` | Locators from the previous lesson |
+| `expect(locator)` | Auto-retrying assertion until timeout |
+
+**Definition:** *Auto-wait* means Playwright retries actions and assertions until the element is ready (visible, stable, enabled) or the timeout hits. You should almost never `waitForTimeout(5000)`.
+
+<Warning title="Hard sleeps hide flakes">
+`sleep(3)` makes CI slow and still fails on a slow day. Prefer `expect(locator).toBeVisible()` and Playwright's actionability checks.
+</Warning>
+
+## Step-by-step: write the stacking spec
+
+1. **Goto** the sandbox (or your staging checkout).
+2. **Add** a mug (stable role or test id).
+3. **Apply** `SAVE10`.
+4. **Apply** `SAVE10` again.
+5. **Expect** the total is not negative, and/or a message that the code was already used.
+
+```ts
+test("SAVE10 does not stack", async ({ page }) => {
+  await page.goto("/sandbox")
+  await page.getByRole("button", { name: /add to cart/i }).first().click()
+  const promo = page.getByLabel(/promo/i)
+  await promo.fill("SAVE10")
+  await page.getByRole("button", { name: "Apply" }).click()
+  await promo.fill("SAVE10")
+  await page.getByRole("button", { name: "Apply" }).click()
+  await expect(page.getByTestId("order-total")).not.toHaveText(/^-/)
+})
+```
+
+If the Sandbox still contains the seeded stacking bug, this test **should fail** until you are hunting it as a learner — that is a good fail. Do not "fix" the product to make the spec green if the bug is planted on purpose.
+
+## When it fails
+
+1. Open the **trace** (Playwright Trace Viewer) or the screenshot on the CI artifact.
+2. Check the locator name against the snapshot.
+3. Check you waited for the right network (cart totals) — `expect` on the total, not a random `sleep`.
+4. If Pay is covered by another control, you found a **product** defect; assert the overlap or file a manual bug.
+
+```json
+{
+  "spec": "SAVE10-does-not-stack",
+  "onFailure": [
+    "open trace",
+    "confirm locator name Apply",
+    "assert order-total text",
+    "file defect if product stacked the code"
+  ]
+}
+```
+
+## Knowledge check
+
+<Quiz
+  title="First Playwright test"
+  question="Why does Playwright encourage expect(locator).toBeVisible() instead of sleep(5000)?"
+  options={[
+    "Sleep is illegal in JavaScript",
+    "Assertions retry until the condition is true or timeout — faster and less flaky than a fixed sleep",
+    "Visible always means the API returned 200",
+    "Sleep is required for GET requests"
+  ]}
+  correctIndex={1}
+  explanation="Auto-waiting assertions stop as soon as the UI is ready. A fixed sleep is either too short (flake) or too long (slow CI)."
+  questions={[
+    {
+      question: "In test('name', async ({ page }) => { … }), page is:",
+      options: [
+        "The HTTP status code",
+        "The browser tab Playwright is driving",
+        "A CSS file",
+        "The Postman environment"
+      ],
+      correctAnswer: 1,
+      explanation: "The page fixture is your tab: goto, locators, click, fill, expect."
+    },
+    {
+      question: "A UI spec for SAVE10 stacking should assert:",
+      options: [
+        "Only that Chromium started",
+        "What the shopper sees (total / message) after the second apply",
+        "Every CSS class on the homepage",
+        "The operating system version only"
+      ],
+      correctAnswer: 1,
+      explanation: "The test is a user journey. Assert the outcome on screen (and keep a cheaper API test for the raw totals)."
+    }
+  ]}
+/>

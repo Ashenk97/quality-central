@@ -1,0 +1,235 @@
+---
+title: "Git, GitHub, and Agile Ceremonies"
+description: "Scrum events from a tester's seat, clone and pull so you test the right branch, and where QA belongs in a pull request."
+category: "Technical Core"
+level: "Intermediate"
+estimatedTime: "20 mins"
+order: 2
+lessonId: 02-git-and-agile
+track: technical
+---
+
+## What this lesson covers
+
+Quality work lives in two loops at once: **the sprint** (who is blocked, what we planned) and **the repository** (which commit you actually tested). A tester who only watches Jira will demo the wrong build. A tester who only clones `main` will miss the PR that ships Friday.
+
+This lesson complements [Agile and Scrum QA](/courses/foundation/04-agile-and-scrum-qa) (stories, AC, Definition of Done). Here the focus is **ceremonies in tester language**, **Git you need to run locally**, and the **pull request (PR)** as a quality gate.
+
+- Daily Standup, Sprint Planning, Backlog Refinement, Retrospective — what you say and ask
+- Why QA uses Git: clone, fetch, checkout, pull
+- PR lifecycle and code review as a tester
+- Standup's three beats (the quiz)
+
+## Outcome
+
+After this lesson you will be able to give a 60-second standup, check out the branch under test, and leave a PR comment that cites an AC — not "LGTM" with no evidence.
+
+<Info title="Git vs GitHub">
+**Git** is the version-control tool on your machine. **GitHub** (or GitLab, Bitbucket) hosts the remote, PRs, and CI. You clone with Git. You review in the host's UI. Both matter.
+</Info>
+
+## Agile Scrum workflow from a QA seat
+
+Scrum runs in a **sprint** (often one or two weeks). Testers are part of the increment, not a queue after coding. Four events you will be asked about in interviews and on the job:
+
+### Daily Standup (Daily Scrum)
+
+**Definition:** A short, same-time sync so the team can inspect progress toward the sprint goal and **surface blockers**. It is not a status report for a manager, and it is not a defect triage.
+
+A QA update uses three beats:
+
+1. **What I did** since the last standup (stories tested, PRs checked, bugs filed or retested)
+2. **What I will do** next (which story, which environment, which risk)
+3. **Any blockers** (no preview URL, flaky staging mail, AC still vague, waiting on a fix)
+
+Example, spoken in under a minute:
+
+```text
+Yesterday I finished the happy-path reset on PR 412 preview and filed TC-FP-06 (expired token still accepted).
+Today I will retest 412 after the token-expiry fix and start exploratory on rate-limit.
+Blocked: staging SMTP is down, so I cannot prove the reset email until infra unblocks it.
+```
+
+What not to do: read a 12-item Jira dump, debug a stack trace in the circle, or stay silent because "testers speak at the demo." **Blocked on environment** is a valid, high-value sentence.
+
+### Sprint Planning
+
+The team forecasts a **sprint backlog** they believe they can finish to Done. QA's job is to make **test work visible** so it is not squeezed to Friday.
+
+| You bring | You ask |
+| --- | --- |
+| Rough test effort per story (happy, negative, data, devices) | Is this story small enough to test this sprint? |
+| Environment needs (test inbox, feature flag, seed users) | When does a preview or staging build exist? |
+| Known risk (payment, auth, migrations) | Who pairs with me on the first build? |
+
+If planning only counts "dev days," you will "run out of time to test" on purpose. Call that out in the room, not in the retro as a surprise.
+
+### Backlog Refinement
+
+**Definition:** *Refinement* (grooming) is where upcoming stories become **testable** before they enter a sprint: clearer AC, smaller slices, fewer "we'll figure it out in QA."
+
+QA habits:
+
+- Circle numbers, "must," "never," and error text — those become cases
+- Ask how to **observe** success (UI, API, [SQL](/courses/technical-core/01-sql-for-qa))
+- Split "and also migrate historical orders" off a UI story if it cannot be tested together
+- Flag missing oracles: "success toast" with no row in `orders` is not Done
+
+Refinement is cheaper than finding a hole in week two of a sprint.
+
+### Retrospective
+
+**Definition:** The *retrospective* is the team's look at **how** they worked last sprint, not a second demo of the product.
+
+QA should bring facts, not theater:
+
+- Escaped bugs: which story, which gap (AC, environment, no PR test)
+- Flakes: which job, how often, who owns a fix
+- What worked: pairing on the first preview, a seed script, a test inbox
+
+A useful retro item is a **change** (seed users in CI, smaller stories, review checklist) plus an owner. "We should test more" with no change to planning is not an outcome.
+
+| Event | QA voice in one line |
+| --- | --- |
+| Standup | Did / will do / blocked |
+| Planning | Test capacity and environments are in the forecast |
+| Refinement | AC you can pass or fail |
+| Retro | Evidence, then one process change |
+
+Sprint Review (the demo) still matters — watch as a user — but the quiz is about **standup**, not the demo.
+
+## Why QA uses Git
+
+The product you test is a **specific commit**. Git is how you get that commit onto your machine (or how you know which commit a preview deployed).
+
+Without Git you test "whatever is on staging," which might be three PRs merged, or last week's `main`, or a hotfix you were never told about.
+
+| Goal | Git move |
+| --- | --- |
+| Get the project the first time | `clone` the remote |
+| See new branches and commits | `fetch` |
+| Test a feature locally | `checkout` that branch, then `pull` |
+| Know you match the PR | Compare the SHA on GitHub with `git log -1` |
+
+### Clone once
+
+```bash
+git clone https://github.com/nimbus-qa/nimbus.git
+cd nimbus
+```
+
+You now have a local copy of the default branch (often `main` or `master`) plus a remote named `origin`.
+
+### Pull the branch under test
+
+PRs are almost never "just `main`." The developer opened a branch. To test **that** change locally (app, tests, or a script):
+
+```bash
+git fetch origin
+git checkout feature/forgot-password
+git pull origin feature/forgot-password
+```
+
+If the branch already exists locally and you only need new commits:
+
+```bash
+git checkout feature/forgot-password
+git pull
+```
+
+Then install and run whatever the README says (`npm install`, migrate a local DB, start the app). You are testing **this branch**, not last month's clone.
+
+<Warning title="Dirty tree, wrong branch">
+If `git status` shows your own leftover files, you are not on a clean copy of the PR. Stash or reset only if you understand you will lose local edits. Never force-push to a shared branch. Testers usually **do not** push product code; they pull, run, and comment on the PR.
+</Warning>
+
+```json
+{
+  "pr": 412,
+  "branch": "feature/forgot-password",
+  "qa": ["fetch", "checkout", "pull", "run locally or open preview URL"]
+}
+```
+
+Preview deploys (Vercel, Netlify, GitHub Environments) are Git too: the host builds the PR's SHA. If you cannot run locally, still confirm the preview is for **that** PR number, then execute cases against it.
+
+## Pull request lifecycle and QA
+
+**Definition:** A *pull request* (merge request on GitLab) is a proposal: "take these commits from my branch into `main`." It is the team's chance to review **diff, tests, and risk** before merge.
+
+Typical lifecycle:
+
+1. **Open** — developer pushes a branch and opens a PR with a description (what, why, how to test).
+2. **CI** — automated checks (lint, unit tests, build). Red CI is a blocker; do not "QA around" a failing pipeline unless the team agreed the job is unrelated.
+3. **Review** — people comment on the diff. QA may not own every line of TypeScript, but you **do** own "does this meet AC?"
+4. **QA on the change** — preview URL or local branch; execute the story's cases; [SQL](/courses/technical-core/01-sql-for-qa) if persistence is in play.
+5. **Changes requested or approved** — more commits, or the PR is ready.
+6. **Merge** — squash or merge commit lands on `main`.
+7. **After merge** — smoke on staging/production per the team's DoD; close the loop on bugs filed against the PR.
+
+### How QA fits in code review
+
+You are not required to nitpick comma style. You **are** expected to:
+
+| Do | Do not |
+| --- | --- |
+| Confirm the PR description lists how to test, or add a comment asking for it | Approve with "LGTM" and zero execution |
+| Run the happy path and the AC negatives on the PR build | Only test `main` "later" |
+| Comment with evidence: case id, preview URL, expected vs actual | Paste a 400-line log in the first comment with no summary |
+| Flag missing tests (no check for expired token) as review comments | Merge from QA permission if policy says engineering lead merges |
+| Recheck after new commits (PRs move) | Assume yesterday's pass still holds |
+
+A high-signal PR comment:
+
+```text
+AC: expired reset link must not change the password.
+On preview for commit a1b2c3, TC-FP-06 still sets a new password (see steps in the case).
+Blocked for merge until that path fails closed. Happy path TC-FP-02 passed.
+```
+
+That is review **and** testing. GitHub's "Request changes" vs "Comment" vs "Approve" should match your team's rule: many squads want QA **Comment** plus a checklist, with maintainers merging.
+
+## Try this
+
+1. Write your next standup in three bullets before the meeting. Time yourself: under a minute.
+2. On a public repo you are allowed to clone, `git clone`, then `git checkout` a PR branch (GitHub: "checkout" instructions on the PR).
+3. Open a PR on a practice repo and leave one comment that cites an expected result, not "looks good."
+
+## Knowledge check
+
+<Quiz
+  title="Standup, Git, and PRs"
+  question="What should a QA engineer report during a Daily Standup?"
+  options={[
+    "What I did, what I will do next, and any blockers",
+    "A full retrospective of every escaped bug from last quarter",
+    "Only Git commit hashes with no story or environment context",
+    "Nothing — testers wait until the sprint demo to speak"
+  ]}
+  correctIndex={0}
+  explanation="Standup is did / will do / blocked. It is not a retro, not a git log dump, and testers are not silent until the demo. Environment and AC blockers belong here so the team can help the same day."
+  questions={[
+    {
+      question: "A developer asks you to test PR 412. After clone, what is the Git reason to checkout and pull that feature branch?",
+      options: [
+        "So you test the commits in the PR, not an old copy of main",
+        "So you can force-push a rewrite of production history",
+        "So Daily Standup can be skipped",
+        "So SQL WHERE clauses are generated by GitHub"
+      ],
+      correctAnswer: 0,
+      explanation: "Clone gets the repo. Checkout and pull get the branch under test. Testing only main misses the PR until it merges."
+    },
+    {
+      question: "Where does QA fit in a pull request?",
+      options: [
+        "Approve with LGTM and never open the preview",
+        "Execute the change against acceptance criteria, comment with evidence, and retest after new commits",
+        "Merge to main from the tester laptop with no CI",
+        "Delete the branch before anyone reviews the diff"
+      ],
+      correctAnswer: 1,
+      explanation: "QA is a quality gate on the PR: run the story, write what you saw, do not treat a stale pass as still true after new pushes."
+    }
+  ]}
+/>

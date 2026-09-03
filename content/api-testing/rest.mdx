@@ -4,20 +4,131 @@ description: Resources, status codes, and API contracts.
 category: api-testing
 lessonId: rest
 track: api
-order: 1
+order: 5
+difficulty: intermediate
+readingTime: 12
 ---
 
 ## What this lesson covers
 
-This module introduces **REST** as a contract between clients and services.
+**REST** is an architectural style, not a file format. As a tester you treat it as a **contract**: identified resources, representations (usually JSON), and HTTP semantics that clients are allowed to rely on.
 
-- Resources and representations
-- Status codes that testers should assert
-- How API contracts fail in the wild
+- Resources vs payloads
+- Status code families you should assert
+- How contracts fail in the wild
 
 ## Outcome
 
-After this lesson you will be able to describe a REST endpoint in testable terms.
+After this lesson you will be able to describe a REST endpoint in testable terms: URL, method, headers, expected status, and payload shape.
+
+<Info title="Contract first">
+If two teams disagree about a field name, the test suite should fail before production users do. Your job is to make that disagreement visible.
+</Info>
+
+## Resources and representations
+
+A **resource** is a thing with an identity, often a URL:
+
+- Collection: `/api/orders`
+- Member: `/api/orders/1082`
+
+A **representation** is how that thing is serialized today: JSON, XML, or a problem-details document. The same order can have more than one representation. Testers assert the representation the client actually consumes.
+
+Good REST tests name the resource, not the UI:
+
+```http
+GET /api/orders/1082
+Accept: application/json
+Authorization: Bearer <token>
+```
+
+That request should not depend on a browser cookie from the marketing site unless the API contract says so.
+
+## Status codes as oracles
+
+Assert the **family** and the **specific code** the contract promised.
+
+| Family | Meaning for testers |
+| --- | --- |
+| 2xx | Success — still assert the body |
+| 3xx | Redirect — follow or forbid, per spec |
+| 4xx | Client problem — validate message and that the server did not mutate |
+| 5xx | Server problem — fail the build; do not treat as a "valid negative test" |
+
+Common assertions:
+
+- **200** GET member that exists
+- **201** POST that created, plus `Location` if the API issues one
+- **204** DELETE or a body-less success
+- **400** malformed JSON or failed schema
+- **401** missing/invalid auth
+- **403** authenticated but not allowed
+- **404** no resource at that id (or hidden)
+- **409** conflict (duplicate coupon, stale version)
+- **422** semantically invalid (valid JSON, illegal business rule)
+- **429** rate limit — retry-after is part of the contract
+
+<Warning title="200 with an error object is a smell">
+Some APIs return HTTP 200 and put `"success": false` in the body. Testers still must assert both layers, then file a contract bug: HTTP already has a status line. Clients and caches will get it wrong.
+</Warning>
+
+## Payload shape
+
+Status is not enough. Assert:
+
+- Required fields present
+- Types (string id vs number id)
+- Enums (`pending` vs `PENDING`)
+- Null vs omitted
+- Arrays that must not be null
+- Pagination (`items`, `nextCursor`)
+
+Example representation you might freeze as a fixture:
+
+```json
+{
+  "id": "1082",
+  "status": "pending",
+  "items": [
+    { "sku": "QC-MUG", "qty": 1, "unitPrice": 1800 }
+  ],
+  "totals": { "subtotal": 1800, "discount": 0, "tax": 144, "grand": 1944 }
+}
+```
+
+Money as integer cents avoids floating-point surprises. If the API sends `19.44`, your oracle must say so.
+
+## Practical example: create-order contract
+
+Positive path:
+
+1. POST `/api/orders` with a valid cart id
+2. Expect 201
+3. Expect `id` to be a non-empty string
+4. GET the Location header (or the member URL for the new id) and expect 200 with the same totals
+
+Negative paths that belong in the pack:
+
+- Empty body → 400
+- Unknown cart id → 404 or 422 (document which)
+- Expired session → 401
+- Replay with the same idempotency key → same order id, not a duplicate
+
+<Info title="Idempotency keys">
+If the docs mention an Idempotency-Key header, treat duplicate POSTs as a first-class case. Networks retry. APIs that ignore the key will double-charge.
+</Info>
+
+## How contracts fail
+
+- Field renamed in the service, UI still works because it was hardcoded
+- Extra fields added — usually OK — but a required field removed
+- List endpoint starts wrapping items in `data`
+- Timezones shift from UTC strings to epoch seconds
+- Error body changes from a simple message field to RFC 7807 problem+json
+
+Your regression pack should fail on those. Exploratory API testing then hunts authorization gaps and stateful sequences the pack never named.
+
+## Knowledge check
 
 <Quiz
   title="REST check"
@@ -43,6 +154,28 @@ After this lesson you will be able to describe a REST endpoint in testable terms
       ],
       correctAnswer: 1,
       explanation: "Contracts fail in the body as often as they fail in the status line — assert both."
+    },
+    {
+      question: "POST /api/orders returns 201 but the JSON body omits id. What should you do?",
+      options: [
+        "Pass the test because 201 means created",
+        "Fail: the contract for a created resource should identify it, often via body or Location",
+        "Treat it as a 500",
+        "Retry until an id appears"
+      ],
+      correctAnswer: 1,
+      explanation: "Clients need an identifier to GET, PATCH, or DELETE the new order. 201 without identity is an incomplete contract."
+    },
+    {
+      question: "An endpoint returns HTTP 200 with a body of success false and an error message. The strongest tester response is:",
+      options: [
+        "Ignore HTTP and only read the body",
+        "Assert both layers, then challenge the contract — HTTP status should match the outcome",
+        "Count it as a 5xx",
+        "Skip negative tests on that API"
+      ],
+      correctAnswer: 1,
+      explanation: "You still encode the current behavior so you notice drift, and you report the semantic mismatch so clients are not trapped."
     }
   ]}
 />

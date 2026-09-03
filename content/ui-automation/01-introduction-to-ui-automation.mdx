@@ -1,0 +1,128 @@
+---
+title: "Introduction to UI Automation"
+description: "What UI automation is, when it pays off, the test pyramid, and what not to automate first."
+category: "UI Automation"
+level: "Beginner"
+estimatedTime: "15 mins"
+order: 4
+lessonId: 01-introduction-to-ui-automation
+track: automation
+---
+
+## What this lesson covers
+
+**UI automation** drives a real browser (or a real app) the way a user would: click, type, assert what is on the screen. It is powerful and expensive. Testers who automate everything drown in flakes. Testers who automate nothing repeat the same checkout click forever.
+
+- UI automation vs API tests vs manual
+- The test pyramid in one picture
+- What to automate first
+- How this track maps to the Automation Playground
+
+## Outcome
+
+After this lesson you will be able to explain when a UI test is the right layer, and name one journey you would automate on Nimbus before you automate the About page.
+
+<Info title="Playground">
+The [Automation Playground](/ui-automation/playground) lets you edit a Playwright `test()` shape. It checks syntax — it does not launch a browser yet. Use it after you can read a spec.
+</Info>
+
+## What a UI test actually does
+
+**Definition:** A *UI automated test* is a script that opens a browser, performs user actions, and **asserts** visible (or accessible) outcomes.
+
+Analogy: API tests are letters to the kitchen. UI tests are sitting at the table: you see the menu, the overlapping button, the total that went negative. Some bugs **only** exist at the table (layout, focus, a disabled Pay button that is still clickable).
+
+| Layer | Fast? | Catches | Misses |
+| --- | --- | --- | --- |
+| Unit / component | Yes | Logic in isolation | Real wiring, real CSS |
+| API | Yes | Contracts, money rules | Layout, keyboard, overlap |
+| UI | No | Journeys, locators, visual-ish bugs | Deep combinatorial data (use API for that) |
+| Manual / exploratory | Slow | Surprise, UX, "this feels wrong" | Repeatability overnight |
+
+**Definition:** The *test pyramid* says: many fast checks at the bottom, fewer UI journeys at the top. Invert it (all UI, no API) and CI becomes a flake factory.
+
+## What to automate first
+
+Automate **high-value, stable** user journeys:
+
+1. Login (if the product has it)
+2. Checkout / pay
+3. Apply one promo code (`SAVE10`) — the rule you already tested by hand and by API
+4. A smoke path after every deploy ("can a guest add a mug?")
+
+Do **not** start with:
+
+- Marketing pixels and every breakpoint
+- Captchas and real 2FA
+- Screens that redesign weekly
+- Assertions on exact hex colors unless visual regression is a chosen tool
+
+<Warning title="Automating a junk journey encodes the junk">
+If checkout is still changing daily, a UI test will fail daily. Stabilize the product or keep that path manual/exploratory until the flow settles. Then lock it in.
+</Warning>
+
+## Step-by-step: pick one Nimbus journey
+
+1. **Name the risk.** "Second `SAVE10` must not stack; Pay must stay honest."
+2. **Decide the layer.** Stacking is an API rule — still add **one** UI test that shows the total on screen, because users see the label.
+3. **Write the user steps** the same way you write a bug report: given, when, then.
+4. **Choose locators** next lesson (role and name, not a 12-part CSS chain).
+5. **Run in CI** on a known build, not only on your laptop.
+
+```json
+{
+  "journey": "checkout-promo-once",
+  "layer": "ui",
+  "steps": [
+    "Add Classic Mug to cart",
+    "Go to checkout",
+    "Apply SAVE10",
+    "Apply SAVE10 again"
+  ],
+  "assert": {
+    "visibleTotal": "not negative",
+    "message": "Already used or equivalent"
+  }
+}
+```
+
+Next: the **DOM** (how the page is built), then **frameworks** (Playwright vs the rest), then a first Playwright spec.
+
+## Knowledge check
+
+<Quiz
+  title="Introduction to UI automation"
+  question="What should you automate first?"
+  options={[
+    "Every pixel of the marketing site",
+    "High-value, stable user journeys",
+    "Internal debug screens that change daily",
+    "Captchas and 2FA prompts"
+  ]}
+  correctIndex={1}
+  explanation="Early automation pays off on journeys that are both important and relatively stable — checkout, not the weekly landing-page experiment."
+  questions={[
+    {
+      question: "Why keep API tests even if you have UI automation?",
+      options: [
+        "API tests are slower, so they should replace UI",
+        "API tests cover contracts and data cheaply; UI tests should stay few and journey-shaped",
+        "Browsers cannot be automated",
+        "JSON is illegal in UI tests"
+      ],
+      correctAnswer: 1,
+      explanation: "The pyramid exists because UI is slow and brittle. Money rules belong in API packs; the UI asserts what the shopper sees."
+    },
+    {
+      question: "A UI test that fails every time design moves a div is usually:",
+      options: [
+        "Proof the product is untestable forever",
+        "Coupled to incidental layout instead of user-facing meaning — fix locators and scope",
+        "A reason to delete all API tests",
+        "A 500 from the kitchen API"
+      ],
+      correctAnswer: 1,
+      explanation: "Flakes from CSS chains are a locator and design-stability problem. Next lesson: role, name, and test ids."
+    }
+  ]}
+/>

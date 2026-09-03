@@ -4,20 +4,76 @@ description: Test design, exploratory testing, and defect reporting.
 category: foundation
 lessonId: manual-qa
 track: manual
-order: 1
+order: 9
+difficulty: beginner
+readingTime: 10
 ---
 
 ## What this lesson covers
 
-This module introduces **manual QA** as the foundation of the Quality Central path. Full lesson content will be written here.
+Manual QA is not "clicking around until something feels off." It is **designed sampling** plus **session-based exploration**, written so another person can repeat or refute your result.
 
-- Test design techniques
-- Exploratory testing sessions
-- Defect reporting that developers can act on
+- Equivalence, boundaries, and states
+- Exploratory charters and notes
+- Defect reports developers can act on
 
 ## Outcome
 
-After this lesson you will be able to plan a manual test pass and file a clear bug report.
+After this lesson you will be able to plan a manual pass and file a clear bug report.
+
+## Test design that earns its time
+
+**Equivalence partitioning** groups inputs that should behave the same. One value per class is usually enough.
+
+**Boundary value analysis** sits on the edges: 0 / 1 / max, empty / one character over limit, 767px vs 768px.
+
+**State transition** asks what is legal next: logged out cannot checkout; coupon applied cannot apply twice if the spec says so.
+
+### Practical example: quantity field
+
+| Class | Sample | Expect |
+| --- | --- | --- |
+| Valid | 1, 10 | Line total updates |
+| Lower boundary | 0, 1 | 0 rejected or removes line; 1 accepted |
+| Upper boundary | 99, 100, 101 | Per product cap |
+| Invalid | blank, letters | Validation, no request |
+
+<Info title="Oracles">
+An oracle is how you know pass from fail: spec, previous build, a calculation, a competing product, or a heuristic like "discounts never increase the total." Write the oracle next to the case.
+</Info>
+
+## Exploratory testing
+
+Exploratory testing is simultaneous **learning, design, and execution**, guided by a charter and time box — not the absence of notes.
+
+```text
+Charter: Attack coupon + email validation on mobile.
+Time:    45 minutes
+Setup:   375px viewport, SAVE20 enabled, empty cart then one item
+Notes:   ...
+Bugs:    ticket links
+```
+
+You still use ISTQB techniques inside the session. The difference is you decide the next test from what you just learned.
+
+<Warning title="Unreproducible is usually incomplete">
+If you cannot write steps, capture the URL, viewport, account, and payload before you refresh. Exploratory speed is wasted when the only evidence is a memory.
+</Warning>
+
+## Defect reports that get fixed
+
+A useful report always includes:
+
+1. **Title** that names the failure, not the guess ("SAVE20 stacks on second apply")
+2. **Environment** (build, viewport, account role)
+3. **Steps** starting from a known state
+4. **Expected vs actual**
+5. **Evidence** (screenshot, HAR, log snippet)
+6. **Severity vs priority** (impact vs when to fix)
+
+Do not assign blame in the ticket. Do not skip the expected result. Do not file a duplicate without searching.
+
+## Knowledge check
 
 <Quiz
   title="Manual QA check"
@@ -43,6 +99,17 @@ After this lesson you will be able to plan a manual test pass and file a clear b
       ],
       correctAnswer: 1,
       explanation: "Exploratory testing couples investigation with execution, guided by charters and session notes."
+    },
+    {
+      question: "You test a 5-character promo code field. Which set is the strongest boundary sample?",
+      options: [
+        "Only a typical valid code",
+        "4, 5, and 6 character strings, plus empty",
+        "Twenty random valid codes",
+        "Only SQL injection strings"
+      ],
+      correctAnswer: 1,
+      explanation: "Boundaries sit just inside, on, and just outside the limit. Empty is a separate invalid or special class."
     }
   ]}
 />

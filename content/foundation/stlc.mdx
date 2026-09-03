@@ -4,20 +4,127 @@ description: Software testing life cycle from plan to closure.
 category: foundation
 lessonId: stlc
 track: manual
-order: 3
+order: 8
+difficulty: beginner
+readingTime: 14
 ---
 
 ## What this lesson covers
 
-This module walks the **software testing life cycle** from planning through closure.
+The **software testing life cycle** is the tester's operating system. SDLC decides how software is built. STLC decides how confidence is earned, recorded, and handed off.
 
-- Test planning and control
-- Design, execution, and reporting
-- Exit criteria and closure
+- Six STLC phases and the artifacts each one produces
+- Entry criteria, exit criteria, and suspension
+- A worked checkout example you can copy into a real project
 
 ## Outcome
 
-After this lesson you will be able to describe each STLC phase and what “done” looks like.
+After this lesson you will be able to run a test cycle with a plan, a design, evidence, and a closure note — not just a pile of tickets.
+
+<Info title="STLC is not a waterfall tax">
+In Scrum you still plan, design, execute, and close. You just do it in hours or days per story, and you keep a thin suite living across sprints. The phases are activities, not calendar months.
+</Info>
+
+## The six phases
+
+| Phase | Primary question | Typical artifacts |
+| --- | --- | --- |
+| Requirement analysis | What must we prove, and what is ambiguous? | Testable requirements, questions, RTM start |
+| Test planning | How much, by whom, with which risks? | Test plan, estimates, entry/exit criteria |
+| Test design (case development) | Which samples give the cheapest signal? | Cases, charters, data, oracles |
+| Test environment | Can we even run the tests? | Env checklist, test data, access, stubs |
+| Test execution | What happened, and is it a defect? | Results, bugs, retests, progress |
+| Test cycle closure | What do we know, and what is leftover? | Summary, open risks, lessons learned |
+
+Traceability (often a **requirements traceability matrix**) is the thread: every in-scope requirement maps to at least one test, every test maps to a result, every failure maps to a defect or a waived risk.
+
+## Entry, exit, and suspension
+
+**Entry criteria** are the gates before you spend execution budget. Examples:
+
+- Stories have acceptance examples
+- A build is installed in the test environment
+- Payment sandbox credentials work
+- Known blockers from last cycle are closed or explicitly waived
+
+**Exit criteria** are the gates before you call the cycle done. Examples:
+
+- All P0 cases executed
+- No open Sev-1 defects
+- Regression pack green on the agreed browsers
+- Residual risks written down, not forgotten
+
+**Suspension criteria** pause execution when continuing would waste time: environment down, blocking defect, or data refresh failed.
+
+<Warning title="Exit criteria without numbers become vibes">
+"Testing is complete when we feel good" cannot survive a release meeting. Prefer countable statements, plus an explicit waiver list for anything you skipped.
+</Warning>
+
+## Practical example: SAVE20 checkout cycle
+
+Imagine Quality Central's sandbox cart. Scope for this cycle: apply a percent discount once per order.
+
+### 1. Requirement analysis
+
+- In: one coupon, one apply, totals on desktop and a 375px viewport
+- Out: stacking two different coupons (later story)
+- Ambiguity to raise: does a second click replace the first discount or add another 20% of the original subtotal?
+
+### 2. Test planning (excerpt)
+
+```text
+Objective: Prove SAVE20 applies once; catch stacking and mobile overlap.
+Risks:   Discount math, payment field occlusion under 768px.
+Entry:   Build deployed; coupon SAVE20 enabled; test card available.
+Exit:    P0 cases pass; no Sev-1 open; residual risks listed.
+Suspend: Checkout returns 5xx for 15 minutes or coupon service is down.
+```
+
+### 3. Test design
+
+Black-box samples:
+
+| ID | Idea | Expected |
+| --- | --- | --- |
+| QC-D1 | Apply SAVE20 once | 20% off subtotal, tax on discounted amount |
+| QC-D2 | Apply SAVE20 twice | Still a single 20% — no stack |
+| QC-D3 | Clear coupon | Original subtotal restored |
+| QC-D4 | Viewport 375px | CVC and Submit both usable |
+
+Exploratory charter (90 minutes): "Attack discount + validation. Note any way to submit without a valid email."
+
+### 4. Environment
+
+- Seeded cart with a known subtotal
+- Coupon service flag on
+- Do not use production PAN
+
+### 5. Execution notes
+
+You run QC-D2 and the total drops again. That is a **failure**. You file a defect with actual vs expected, then keep executing unblocked cases (QC-D4) instead of waiting. Confirmation testing happens after the fix; regression is the rest of the pack.
+
+### 6. Closure
+
+A useful closure paragraph:
+
+> Executed 4 of 4 P0 cases. QC-D2 failed (discount stacking) — open Sev-2. QC-D4 passed on 375px. Gift cards still out of scope. Recommend blocking release of the coupon flag until QC-D2 is retested.
+
+That paragraph is what stakeholders actually need. Screenshots live in the defect, not in the summary.
+
+## Planning vs control
+
+ISTQB splits **planning** (decide) from **control** (steer). During execution you compare progress against the plan: are P0s finishing? Did a blocker eat the budget? Control actions include adding a charter, dropping a P3, or calling suspension.
+
+```text
+Planned P0: 12
+Executed:   9
+Blocked:    2 (payment sandbox)
+Deferred:   1 (gift card — out of scope after analysis)
+```
+
+Numbers like these belong in standup. They are STLC monitoring, not bureaucracy.
+
+## Knowledge check
 
 <Quiz
   title="STLC check"
@@ -43,6 +150,28 @@ After this lesson you will be able to describe each STLC phase and what “done�
       ],
       correctAnswer: 2,
       explanation: "Closure wraps evidence, open risks, and next actions — not just 'we ran some tests'."
+    },
+    {
+      question: "A payment sandbox is down and every checkout case would fail for the same reason. The correct STLC move is:",
+      options: [
+        "Keep executing to inflate the fail count",
+        "Invoke suspension criteria and switch to unblocked work",
+        "Mark all cases passed because the product is not at fault",
+        "Skip test design for the next cycle"
+      ],
+      correctAnswer: 1,
+      explanation: "Suspension protects the budget. Continuing would not produce new information about the product."
+    },
+    {
+      question: "Why start a requirements traceability matrix during analysis instead of after execution?",
+      options: [
+        "So you can map tests to in-scope items before you invent cases",
+        "Because ISTQB forbids exploratory testing",
+        "To replace defect reports",
+        "To prove exhaustive testing"
+      ],
+      correctAnswer: 0,
+      explanation: "Traceability is a design aid. If you wait until the end, you discover gaps when it is too late to test them."
     }
   ]}
 />

@@ -1,0 +1,138 @@
+---
+title: "The DOM & Stable Locators"
+description: "How the document is a tree, why CSS chains flake, and how to locate by role, name, and test id."
+category: "UI Automation"
+level: "Beginner"
+estimatedTime: "18 mins"
+order: 7
+lessonId: 02-dom-and-locators
+track: automation
+---
+
+## What this lesson covers
+
+The **DOM (Document Object Model)** is the tree of elements the browser builds from HTML. Automation does not "see" the pretty screenshot first — it queries this tree (and the **accessibility tree** derived from it).
+
+- DOM vs what you see
+- Why long CSS/XPath chains flake
+- Role, name, placeholder, test id
+- Debugging a locator that "worked on my machine"
+
+## Outcome
+
+After this lesson you will be able to choose a locator that still works after a designer rearranges classes. Prefer role and name (see the Playwright examples below) over a long CSS chain such as `div > div > span.btn-3`.
+
+<Info title="Accessibility is a test oracle">
+If a button has no accessible name, a screen-reader user cannot find it — and neither can a good locator. Filing "missing name" is both a11y and automation hygiene.
+</Info>
+
+## The page is a tree
+
+```html
+<form>
+  <label for="qty">Quantity</label>
+  <input id="qty" type="number" value="1" />
+  <button type="submit">Add to cart</button>
+</form>
+```
+
+Testers care about:
+
+| Idea | Why it matters |
+| --- | --- |
+| Roles | `button`, `textbox`, `link` — how the control is used |
+| Accessible name | The label or button text a user hears |
+| Test id | `data-testid` when the UI has no stable name |
+| Hidden nodes | `display: none` may still exist in the DOM |
+
+<Warning title="Visible is not the same as in the DOM">
+An overlay can cover Pay. The button is in the tree and "enabled" in HTML, but the user cannot click it. QA Mode in the Sandbox outlines spots like this — your UI test should click the real control, not a covered one.
+</Warning>
+
+## Locators that survive redesign
+
+**Prefer** (Playwright-style, in a fence because of braces):
+
+```ts
+page.getByRole("button", { name: "Apply" })
+page.getByLabel("Quantity")
+page.getByTestId("cart-promo-input")
+```
+
+**Avoid** as a first choice:
+
+```css
+div.container > div:nth-child(2) > span.sc-a1b2c3
+```
+
+That chain is coupled to **incidental structure**. One wrapper div from a CSS-in-JS rename and CI goes red.
+
+| Strategy | Stable when | Breaks when |
+| --- | --- | --- |
+| Role + name | Copy and semantics stay | Designers change the visible verb without a product decision |
+| Label | Forms stay labeled | Label not wired with `for` / wrapping |
+| Test id | You own the attribute | App code strips test ids in production (agree a policy) |
+| CSS/XPath by layout | Almost never | Almost always |
+
+## Step-by-step: locate Apply on Nimbus
+
+1. Open DevTools. Inspect **Apply**.
+2. Confirm it is a `button` (or `input` with a type). Note the accessible name.
+3. Write the locator against **role + name**, not the class list.
+4. If two Applies exist, **scope** to the checkout form (`getByRole('form')` then the button).
+5. Run twice. If it flakes, you scoped too wide or the name is dynamic (`Apply (2)`).
+
+```json
+{
+  "control": "apply-promo",
+  "locator": "role=button name=Apply",
+  "scope": "checkout form",
+  "avoid": "div.flex > button.primary:nth-of-type(1)"
+}
+```
+
+## Debugging a flake
+
+1. Screenshot on failure (Playwright does this in CI).
+2. Print `page.getByRole('button').allTextContents()` — did the name change?
+3. Check overlays (the Sandbox CVC/Pay overlap is a **product** bug, not a locator puzzle).
+4. Wait for **readiness** (next Playwright lesson), not `sleep(5000)`.
+
+## Knowledge check
+
+<Quiz
+  title="DOM and locators"
+  question="Why prefer role and name locators over long CSS chains?"
+  options={[
+    "They are slower, so flakes hide longer",
+    "They follow how users and assistive tech find the control",
+    "CSS is banned in browsers",
+    "They ignore visible text"
+  ]}
+  correctIndex={1}
+  explanation="Accessible names stay stable when layout classes change, and they match real user intent."
+  questions={[
+    {
+      question: "A locator that flakes after a redesign usually failed because:",
+      options: [
+        "The assertion library was too strict",
+        "It was coupled to incidental structure instead of meaning",
+        "The test ran too quickly on CI",
+        "Playwright cannot read the DOM"
+      ],
+      correctAnswer: 1,
+      explanation: "Brittle CSS/XPath tied to DOM shape breaks when designers rearrange markup."
+    },
+    {
+      question: "Two Apply buttons exist on the page. The robust move is:",
+      options: [
+        "Click the first match and hope",
+        "Scope the locator to the checkout region, then use role and name",
+        "Use a 20-level XPath from html",
+        "Disable one button in production"
+      ],
+      correctAnswer: 1,
+      explanation: "Ambiguous names need a parent scope (form, dialog, test id on the section), not a longer CSS chain."
+    }
+  ]}
+/>

@@ -1,0 +1,160 @@
+---
+title: "What is an API & How Does it Work?"
+description: "APIs as messengers between client and server, a restaurant analogy, and how JSON carries data."
+category: "API Testing"
+level: "Intermediate"
+estimatedTime: "15 mins"
+order: 1
+lessonId: 01-introduction-to-api-testing
+track: api
+---
+
+## What this lesson covers
+
+An **API (Application Programming Interface)** is the messenger that takes a request from a user, tells a system what to do, and returns the response back to the user.
+
+You will learn:
+
+- Client, server, and API as three roles (not three mystery acronyms)
+- A restaurant analogy you can reuse in interviews
+- **JSON** as the usual language of that conversation
+- What a tester actually asserts on a response
+
+## Outcome
+
+After this lesson you will be able to explain an API in one sentence, map it to waiter / kitchen / diner, and read a small JSON object field by field.
+
+<Info title="The UI is only one diner">
+The screen you click is one client. A mobile app, a partner, and your test tool are other diners using the same waiter. If the waiter brings the wrong plate, every diner is wrong — even if the menu looks pretty.
+</Info>
+
+## The restaurant model
+
+Imagine a restaurant:
+
+| Role | In the restaurant | In software |
+| --- | --- | --- |
+| **You (Client / Frontend)** | The person ordering food | Browser, mobile app, Postman, or a test script |
+| **The Kitchen (Server / Database)** | Where the food is made | Application server and data store |
+| **The Waiter (API)** | Takes your order to the kitchen and brings food back | The HTTP interface: request in, response out |
+
+You do not walk into the kitchen. You do not need to know the recipe. You need a waiter who:
+
+1. Hears a **clear order** (the request: method, URL, body).
+2. Delivers it to the **right station** (the resource: cart, user, order).
+3. Brings back a **plate you can inspect** (the response: status + JSON).
+
+**Definition:** An *HTTP request* is the order ticket. An *HTTP response* is the plate plus a note (status code) saying whether the kitchen succeeded.
+
+```http
+GET /api/users/101
+Accept: application/json
+```
+
+The waiter (API) asks the kitchen for user 101. The kitchen replies with data, not with a screenshot of the profile page.
+
+<Warning title="A smiling waiter can still bring the wrong plate">
+The UI might show "Alex" while the JSON says a different `user_id`. Testers check the plate (response body), not only the garnish (labels on screen).
+</Warning>
+
+## Understanding JSON
+
+APIs commonly communicate using **JSON (JavaScript Object Notation)**. It is a lightweight format for storing and transporting data, structured in **key-value pairs**.
+
+**Definition:** A *key* is the field name (always a string in JSON). A *value* is what that field holds: a number, a string, a boolean, an array, another object, or `null`.
+
+```json
+{
+  "user_id": 101,
+  "name": "Alex Smith",
+  "is_active": true,
+  "roles": ["admin", "tester"]
+}
+```
+
+Read that object like a tester:
+
+| Key | Value | Type you assert |
+| --- | --- | --- |
+| `user_id` | `101` | Number (not the string `"101"` unless the spec says so) |
+| `name` | `Alex Smith` | String |
+| `is_active` | `true` | Boolean — `true`/`false`, not `"yes"` |
+| `roles` | `admin`, `tester` | Array of strings; order may or may not matter — ask |
+
+Analogy: JSON is the written ticket and the receipt. The waiter does not invent fields. If `is_active` is missing, that is a contract bug, not "the kitchen was busy."
+
+Nested objects are just tickets stapled together:
+
+```json
+{
+  "user_id": 101,
+  "name": "Alex Smith",
+  "profile": {
+    "title": "QA engineer",
+    "team": "Nimbus"
+  }
+}
+```
+
+You still assert **shape**: required keys present, types right, arrays not unexpectedly `null`.
+
+## Step-by-step: one tester pass
+
+1. **Name the diner's ask.** "Give me user 101."
+2. **Write the order.** GET, path, headers (`Accept` JSON).
+3. **Write the oracle.** Status 200; `user_id` is 101; `name` is a non-empty string; `roles` is an array.
+4. **Send it** (Postman or the [API Playground](/api-testing/playground)).
+5. **Compare** keys and types to the oracle. Log expected vs actual the same way you would for a UI bug.
+
+```json
+{
+  "check": "GET user 101",
+  "expect": {
+    "status": 200,
+    "user_id": 101,
+    "nameType": "string",
+    "is_active": true
+  }
+}
+```
+
+Next lessons: HTTP methods and status codes (what the ticket is allowed to say), REST resources, then Postman so this sketch becomes a runnable collection.
+
+## Knowledge check
+
+<Quiz
+  title="What is an API"
+  question="In the restaurant analogy, what is the API?"
+  options={[
+    "The person ordering food",
+    "The kitchen and database only",
+    "The waiter who takes the order and brings the response back",
+    "The printed menu on the wall"
+  ]}
+  correctIndex={2}
+  explanation="The client orders, the server cooks, the API is the messenger in between — request in, response out."
+  questions={[
+    {
+      question: "JSON is best described as:",
+      options: [
+        "A database engine that replaces Postgres",
+        "A lightweight format of key-value pairs used to store and transport data",
+        "A CSS layout system",
+        "A status code family"
+      ],
+      correctAnswer: 1,
+      explanation: "JSON is notation for data: keys map to values (strings, numbers, booleans, arrays, objects). APIs commonly send it in the body."
+    },
+    {
+      question: "In the sample user object, which assertion is the most precise?",
+      options: [
+        "The response arrived, so the test passes",
+        "user_id is the number 101, is_active is boolean true, and roles is an array",
+        "name looks friendly",
+        "Any JSON at all means the kitchen is fine"
+      ],
+      correctAnswer: 1,
+      explanation: "Testers assert types and values the contract promised — not only that a body exists."
+    }
+  ]}
+/>

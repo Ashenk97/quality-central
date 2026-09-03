@@ -4,12 +4,14 @@ description: GET, POST, PUT, PATCH, DELETE, and idempotency.
 category: api-testing
 lessonId: http-methods
 track: api
-order: 2
+order: 6
+difficulty: intermediate
+readingTime: 11
 ---
 
 ## What this lesson covers
 
-This module focuses on **HTTP methods** and the guarantees testers should verify.
+HTTP **methods** (verbs) are part of the contract. Testers who only assert JSON will miss servers that delete on GET or create a new resource on every PUT.
 
 - Safe vs unsafe methods
 - Idempotency
@@ -18,6 +20,90 @@ This module focuses on **HTTP methods** and the guarantees testers should verify
 ## Outcome
 
 After this lesson you will be able to pick the right method checks for a given API call.
+
+## The verbs you will test daily
+
+| Method | Typical use | Safe | Idempotent |
+| --- | --- | --- | --- |
+| GET | Read a representation | Yes | Yes |
+| HEAD | Headers only | Yes | Yes |
+| POST | Create, or trigger a process | No | No (unless the API adds a key) |
+| PUT | Replace a member | No | Yes |
+| PATCH | Partial update | No | Often, not guaranteed |
+| DELETE | Remove a member | No | Yes |
+
+**Safe** means "no intended server-side state change." Logging or analytics on GET is common; charging a card on GET is a defect.
+
+**Idempotent** means repeating the same request has the same effect as calling it once. DELETE of a missing id is often 404 or 204 both times — pick one, freeze it, assert it.
+
+<Warning title="GET with a body">
+Some clients send JSON on GET. Many servers ignore it; some crash. Your pack should document "no body on GET" unless the API is an RPC outlier, and you should still refuse side effects.
+</Warning>
+
+## Assertions per verb
+
+### GET
+
+```http
+GET /api/orders/1082
+```
+
+- 200 + schema on a known id
+- 404 on a never-issued id
+- Repeat GET twice — same resource, no extra side effects
+- If `Cache-Control` is part of the contract, assert it
+
+### POST
+
+```http
+POST /api/orders
+Content-Type: application/json
+```
+
+- 201 (or 200) on create
+- Duplicate without an idempotency key creates two members — or 409 if the API forbids it
+- Invalid schema → 400 / 422 and **no row**
+
+### PUT vs PATCH
+
+PUT sends the full replacement. PATCH sends a delta.
+
+```text
+PUT   /api/users/44   { "name": "Ada", "role": "admin" }
+PATCH /api/users/44   { "name": "Ada" }
+```
+
+Tests:
+
+- PUT omitting `role` should not keep the old role if the spec says replace
+- PATCH omitting `role` should keep the old role
+- PUT/PATCH of an unknown id: 404 vs upsert — the docs must say which
+
+### DELETE
+
+- First call: 200 or 204
+- Second call: still 204 (idempotent) **or** 404 — never 500
+- GET after delete: 404
+- DELETE without auth: 401, resource still there
+
+## Practical example: coupon apply
+
+Suppose `POST /api/carts/1/coupons` applies SAVE20.
+
+| Call | Expect |
+| --- | --- |
+| First POST | 200, `discount` equals 20% of subtotal |
+| Second POST | 409 or 200 with the same totals — not another 20% |
+| GET cart | Matches the POST body |
+| DELETE coupon | Totals restored |
+
+That sequence is an **integration-level** API test. It is also the automation version of the STLC design you wrote for the sandbox.
+
+<Info title="Idempotency keys on POST">
+If the client sends a key header, two POSTs with the same key and body must return the same order. Two POSTs with the same key and different bodies should 409. Both cases belong in the pack.
+</Info>
+
+## Knowledge check
 
 <Quiz
   title="HTTP methods check"
@@ -43,6 +129,28 @@ After this lesson you will be able to pick the right method checks for a given A
       ],
       correctAnswer: 1,
       explanation: "PUT and DELETE are typically idempotent; repeating them should not keep creating extra side effects."
+    },
+    {
+      question: "A client sends PATCH /api/users/44 with only name. The API also blanks the user's role. What should a tester log?",
+      options: [
+        "Expected PUT semantics leaking into PATCH — a contract defect unless docs say replace",
+        "A successful GET",
+        "Proof that PATCH is safe",
+        "Nothing; bodies are optional"
+      ],
+      correctAnswer: 0,
+      explanation: "PATCH is a partial update. Clearing unspecified fields is PUT-like behavior and will break clients that send deltas."
+    },
+    {
+      question: "DELETE /api/orders/1082 returns 204, then the same DELETE returns 500. The defect is primarily:",
+      options: [
+        "A missing request body",
+        "Broken idempotency on DELETE",
+        "A 2xx that should have been 201",
+        "An Accept header problem"
+      ],
+      correctAnswer: 1,
+      explanation: "The second DELETE should be a stable 204 or 404. 500 means the server cannot handle 'already gone'."
     }
   ]}
 />

@@ -1,0 +1,155 @@
+---
+title: "REST & JSON Contracts"
+description: "Resources, representations, payload shape, and how REST contracts fail in the wild."
+category: "API Testing"
+level: "Beginner"
+estimatedTime: "16 mins"
+order: 4
+lessonId: 03-rest-and-json
+track: api
+---
+
+## What this lesson covers
+
+**REST** is an architectural style, not a file format. As a tester you treat it as a **contract**: identified resources, JSON (usually), and HTTP semantics clients may rely on.
+
+- Resources vs payloads
+- JSON shape: types, null vs omitted, money
+- Create-order path and negative cases
+- How contracts drift after a "small" rename
+
+## Outcome
+
+After this lesson you will be able to describe an endpoint in testable terms: URL, method, expected status, and payload shape.
+
+<Info title="Contract first">
+If two teams disagree about a field name, the test suite should fail before production users do. Your job is to make that disagreement visible.
+</Info>
+
+## Resources and representations
+
+A **resource** is a thing with an identity, often a URL:
+
+- Collection: `/api/orders`
+- Member: `/api/orders/1082`
+
+A **representation** is how that thing is serialized today — usually JSON.
+
+```http
+GET /api/orders/1082
+Accept: application/json
+```
+
+Good REST tests name the **resource**, not the UI button.
+
+## Payload shape
+
+Status is not enough. Assert:
+
+- Required fields present
+- Types (string id vs number id)
+- Enums (`pending` vs `PENDING`)
+- Null vs omitted
+- Arrays that must not be null
+- Pagination (`items`, `nextCursor`)
+
+Example representation to freeze as a fixture:
+
+```json
+{
+  "id": "1082",
+  "status": "pending",
+  "items": [
+    { "sku": "QC-MUG", "qty": 1, "unitPrice": 1800 }
+  ],
+  "totals": {
+    "subtotal": 1800,
+    "discount": 180,
+    "tax": 130,
+    "grand": 1750
+  }
+}
+```
+
+Money as **integer cents** avoids floating-point surprises. If the API sends `17.50`, your oracle must say so.
+
+```json
+{
+  "oracle": "order-1082",
+  "expect": {
+    "status": 200,
+    "idType": "string",
+    "itemCount": 1,
+    "grand": 1750
+  }
+}
+```
+
+## Practical example: create-order contract
+
+Positive path:
+
+1. `POST /api/orders` with a valid cart id
+2. Expect **201**
+3. Expect `id` to be a non-empty string
+4. GET the new member; expect **200** and the same totals
+
+Negative paths that belong in the pack:
+
+- Empty body → 400
+- Unknown cart id → 404 or 422 (document which)
+- Expired session → 401
+- Replay with the same idempotency key → same order id, not a duplicate
+
+<Info title="Idempotency keys">
+If the docs mention an Idempotency-Key header, treat duplicate POSTs as a first-class case. Networks retry. APIs that ignore the key will double-charge.
+</Info>
+
+## How contracts fail
+
+- Field renamed in the service; the UI still works because it was hardcoded
+- Extra fields added — usually OK — but a required field removed
+- List endpoint starts wrapping items in `data`
+- Timezones shift from UTC strings to epoch seconds
+- Error body changes from a simple `message` to a nested object
+
+Your regression pack should fail on those. Then exploratory API testing hunts auth gaps and stateful sequences the pack never named.
+
+## Knowledge check
+
+<Quiz
+  title="REST and JSON"
+  question="A REST client should treat HTTP 404 as:"
+  options={[
+    "A successful create",
+    "The resource was not found at that URL",
+    "The server crashed",
+    "Authentication succeeded"
+  ]}
+  correctIndex={1}
+  explanation="404 means the requested resource does not exist (or is hidden) at the given identifier."
+  questions={[
+    {
+      question: "What should an API test assert besides the status code?",
+      options: [
+        "Only that the response arrived",
+        "The payload shape and important field values",
+        "The browser theme",
+        "The number of CSS files"
+      ],
+      correctAnswer: 1,
+      explanation: "Contracts fail in the body as often as they fail in the status line. Assert both."
+    },
+    {
+      question: "POST /api/orders returns 201 but the JSON omits id and there is no Location header. What should you do?",
+      options: [
+        "Pass because 201 means created",
+        "Fail: the client needs an identifier to GET, PATCH, or DELETE the order",
+        "Treat it as a 500",
+        "Retry until an id appears"
+      ],
+      correctAnswer: 1,
+      explanation: "201 without identity is an incomplete contract. Clients cannot continue the flow."
+    }
+  ]}
+/>

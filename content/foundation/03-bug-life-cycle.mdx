@@ -1,0 +1,184 @@
+---
+title: "The Defect Life Cycle & Writing Bug Reports"
+description: "How a defect moves from found to closed, and how to write a report a developer can reproduce without a meeting."
+category: "Foundation"
+level: "Beginner"
+estimatedTime: "15 mins"
+order: 3
+lessonId: 03-bug-life-cycle
+track: manual
+---
+
+## What this lesson covers
+
+A high-quality bug report allows developers to reproduce and fix an issue **without asking follow-up questions**.
+
+You will learn:
+
+- What a defect report is for (and what "vague" looks like)
+- The **anatomy** of a useful ticket — title, environment, severity, priority, steps, expected vs actual
+- How **severity** (technical impact) differs from **priority** (business urgency)
+- A simple **defect life cycle**: New through Closed, including retest
+
+## Outcome
+
+After this lesson you will be able to fill every field in the table below for a checkout promo bug, and explain why severity and priority are not the same metric.
+
+<Info title="Your reputation is reproducibility">
+A calm, numbered report ships faster than a loud one. If a teammate can follow your steps on a clean machine and see the same actual result, you did the job.
+</Info>
+
+## Anatomy of a Bug Report
+
+Use this as a template. The checkout example is one defect, fully specified.
+
+| Field | Description | Example |
+| --- | --- | --- |
+| **Title** | Concise summary specifying location and issue | `[Checkout] Discount code applied twice reduces total below $0` |
+| **Environment** | OS, browser, app version | Chrome v128, macOS Sonoma |
+| **Severity** | Impact on the system (Critical, Major, Minor) | Critical (financial discrepancy) |
+| **Priority** | Urgency of the business fix (High, Medium, Low) | High |
+| **Steps to Reproduce** | Exact numbered sequence | 1. Add item to cart. 2. Apply code `SAVE10`. 3. Re-enter `SAVE10`. |
+| **Expected Result** | What should happen | Code applies once; message shows "Already used" |
+| **Actual Result** | What actually happened | Total updates to a negative value |
+
+Same report as structured notes you can paste into Jira, GitHub, or Linear:
+
+```json
+{
+  "title": "[Checkout] Discount code applied twice reduces total below $0",
+  "environment": {
+    "browser": "Chrome v128",
+    "os": "macOS Sonoma",
+    "build": "sandbox"
+  },
+  "severity": "critical",
+  "priority": "high",
+  "steps": [
+    "Add item to cart",
+    "Apply code SAVE10",
+    "Re-enter SAVE10"
+  ],
+  "expected": "Code applies once; message shows Already used",
+  "actual": "Total updates to a negative value"
+}
+```
+
+<Warning title="Never paste real secrets">
+No live card numbers, passwords, or private customer data. Use test accounts and mask emails if a screenshot would expose them.
+</Warning>
+
+### What each field is doing
+
+**Title.** Searchable and specific. `[Checkout]` tells the squad *where*. "reduces total below $0" tells them *what*. Avoid "Checkout broken" and "ASAP."
+
+**Environment.** If it only fails on Safari 17, the developer who uses Chrome needs to know that on line one — not after three Slack pings.
+
+**Steps.** Start from a known state (empty cart, logged-out guest, named build). Number them. One action per line when you file for real.
+
+**Expected vs actual.** Expected comes from the spec or a reasonable oracle ("one code per order"). Actual is a fact with numbers when money is involved. "Looks wrong" is not an actual result.
+
+## Severity vs priority
+
+These two get swapped in stand-up every day. Keep them separate.
+
+**Definition:** *Severity* is how badly the **system** is broken — user harm, data, money, a blocked journey. It is mostly a technical-impact judgment.
+
+**Definition:** *Priority* is how soon the **business** needs a fix. It is mostly an urgency judgment (launch date, number of users, legal exposure).
+
+| Example | Severity | Priority | Why they can differ |
+| --- | --- | --- | --- |
+| Double discount drives the total below $0 | Critical | High | Money is wrong; operations need it today |
+| Typo on a buried FAQ | Minor | Low | Ugly, not urgent |
+| Same typo on the homepage during a televised launch | Minor | High | Impact is still cosmetic; the calendar is not |
+| Rare crash in an admin tool used next quarter | Major | Medium | Painful for the admin, not this week's checkout |
+
+Testers recommend both. Product or tech leads often **set** priority. Argue with evidence, not volume.
+
+A simple severity scale for this course:
+
+| Severity | Use when |
+| --- | --- |
+| Critical | Core journey blocked, or money/data is wrong with no workaround |
+| Major | Core journey broken but a workaround exists, or a wrong total that is visible |
+| Minor | Incorrect behavior in a secondary flow, or cosmetic that still changes meaning |
+
+<Info title="Inflation makes the scale useless">
+If every ticket is Critical and High, the board cannot rank work. Match the label to the example in the table, not to how annoyed you feel.
+</Info>
+
+## The defect life cycle (short map)
+
+**Definition:** The *defect life cycle* is the set of statuses a bug moves through from discovery until the team agrees it is done (or declined).
+
+| Status | Meaning | Who usually acts |
+| --- | --- | --- |
+| **New** | Reported, not yet accepted | Tester |
+| **Assigned** | Someone owns the next action | Lead or developer |
+| **In progress** | Being investigated or fixed | Developer |
+| **Fixed** (ready for test) | Developer believes it is done | Developer |
+| **Verified** | You reran the original steps; the issue is gone | Tester |
+| **Closed** | Team agrees no more work | Tester or lead |
+| **Reopened** | Fix failed or the bug came back | Tester |
+
+**Fixed is a claim. Verified is evidence.** Closing without a retest is how escaped defects return in production.
+
+Analogy: a doctor's visit. You describe symptoms with enough detail to examine (the report). Treatment happens. The doctor says it should be resolved (Fixed). You live a week and confirm the symptom is gone (Verified) — or you come back (Reopened).
+
+### Step-by-step: `SAVE10` through the cycle
+
+1. **Discover.** Re-entering `SAVE10` drives the total negative.
+2. **Reproduce twice.** Same steps, same actual. If it is flaky, write the rate (for example two times in five).
+3. **File New** with the anatomy table filled in.
+4. **Developer fixes** the double-apply handler and marks Fixed.
+5. **You retest** on that build: original steps plus a cousin case (remove code, apply once — one discount should work).
+6. **Verified**, then **Closed** — or **Reopened** with the new actual if the total is still wrong.
+
+```json
+{
+  "retest": "SAVE10-double-apply",
+  "build": "sandbox-after-fix",
+  "originalSteps": "pass — second apply shows Already used",
+  "cousinCase": "remove code then apply once — pass",
+  "decision": "verified"
+}
+```
+
+## Knowledge check
+
+<Quiz
+  title="Defect life cycle and bug reports"
+  question="What is the difference between Bug Severity and Priority?"
+  options={[
+    "They are the exact same metric",
+    "Severity reflects technical impact; Priority reflects business urgency",
+    "Priority reflects technical impact; Severity reflects business urgency",
+    "Severity is set by developers; Priority is set by users"
+  ]}
+  correctIndex={1}
+  explanation="Severity evaluates how severely the system is broken, while Priority determines how quickly business operations require a fix."
+  questions={[
+    {
+      question: "Which title is the most useful bug summary?",
+      options: [
+        "Checkout broken!!!",
+        "[Checkout] Discount code applied twice reduces total below $0",
+        "Please fix ASAP",
+        "UI"
+      ],
+      correctAnswer: 1,
+      explanation: "A useful title names the area and the observable failure. Drama and one-word titles waste triage time."
+    },
+    {
+      question: "A developer marks a ticket Fixed. What should a tester do before Closed?",
+      options: [
+        "Delete the ticket so the board looks green",
+        "Retest the original steps on the build that contains the fix",
+        "Raise severity to Critical automatically",
+        "Assign it back without running anything"
+      ],
+      correctAnswer: 1,
+      explanation: "Fixed is a claim. Verified means you gathered evidence on the new build, then you close per team process."
+    }
+  ]}
+/>

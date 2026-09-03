@@ -1,0 +1,201 @@
+---
+title: Postman
+description: Collections, environments, and automated API checks.
+category: api-testing
+lessonId: postman
+track: api
+order: 7
+difficulty: intermediate
+readingTime: 13
+---
+
+## What this lesson covers
+
+**Postman** is a client for designing, running, and automating HTTP tests. Used well, it is a living contract: requests, environments, and assertions that Newman can run in CI. Used poorly, it is a folder of unreproducible clicks.
+
+- Collections and folders
+- Environments and variables
+- Tests, scripts, and collection runners
+- How this maps to Quality Central's API playground
+
+## Outcome
+
+After this lesson you will be able to build a small collection that creates a resource, asserts the contract, and reuses the same requests against mock and staging hosts.
+
+<Info title="Playground next">
+When you finish here, open the API Playground in this track. Postman is the professional shell; the playground is the same idea with a thinner UI: method, URL, JSON body, status badge.
+</Info>
+
+## Collections are the suite
+
+A **collection** is a tree of requests. Folders should match resources, not random chronology.
+
+```text
+Orders API
+├── Health
+│   └── GET health
+├── Orders
+│   ├── POST create order
+│   ├── GET order by id
+│   ├── PATCH status
+│   └── DELETE order
+└── Negative
+    ├── POST invalid body
+    └── GET missing id
+```
+
+Name requests after the **behavior** (`POST create order`), not after a ticket number. Ticket links belong in the description.
+
+## Environments vs collection variables
+
+| Store | Use when |
+| --- | --- |
+| Environment | Host, tokens, and secrets that change per target (mock, staging) |
+| Collection variable | Ids produced during a run (`orderId`) |
+| Local / data file | Iteration data for the runner |
+
+Never commit production secrets in a shared collection. Use environment files that stay out of git, or CI secrets injected at run time.
+
+A request URL should look like this in Postman:
+
+```text
+GET {{baseUrl}}/api/orders/{{orderId}}
+Authorization: Bearer {{token}}
+```
+
+`baseUrl` and `token` come from the environment. `orderId` is written by a previous request's test script.
+
+<Warning title="Hardcoded hosts rot">
+If every request says `http://localhost:3000`, the collection cannot run in CI against a preview deploy. Variables are not decoration — they are what make the suite portable.
+</Warning>
+
+## The Tests tab is your oracle
+
+Postman scripts run in a sandbox with a `pm` API. Keep assertions boring and named.
+
+```javascript
+pm.test("status is 201", function () {
+  pm.response.to.have.status(201);
+});
+
+pm.test("order id is a string", function () {
+  const body = pm.response.json();
+  pm.expect(body.id).to.be.a("string").and.not.empty;
+  pm.collectionVariables.set("orderId", body.id);
+});
+
+pm.test("totals are integers", function () {
+  const totals = pm.response.json().totals;
+  pm.expect(totals.grand).to.be.a("number");
+});
+```
+
+Chain GET next:
+
+```javascript
+pm.test("fetched order matches created id", function () {
+  const body = pm.response.json();
+  pm.expect(body.id).to.eql(pm.collectionVariables.get("orderId"));
+});
+```
+
+That is confirmation plus a contract check. It is also how you stop copy-pasting ids.
+
+## Pre-request scripts
+
+Use pre-request scripts for:
+
+- Timestamps and idempotency keys
+- Signatures
+- Skipping a request when `orderId` is missing (`pm.execution.skipRequest()` in recent Postman)
+
+Do not hide the entire business oracle in pre-request code. Future you will not find it.
+
+## Collection runner, monitors, and Newman
+
+- **Collection runner** — local, optional data file, ordered folders
+- **Monitors** — scheduled runs in Postman Cloud (watch cost and secrets)
+- **Newman** — CLI for CI
+
+A CI sketch:
+
+```bash
+newman run orders.postman_collection.json \
+  -e staging.postman_environment.json \
+  --reporters cli,junit
+```
+
+Fail the pipeline on failed assertions, not only on HTTP 5xx. A 200 with the wrong `status` enum is still a failed contract.
+
+## Practical example: SAVE20 from Postman
+
+1. Environment: `baseUrl` points at the cart API (or the Quality Central dummy API).
+2. POST the coupons endpoint using the environment host, with body:
+
+```json
+{ "code": "SAVE20" }
+```
+
+3. Tests: status 200; `discount` equals 20% of a known subtotal.
+4. Duplicate the request in the same folder. Tests: totals **unchanged** (no stack).
+5. Export the collection. Run it after every API change.
+
+Compare with the HTTP methods lesson: same sequence, now executable by someone who was not in the room.
+
+## What Postman is not
+
+Postman will not replace contract testing in code (Pact, OpenAPI schemathesis) for every team. It **will** give you a fast, shareable pack while you learn HTTP. Graduate assertions into the repo when the collection becomes the only documentation.
+
+When you want a smaller loop, use [the API Playground](/api-testing/playground): send GET/POST, read the status badge (green 2xx, red 4xx/5xx), and inspect the JSON. Bring failures back here as Postman cases.
+
+## Knowledge check
+
+<Quiz
+  title="Postman check"
+  questions={[
+    {
+      question: "Where should the staging host live so a collection can run in CI?",
+      options: [
+        "Hardcoded in every request URL",
+        "An environment variable such as baseUrl",
+        "Only in a screenshot of the Postman UI",
+        "Inside a 201 response body"
+      ],
+      correctAnswer: 1,
+      explanation: "Environments swap hosts and secrets without editing requests. CI injects the staging environment at run time."
+    },
+    {
+      question: "A POST test stores orderId on the collection, then GET uses that variable. This pattern is primarily:",
+      options: [
+        "A flake you should avoid",
+        "Request chaining so later calls exercise the created resource",
+        "Proof that GET is unsafe",
+        "A replacement for status codes"
+      ],
+      correctAnswer: 1,
+      explanation: "Chaining creates realistic flows: create, read, patch, delete. Store ids from the response, do not type them by hand."
+    },
+    {
+      question: "Newman is used to:",
+      options: [
+        "Design CSS for the API",
+        "Run a Postman collection from the command line in CI",
+        "Replace HTTP with gRPC",
+        "Issue TLS certificates"
+      ],
+      correctAnswer: 1,
+      explanation: "Newman is the CLI runner. Same collection, non-interactive, reportable."
+    },
+    {
+      question: "A request returns 200 but a pm.test on body.status fails. The collection run should:",
+      options: [
+        "Pass, because HTTP 200 always means success",
+        "Fail — assertions are part of the contract, not optional comments",
+        "Skip remaining requests without recording the failure",
+        "Upgrade the status to 201 automatically"
+      ],
+      correctAnswer: 1,
+      explanation: "Postman tests are the oracle. CI should fail on assertion errors even when the status line looks healthy."
+    }
+  ]}
+/>

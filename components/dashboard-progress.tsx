@@ -4,6 +4,7 @@ import { useMemo, useState } from "react"
 import Link from "next/link"
 import { CheckIcon } from "lucide-react"
 
+import { DailyChallenge } from "@/components/DailyChallenge"
 import { CatalogFilterTabs } from "@/components/catalog/catalog-tabs"
 import { ModuleGrid } from "@/components/catalog/module-card"
 import { DifficultyBadge } from "@/components/difficulty-badge"
@@ -110,6 +111,8 @@ export function DashboardProgress() {
         <p className="text-muted-foreground">{persistenceHint}</p>
       </div>
 
+      <DailyChallenge />
+
       <div className="relative grid gap-4 lg:grid-cols-4 sm:grid-cols-2">
         <Card className="lg:col-span-1">
           <CardHeader>
@@ -143,7 +146,7 @@ export function DashboardProgress() {
               ? Math.round((tracksComplete / lessonTracks.length) * 100)
               : 0
           }
-          hint="Foundation, API, and UI tracks"
+          hint="Foundation through Interview, plus Capstone"
         />
         <StatRingCard
           label="Average quiz"

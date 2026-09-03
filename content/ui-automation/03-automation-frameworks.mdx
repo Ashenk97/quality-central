@@ -1,0 +1,140 @@
+---
+title: "Automation Frameworks"
+description: "Playwright, Cypress, and Selenium — how to choose, page objects, and what a maintainable suite looks like."
+category: "UI Automation"
+level: "Beginner"
+estimatedTime: "16 mins"
+order: 5
+lessonId: 03-automation-frameworks
+track: automation
+---
+
+## What this lesson covers
+
+A **framework** is the tool plus the conventions you wrap around it: folders, fixtures, locators, CI. Quality Central's playground speaks **Playwright**. That is a choice, not a religion.
+
+- Selection criteria
+- Playwright vs Cypress vs Selenium in tester language
+- Page objects (or fixtures) so specs stay readable
+- What not to put in a UI suite
+
+## Outcome
+
+After this lesson you will be able to justify Playwright (or another tool) for a product, and sketch a page object for checkout instead of a 200-line spec.
+
+## How to choose
+
+| Criterion | Ask |
+| --- | --- |
+| Language | Does the team already write TypeScript or Java? |
+| Browsers | Chromium-only vs Safari/WebKit needed? |
+| Auto-wait | Will juniors remember `sleep` or does the tool wait for actionability? |
+| Trace viewer | Can you debug a CI failure without SSH onto the runner? |
+| Ecosystem | CI reporters, component testing, mobile? |
+
+**Playwright** (this site): auto-wait, trace viewer, Chromium/Firefox/WebKit, first-class TypeScript. Good default for new web suites.
+
+**Cypress:** excellent time-travel UI, historically more Chrome-centric (check current browser support), different waiting model.
+
+**Selenium:** widest language/driver history; more boilerplate; still what many enterprises already run.
+
+<Info title="The tool is not the strategy">
+A bad locator strategy in Playwright is still a bad suite. Framework choice matters less than: few UI journeys, stable locators, API for data setup.
+</Info>
+
+## Page objects and fixtures
+
+**Definition:** A *page object* hides locators and user actions behind a small API so specs read like the journey.
+
+```ts
+// checkout.page.ts — locators live here
+export class CheckoutPage {
+  constructor(private readonly page: Page) {}
+
+  async applyPromo(code: string) {
+    await this.page.getByLabel("Promo code").fill(code)
+    await this.page.getByRole("button", { name: "Apply" }).click()
+  }
+
+  total() {
+    return this.page.getByTestId("order-total")
+  }
+}
+```
+
+```ts
+// checkout.spec.ts — behavior lives here
+test("SAVE10 does not stack", async ({ page }) => {
+  const checkout = new CheckoutPage(page)
+  await checkout.applyPromo("SAVE10")
+  await checkout.applyPromo("SAVE10")
+  await expect(checkout.total()).not.toHaveText(/-/)
+})
+```
+
+When the promo field's label changes, you edit **one** function, not twelve specs.
+
+<Warning title="Page objects are not a dumping ground">
+Do not hide assertions inside `applyPromo`. Actions in the page object; expectations in the spec (or a small assertion helper). Otherwise failures become "something in checkout broke."
+</Warning>
+
+## Structure that scales
+
+```text
+e2e/
+  fixtures/        # auth, test data
+  pages/           # page objects
+  specs/
+    checkout.spec.ts
+    smoke.spec.ts
+```
+
+- **Fixtures** create users via **API**, then the UI test only drives the journey.
+- **Smoke** is a tiny pack on every commit.
+- **Checkout** is slower; run on main or nightly if needed.
+
+## What not to automate first
+
+- Visual pixel-diff of the whole marketing site (unless you chose Percy/Chromatic on purpose)
+- Third-party captcha
+- Admin screens that three people use
+- Tests that need production passwords
+
+## Knowledge check
+
+<Quiz
+  title="Automation frameworks"
+  question="Page objects (or fixtures) exist to:"
+  options={[
+    "Hide locators and user actions behind reusable APIs",
+    "Replace assertions",
+    "Make tests slower on purpose",
+    "Store production passwords"
+  ]}
+  correctIndex={0}
+  explanation="A page object concentrates UI details so specs stay readable when the DOM changes."
+  questions={[
+    {
+      question: "A maintainable UI suite usually:",
+      options: [
+        "Drives every field through the browser, including test-user signup",
+        "Sets up data through APIs and keeps UI specs focused on journeys",
+        "Uses only XPath from the html root",
+        "Skips CI so flakes stay local"
+      ],
+      correctAnswer: 1,
+      explanation: "UI is for what the user sees. Create carts and users via API when you can; the spec stays short and stable."
+    },
+    {
+      question: "Quality Central's automation playground is built around:",
+      options: [
+        "Selenium IDE only",
+        "Playwright test() shape (syntax check, no real browser yet)",
+        "Manual-only checklists",
+        "Mainframe green screens"
+      ],
+      correctAnswer: 1,
+      explanation: "The playground edits a Playwright-style spec. Later you can run the same ideas in a real Playwright project."
+    }
+  ]}
+/>

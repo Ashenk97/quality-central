@@ -1,9 +1,11 @@
 import type { ReactNode } from "react"
 
+import { sandboxDefectAnchor, type SandboxDefectId } from "@/lib/sandbox-defects"
 import { cn } from "@/lib/utils"
 
 export function QaSpot({
   active,
+  defectId,
   id,
   title,
   note,
@@ -11,6 +13,7 @@ export function QaSpot({
   children,
 }: {
   active: boolean
+  defectId: SandboxDefectId
   id: string
   title: string
   note: string
@@ -19,8 +22,10 @@ export function QaSpot({
 }) {
   return (
     <div
+      id={sandboxDefectAnchor(defectId)}
+      data-sandbox-spot={defectId}
       className={cn(
-        "relative",
+        "relative scroll-mt-24",
         active && "rounded-lg ring-2 ring-destructive ring-offset-2 ring-offset-background",
         className
       )}

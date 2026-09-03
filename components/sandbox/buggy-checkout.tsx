@@ -1,9 +1,9 @@
 "use client"
 
 import { type FormEvent, type ReactNode, useState } from "react"
-import { useSearchParams } from "next/navigation"
 import { CheckIcon, ShoppingBagIcon } from "lucide-react"
 
+import { useSandboxQa } from "@/components/sandbox/qa-mode"
 import { QaSpot } from "@/components/sandbox/qa-spot"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -16,6 +16,14 @@ import {
 } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
+import {
+  DISCOUNT_RATE,
+  SEEDED_DEFECT_STATE,
+  discountCents,
+  jsEmailBlocksSubmit,
+  nextDiscountApplies,
+  type SandboxDefectState,
+} from "@/lib/sandbox-defects"
 import { cn } from "@/lib/utils"
 
 const CART_ITEMS = [
@@ -24,7 +32,6 @@ const CART_ITEMS = [
 ] as const
 
 const SHIPPING_CENTS = 600
-const DISCOUNT_RATE = 0.2
 const PROMO_CODE = "SAVE20"
 
 function formatCents(cents: number) {
@@ -35,17 +42,24 @@ function formatCents(cents: number) {
 }
 
 export function BuggyCheckout() {
-  const searchParams = useSearchParams()
-  const [qaMode, setQaMode] = useState(searchParams.get("qa") === "1")
+  const { qaMode, setQaMode, setDrawerOpen } = useSandboxQa()
+  const [defects] = useState<SandboxDefectState>(() => ({
+    ...SEEDED_DEFECT_STATE,
+  }))
   const [promoInput, setPromoInput] = useState("")
   const [promoMessage, setPromoMessage] = useState<string | null>(null)
   const [discountApplies, setDiscountApplies] = useState(0)
+  const [emailError, setEmailError] = useState<string | null>(null)
   const [receipt, setReceipt] = useState<{ email: string; total: number } | null>(
     null
   )
 
   const subtotal = CART_ITEMS.reduce((sum, item) => sum + item.price, 0)
-  const discount = Math.round(subtotal * DISCOUNT_RATE) * discountApplies
+  const discount = discountCents(
+    subtotal,
+    discountApplies,
+    defects.discountStacking
+  )
   const total = subtotal + SHIPPING_CENTS - discount
 
   function applyPromo() {
@@ -54,13 +68,23 @@ export function BuggyCheckout() {
       return
     }
 
-    setDiscountApplies((count) => count + 1)
+    setDiscountApplies((count) =>
+      nextDiscountApplies(count, defects.discountStacking)
+    )
     setPromoMessage("SAVE20 applied.")
   }
 
   function placeOrder(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const email = String(new FormData(event.currentTarget).get("email") ?? "")
+
+    // Seeded BUG-02: when validationBypass is true there is no JS check.
+    if (jsEmailBlocksSubmit(defects.validationBypass, email)) {
+      setEmailError("Enter an email address.")
+      return
+    }
+
+    setEmailError(null)
     setReceipt({ email, total })
   }
 
@@ -82,6 +106,7 @@ export function BuggyCheckout() {
               setDiscountApplies(0)
               setPromoMessage(null)
               setPromoInput("")
+              setEmailError(null)
             }}
           >
             Place another order
@@ -92,7 +117,7 @@ export function BuggyCheckout() {
   }
 
   return (
-    <div className="mx-auto w-full max-w-5xl">
+    <div className="mx-auto w-full max-w-5xl" data-qa-mode={qaMode ? "on" : "off"}>
       {qaMode ? (
         <div className="mb-4 rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
           QA Mode is on. Three seeded defects are outlined below. This banner is
@@ -101,7 +126,7 @@ export function BuggyCheckout() {
       ) : null}
 
       <div className="overflow-hidden rounded-xl ring-1 ring-foreground/10">
-        <div className="group relative flex items-center justify-between gap-3 border-b bg-card px-4 py-3">
+        <div className="flex items-center justify-between gap-3 border-b bg-card px-4 py-3">
           <div className="flex items-center gap-2">
             <span className="flex size-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
               <ShoppingBagIcon className="size-4" />
@@ -117,15 +142,21 @@ export function BuggyCheckout() {
             <Badge variant="secondary">Guest</Badge>
             <button
               type="button"
-              onClick={() => setQaMode((on) => !on)}
+              onClick={() => {
+                const next = !qaMode
+                setQaMode(next)
+                if (next) {
+                  setDrawerOpen(true)
+                }
+              }}
               aria-pressed={qaMode}
               aria-label="Toggle QA Mode"
-              title="QA Mode"
+              title="Toggle QA Mode"
               className={cn(
                 "size-2.5 rounded-full transition-opacity",
                 qaMode
                   ? "bg-destructive opacity-100"
-                  : "bg-foreground/40 opacity-0 group-hover:opacity-40 focus-visible:opacity-100"
+                  : "bg-foreground/40 opacity-70"
               )}
             />
           </div>
@@ -141,6 +172,7 @@ export function BuggyCheckout() {
             <div className="mt-6 space-y-4">
               <QaSpot
                 active={qaMode}
+                defectId="validation-bypass"
                 id="BUG-02"
                 title="Client-side validation"
                 note="Email is required only via the HTML required attribute. There is no JavaScript or server check, so removing the attribute in DevTools lets an empty email submit."
@@ -153,7 +185,14 @@ export function BuggyCheckout() {
                     required
                     autoComplete="email"
                     placeholder="you@example.com"
+                    aria-invalid={emailError ? true : undefined}
+                    aria-describedby={emailError ? "sandbox-email-error" : undefined}
                   />
+                  {emailError ? (
+                    <p id="sandbox-email-error" className="text-xs text-destructive">
+                      {emailError}
+                    </p>
+                  ) : null}
                 </Field>
               </QaSpot>
 
@@ -202,6 +241,7 @@ export function BuggyCheckout() {
 
               <QaSpot
                 active={qaMode}
+                defectId="visual-overlap"
                 id="BUG-01"
                 title="Visual regression"
                 note="On viewports below 768px the Submit button is absolutely positioned over the CVC field and covers it."
@@ -227,7 +267,14 @@ export function BuggyCheckout() {
                   <Button
                     type="submit"
                     size="lg"
-                    className="mt-4 w-full max-md:absolute max-md:bottom-0 max-md:left-0 max-md:z-10 max-md:mt-0"
+                    data-sandbox-defect={
+                      defects.visualOverlap ? "visual-overlap" : undefined
+                    }
+                    className={cn(
+                      "mt-4 w-full",
+                      defects.visualOverlap &&
+                        "max-md:absolute max-md:bottom-0 max-md:left-0 max-md:z-10 max-md:mt-0"
+                    )}
                   >
                     Submit order
                   </Button>
@@ -252,6 +299,7 @@ export function BuggyCheckout() {
 
             <QaSpot
               active={qaMode}
+              defectId="discount-stacking"
               id="BUG-03"
               title="Discount stacking"
               className="mt-5"
@@ -259,10 +307,14 @@ export function BuggyCheckout() {
             >
               <div className="flex gap-2">
                 <Input
+                  id="sandbox-promo"
                   value={promoInput}
                   onChange={(event) => setPromoInput(event.target.value)}
                   placeholder="Discount code"
                   aria-label="Discount code"
+                  data-sandbox-defect={
+                    defects.discountStacking ? "discount-stacking" : undefined
+                  }
                 />
                 <Button type="button" variant="outline" onClick={applyPromo}>
                   Apply
@@ -280,7 +332,7 @@ export function BuggyCheckout() {
                 </p>
               ) : (
                 <p className="mt-2 text-xs text-muted-foreground">
-                  Promo: 20% off with SAVE20
+                  Promo: {Math.round(DISCOUNT_RATE * 100)}% off with SAVE20
                 </p>
               )}
             </QaSpot>
@@ -337,7 +389,10 @@ function Row({
       <dt className={strong ? "font-medium" : "text-muted-foreground"}>
         {label}
       </dt>
-      <dd className={cn("font-mono", strong && "text-base font-semibold")}>
+      <dd
+        className={cn("font-mono", strong && "text-base font-semibold")}
+        data-sandbox-total={strong ? "true" : undefined}
+      >
         {value}
       </dd>
     </div>

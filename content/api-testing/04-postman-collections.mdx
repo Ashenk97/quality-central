@@ -1,0 +1,162 @@
+---
+title: "Postman Collections & Environments"
+description: "Collections, variables, Tests scripts, Newman, and mapping Postman to the API playground."
+category: "API Testing"
+level: "Beginner"
+estimatedTime: "18 mins"
+order: 5
+lessonId: 04-postman-collections
+track: api
+---
+
+## What this lesson covers
+
+**Postman** is a client for designing, running, and automating HTTP tests. Used well, it is a living contract: requests, environments, and assertions that Newman can run in CI. Used poorly, it is a folder of unreproducible clicks.
+
+- Collections and folders
+- Environments vs collection variables
+- The Tests tab as your oracle
+- Newman in CI
+- How this maps to Quality Central's playground
+
+## Outcome
+
+After this lesson you will be able to sketch a small collection that creates a resource, asserts the contract, and swaps mock vs staging hosts without editing every URL.
+
+<Info title="Playground next">
+When you finish here, open the [API Playground](/api-testing/playground). Postman is the professional shell; the playground is the same idea with a thinner UI: method, URL, JSON body, status badge.
+</Info>
+
+## Collections are the suite
+
+A **collection** is a tree of requests. Folders should match **resources**, not random chronology.
+
+```text
+Orders API
+├── Health
+│   └── GET health
+├── Orders
+│   ├── POST create order
+│   ├── GET order by id
+│   ├── PATCH status
+│   └── DELETE order
+└── Negative
+    ├── POST invalid body
+    └── GET missing id
+```
+
+Name requests after the **behavior** (`POST create order`), not after a ticket number.
+
+## Environments vs collection variables
+
+| Store | Use when |
+| --- | --- |
+| Environment | Host, tokens, and secrets that change per target (mock, staging) |
+| Collection variable | Ids produced during a run (`orderId`) |
+| Data file | Iteration rows for the collection runner |
+
+Never commit production secrets in a shared collection.
+
+A portable URL looks like this (variables live in Postman, shown here as a fence so lesson MDX stays valid):
+
+```text
+GET {{baseUrl}}/api/orders/{{orderId}}
+Authorization: Bearer {{token}}
+```
+
+`baseUrl` and `token` come from the **environment**. `orderId` is written by a previous request's test script.
+
+<Warning title="Hardcoded hosts rot">
+If every request says a literal localhost URL, the collection cannot run in CI against a preview deploy. Variables are what make the suite portable.
+</Warning>
+
+## The Tests tab is your oracle
+
+Keep assertions boring and named.
+
+```javascript
+pm.test("status is 201", function () {
+  pm.response.to.have.status(201);
+});
+
+pm.test("order id is a string", function () {
+  const body = pm.response.json();
+  pm.expect(body.id).to.be.a("string").and.not.empty;
+  pm.collectionVariables.set("orderId", body.id);
+});
+```
+
+Chain GET next:
+
+```javascript
+pm.test("fetched order matches created id", function () {
+  const body = pm.response.json();
+  pm.expect(body.id).to.eql(pm.collectionVariables.get("orderId"));
+});
+```
+
+That is confirmation plus a contract check. It is also how you stop copy-pasting ids.
+
+## Newman (CI)
+
+```bash
+newman run orders.postman_collection.json \
+  -e staging.postman_environment.json \
+  --reporters cli,junit
+```
+
+Fail the pipeline on failed **assertions**, not only on HTTP 5xx. A 200 with the wrong `status` enum is still a failed contract.
+
+## Practical example: `SAVE10` from Postman
+
+1. Environment: `baseUrl` points at the cart API (or Quality Central's dummy API).
+2. POST the coupons endpoint with:
+
+```json
+{ "code": "SAVE10" }
+```
+
+3. Tests: status 200; discount applied once.
+4. Duplicate the request. Tests: totals **unchanged** (no stack), or status 409.
+5. Export the collection. Run it after every API change.
+
+Compare with the HTTP methods lesson: same sequence, now executable by someone who was not in the room.
+
+## Knowledge check
+
+<Quiz
+  title="Postman collections"
+  question="Where should the staging host live so a collection can run in CI?"
+  options={[
+    "Hardcoded in every request URL",
+    "An environment variable such as baseUrl",
+    "Only in a screenshot of the Postman UI",
+    "Inside a 201 response body"
+  ]}
+  correctIndex={1}
+  explanation="Environments swap hosts and secrets without editing requests. CI injects the staging environment at run time."
+  questions={[
+    {
+      question: "A POST test stores orderId on the collection, then GET uses that variable. This pattern is primarily:",
+      options: [
+        "A flake you should avoid",
+        "Request chaining so later calls exercise the created resource",
+        "Proof that GET is unsafe",
+        "A replacement for status codes"
+      ],
+      correctAnswer: 1,
+      explanation: "Chaining creates realistic flows: create, read, patch, delete. Store ids from the response; do not type them by hand."
+    },
+    {
+      question: "A request returns 200 but a pm.test on body.status fails. The collection run should:",
+      options: [
+        "Pass, because HTTP 200 always means success",
+        "Fail — assertions are part of the contract, not optional comments",
+        "Skip remaining requests without recording the failure",
+        "Upgrade the status to 201 automatically"
+      ],
+      correctAnswer: 1,
+      explanation: "Postman tests are the oracle. CI should fail on assertion errors even when the status line looks healthy."
+    }
+  ]}
+/>

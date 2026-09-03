@@ -1,0 +1,270 @@
+---
+title: "Intro to Postman"
+description: "Build a request (headers, auth, body), then write JavaScript tests with pm.test, status matchers, and pm.expect on JSON fields."
+category: "API Testing"
+level: "Intermediate"
+estimatedTime: "25 mins"
+order: 3
+lessonId: 03-intro-to-postman
+track: api
+---
+
+## What this lesson covers
+
+**Postman** is the tool most QA engineers use first to send HTTP and **prove** the response. Clicking Send without tests is exploration. The **Tests** tab is where it becomes a check you can rerun.
+
+- Building a request: URL, **Headers**, **Authorization**, **Body**
+- Writing post-response assertions in JavaScript: `pm.test`, `pm.response.to.have.status`, `pm.expect`
+- Asserting a **JSON property value** (the skill this lesson's quiz checks)
+- How this maps to the [API Playground](/api-testing/playground)
+
+## Outcome
+
+After this lesson you will be able to configure a GET or POST in Postman and write a test that fails if `name` is not the string the spec promised.
+
+<Info title="Tests run after the response arrives">
+Pre-request scripts run *before* Send. The Tests tab runs *after*. Assertions belong in Tests. Saving an `id` from JSON for the next request also belongs in Tests.
+</Info>
+
+## Setting up the request
+
+Create a request in a collection (later you will organize folders; here we care about one call).
+
+### URL and method
+
+Pick **GET** or **POST** (and the rest from the previous lesson). Prefer variables for the host so you can swap mock vs staging:
+
+```text
+GET {{baseUrl}}/api/users/101
+```
+
+`baseUrl` lives in an **environment** (for example `https://staging.nimbus.test`). Do not paste production secrets into a shared collection.
+
+### Headers
+
+Headers are metadata the waiter reads before opening the plate.
+
+| Header | Typical value | Why testers set it |
+| --- | --- | --- |
+| `Accept` | `application/json` | Ask for JSON, not HTML |
+| `Content-Type` | `application/json` | Required when a JSON **Body** is sent |
+| `X-Request-Id` | a unique string | Trace a call in server logs |
+
+In Postman: **Headers** tab → key and value. Disable a header with the checkbox instead of deleting it when you compare two runs.
+
+```http
+GET /api/users/101
+Accept: application/json
+X-Request-Id: qa-lesson-03
+```
+
+### Authorization
+
+The **Authorization** tab is the same data as an `Authorization` header, with less chance of a typo.
+
+| Type | When to use | What QA asserts next |
+| --- | --- | --- |
+| No Auth | Public health or docs | **200** without a token |
+| Bearer Token | Most JSON APIs | Missing token → **401**; wrong role → **403** |
+| Basic Auth | Older APIs | Same 401/403 split |
+
+Paste the token from your environment variable, not from a chat screenshot.
+
+```text
+Authorization: Bearer {{token}}
+```
+
+Send once **without** the token and expect **401**. Send as a tester on an admin route and expect **403**. That is still the previous lesson — Postman is how you execute it.
+
+<Warning title="Never commit live tokens">
+Environment files with secrets stay out of git. Rotate anything that was pasted into a ticket. Use a throwaway staging user.
+</Warning>
+
+### Body params
+
+For **POST**, **PUT**, and **PATCH**, open **Body** → **raw** → **JSON** (Postman will set `Content-Type` if you pick JSON).
+
+```json
+{
+  "name": "Alex Smith",
+  "is_active": true,
+  "roles": ["tester"]
+}
+```
+
+**x-www-form-urlencoded** is for older form posts. **form-data** is for file uploads. If the spec says JSON, do not send form-data "because it also has key-value fields."
+
+Query params (`?status=active`) live on the **Params** tab, not in the body. GET should not carry a JSON body.
+
+## Writing Tests (post-response JavaScript)
+
+After Send, Postman exposes a `pm` API. Wrap each check in `pm.test` so the run report names the failure.
+
+### Status first
+
+```javascript
+pm.test("status is 200", function () {
+  pm.response.to.have.status(200);
+});
+```
+
+Equivalent:
+
+```javascript
+pm.test("status is 200", function () {
+  pm.expect(pm.response.code).to.eql(200);
+});
+```
+
+Use **201** for a creating POST if that is the contract.
+
+### Parse JSON once
+
+```javascript
+const json = pm.response.json();
+```
+
+If the body is not JSON, this throws — that is a failed test, which is what you want when `Content-Type` promised JSON.
+
+### Assert a JSON property value
+
+This is the core skill. After `GET /api/users/101` you must prove **fields**, not only that *some* object arrived.
+
+```javascript
+pm.test("user name is Alex Smith", function () {
+  const json = pm.response.json();
+  pm.expect(json.name).to.eql("Alex Smith");
+});
+```
+
+```javascript
+pm.test("user_id is 101", function () {
+  const json = pm.response.json();
+  pm.expect(json.user_id).to.eql(101);
+});
+```
+
+```javascript
+pm.test("user is active", function () {
+  const json = pm.response.json();
+  pm.expect(json.is_active).to.be.true;
+});
+```
+
+```javascript
+pm.test("roles include tester", function () {
+  const json = pm.response.json();
+  pm.expect(json.roles).to.be.an("array").that.includes("tester");
+});
+```
+
+| Matcher | Use when |
+| --- | --- |
+| `.to.eql(value)` | Deep equality (numbers, strings, objects) |
+| `.to.equal(value)` | Strict reference equality — prefer `eql` for JSON fields |
+| `.to.be.true` / `.to.be.false` | Booleans, not the strings `"true"` |
+| `.to.be.a("string")` | Type without a frozen example value |
+| `.that.includes("tester")` | Membership in an array |
+
+Wrong (looks like a test, asserts nothing useful):
+
+```javascript
+pm.test("body exists", function () {
+  pm.expect(pm.response.json()).to.be.ok;
+});
+```
+
+That passes for any non-empty object. Always name the **property** and the **expected value** from the spec.
+
+### Save an id for the next request
+
+```javascript
+pm.test("created user returns an id", function () {
+  const json = pm.response.json();
+  pm.expect(json.id).to.be.a("string").and.not.empty;
+  pm.collectionVariables.set("userId", json.id);
+});
+```
+
+The next GET uses that variable in the path (environment vs collection variables are covered more in the collections lesson).
+
+### A full Tests tab (copy-paste)
+
+Response you expect:
+
+```json
+{
+  "user_id": 101,
+  "name": "Alex Smith",
+  "is_active": true,
+  "roles": ["admin", "tester"]
+}
+```
+
+```javascript
+pm.test("status is 200", function () {
+  pm.response.to.have.status(200);
+});
+
+pm.test("JSON name is Alex Smith", function () {
+  const json = pm.response.json();
+  pm.expect(json.name).to.eql("Alex Smith");
+});
+
+pm.test("JSON user_id is 101", function () {
+  const json = pm.response.json();
+  pm.expect(json.user_id).to.eql(101);
+});
+```
+
+If `name` comes back as `"Alex"` only, the second test **fails**. That is a good fail.
+
+## Step-by-step: your first passing pack
+
+1. Environment: set `baseUrl` (or use the Quality Central dummy API host in the playground for status practice).
+2. GET a known user. Headers: `Accept` JSON. Auth: Bearer `token` if required.
+3. Send. Confirm the body in the response pane by eye once.
+4. Paste the three `pm.test` blocks. Send again. All green.
+5. Change the expected name to `"Wrong"`. Send. Confirm **red**. Change it back.
+6. Duplicate the request. Remove the token. Expect **401** in a new test.
+
+That loop — **see it, freeze it, break it on purpose** — is how you trust the Tests tab.
+
+## Knowledge check
+
+<Quiz
+  title="Intro to Postman"
+  question="After GET /api/users/101, which Tests snippet correctly asserts that the JSON property name equals Alex Smith?"
+  options={[
+    "pm.response.to.have.status(500) and nothing about name",
+    "const json = pm.response.json() then pm.expect(json.name).to.eql('Alex Smith')",
+    "pm.expect(pm.response.code).to.eql('Alex Smith')",
+    "pm.expect(pm.response.json()).to.be.ok with no property check"
+  ]}
+  correctIndex={1}
+  explanation="Parse the body with pm.response.json(), then pm.expect(json.name).to.eql with the spec string. Status-only checks and a generic to.be.ok do not prove that property value."
+  questions={[
+    {
+      question: "Where do you put post-response assertions in Postman?",
+      options: [
+        "Only in the URL bar",
+        "The Tests tab, inside pm.test callbacks that run after the response",
+        "The Authorization type dropdown",
+        "A CSS file in the collection"
+      ],
+      correctAnswer: 1,
+      explanation: "The Tests tab runs after Send. That is where pm.test, status matchers, and pm.expect belong."
+    },
+    {
+      question: "Which header should you set when the Body is raw JSON?",
+      options: [
+        "Accept-Language only",
+        "Content-Type application/json (Postman sets this when you choose JSON)",
+        "Authorization must be Basic even for public GET",
+        "Delete all headers so the server guesses"
+      ],
+      correctAnswer: 1,
+      explanation: "JSON bodies need Content-Type application/json. Accept asks for JSON on the way back; both are common on POST."
+    }
+  ]}
+/>

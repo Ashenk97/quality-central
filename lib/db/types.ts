@@ -1,11 +1,22 @@
-export type Track = "manual" | "api" | "automation" | "sandbox"
+export type Track = "manual" | "api" | "automation" | "technical" | "interview" | "capstone" | "sandbox" | "next-gen"
 
 export type UserRow = {
   id: string
   email: string
   display_name: string | null
+  beta_welcome_seen_at: string | null
   created_at: string
   updated_at: string
+}
+
+export type FeedbackRow = {
+  id: string
+  user_id: string | null
+  kind: "bug" | "ux"
+  message: string
+  page_path: string | null
+  viewport: string | null
+  created_at: string
 }
 
 export type ModuleRow = {
@@ -18,6 +29,15 @@ export type ModuleRow = {
   lesson_id: string | null
   sort_order: number
   created_at: string
+}
+
+export type DailyChallengeStreakRow = {
+  user_id: string
+  streak_count: number
+  last_answered_on: string | null
+  last_challenge_id: string | null
+  created_at: string
+  updated_at: string
 }
 
 export type UserProgressRow = {

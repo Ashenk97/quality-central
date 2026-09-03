@@ -1,0 +1,171 @@
+---
+title: "Introduction to Software QA & STLC"
+description: "QA as a process of meeting quality standards, plus SDLC versus the six STLC phases."
+category: "Foundation"
+level: "Beginner"
+estimatedTime: "15 mins"
+order: 1
+lessonId: 01-introduction-to-qa
+track: manual
+---
+
+## What this lesson covers
+
+**Software Quality Assurance (QA)** is not just about finding bugs — it is the process of ensuring that a product meets defined quality standards before reaching users.
+
+You will learn:
+
+- What "quality" and QA mean when you have never tested software before
+- How **SDLC** (building the product) differs from **STLC** (checking the product)
+- The six STLC phases, with a tiny shop called Nimbus as the running example
+
+## Outcome
+
+After this lesson you will be able to explain QA in one sentence, list the six STLC phases in order, and say which phase is where bugs get logged and retested.
+
+<Info title="You do not need to code yet">
+This is a map of the work, not a tool tutorial. Later Foundation lessons go deeper on test design, bug reports, agile rituals, and a full STLC walkthrough. The Sandbox is practice for after you know the names of the phases.
+</Info>
+
+## What QA actually is
+
+**Definition:** *Software Quality Assurance (QA)* is the planned set of activities that give confidence a product will meet agreed quality standards before users depend on it.
+
+Finding bugs is one of those activities. It is not the whole job.
+
+| If someone says… | A tester hears… |
+| --- | --- |
+| "QA means breaking things" | Testing *investigates* the product. Breaking it is a side effect, not the goal. |
+| "Ship it; we'll test later" | Late testing is still testing — it is also more expensive. |
+| "Zero bugs" | Quality is *fitness for purpose*, not a magic certificate of perfection. |
+
+### Real-world analogy: a bakery
+
+Baking the bread is **development**. Tasting a loaf, checking the allergen label, and keeping the oven log is **testing**. The recipe, supplier checks, and "we never sell a tray we have not checked" is **QA**.
+
+QA is the kitchen *system*. Testing is the flashlight you turn on a specific loaf.
+
+<Warning title="Passing tests never prove the product is perfect">
+A green run means: in the cases you tried, the product behaved as expected. Untested cases still exist. That is why STLC includes planning and coverage — not only clicking until you get tired.
+</Warning>
+
+## SDLC vs. STLC
+
+These two acronyms get used as if they were the same. They are nested, not twins.
+
+**Definition:** *SDLC (Software Development Life Cycle)* is the entire process of building software:
+
+Requirement Analysis → Design → Development → Testing → Deployment → Maintenance
+
+**Definition:** *STLC (Software Testing Life Cycle)* is a subset of SDLC that focuses strictly on testing work. It has its own phases so testing is not "whatever we do in the last week."
+
+Analogy: SDLC is building a house (plans, frame, plumbing, move-in, repairs). STLC is the inspection path (what to inspect, the checklist, the walkthrough, the punch list, the sign-off). You cannot inspect a house that was never designed — but you also should not wait until the family has moved in to look at the wiring.
+
+| | SDLC | STLC |
+| --- | --- | --- |
+| Job | Create and run the product | Learn whether the product is fit to ship |
+| Owned by | The whole delivery team | Testers lead it; the team still owns quality |
+| Testing's place | One stage among several (and, on healthy teams, a habit in every stage) | The whole cycle |
+
+On this site, **SDLC** and **STLC** each get a later lesson. Here you only need the relationship and the six testing phases.
+
+## The six STLC phases
+
+Walk these as a checklist, not as six calendar months. In a two-week sprint you still touch each idea — sometimes in hours, not weeks.
+
+### 1. Requirement Analysis — identifying what needs to be tested
+
+Read the story, the mock, the API contract. Ask: what could hurt a shopper if it is wrong? Circle numbers, "must," and "never."
+
+Nimbus example: "One promo code per order; `SAVE20` is 20 percent off merchandise."
+
+### 2. Test Planning — estimating scope, tools, and resource allocation
+
+Decide *how much* to test, on *which builds*, with *which accounts*, and what "done" means for this slice. Planning is a risk conversation, not a novel.
+
+Nimbus example: "We will cover one-code happy path, a second-code reject, and guest checkout on the sandbox build."
+
+### 3. Test Case Development — writing step-by-step verification procedures
+
+Each case has data, steps, and an **expected result** (your oracle). You cannot test every cart, so you sample (next lesson: test design).
+
+### 4. Environment Setup — preparing servers, databases, and test builds
+
+No environment, no honest test. You need a known build, test users, and data that is safe to break.
+
+### 5. Test Execution — running tests and logging defects
+
+This is the phase people picture when they say "testing": run the cases, compare actual to expected, **log bugs**, and **verify fixes** when a new build arrives.
+
+### 6. Test Closure — analyzing results, coverage, and metrics
+
+What did we cover? What did we skip? What escaped? Closure is how the next cycle gets smarter.
+
+```json
+{
+  "cycle": "Nimbus-sprint-1",
+  "phase": "test-closure",
+  "scope": "checkout promo SAVE20",
+  "executed": 12,
+  "passed": 10,
+  "failed": 2,
+  "openDefects": [
+    "SAVE20 stacks on second apply"
+  ],
+  "notTested": "tax-exempt accounts",
+  "recommendation": "Do not ship stacking; cover tax-exempt next cycle"
+}
+```
+
+<Info title="Where bugs are born vs where they are logged">
+A wrong requirement is an error in phase 1 thinking. The defect may sit in code from Development (SDLC). You usually *observe* the failure during **Test Execution**. Logging and retesting live there — not in Test Planning.
+</Info>
+
+## Step-by-step: one Nimbus pass through STLC
+
+**Spec:** Shoppers may apply one promo code. `SAVE20` takes 20 percent off merchandise.
+
+1. **Analyze.** Write the rule in your own words. Ask what "one code" means if the shopper clicks Apply twice.
+2. **Plan.** Time-box: happy path, double-apply, expired code. Sandbox build only.
+3. **Develop cases.** Example: apply `SAVE20` twice on a $10 mug; expect one discount and $8.00 merchandise.
+4. **Set up.** Guest checkout, known mug price, code `SAVE20` enabled.
+5. **Execute.** If the second apply drops the total to $6.40, log a defect. When a fix lands, rerun the same steps (verify) and a nearby case (remove code, apply once).
+6. **Close.** Record pass/fail counts and the leftover risk (for example tax).
+
+That is STLC on a single story. The later **STLC** lesson adds entry criteria, exit criteria, and artifacts per phase.
+
+## Knowledge check
+
+Work this before you mark the lesson complete. The first item is the phase people mix up most often.
+
+<Quiz
+  title="Introduction to Software QA and STLC"
+  question="Which STLC phase involves logging bugs and verifying fixes?"
+  options={["Test Planning", "Requirement Analysis", "Test Execution", "Test Closure"]}
+  correctIndex={2}
+  explanation="Bugs are identified, logged, and re-tested during the Test Execution phase."
+  questions={[
+    {
+      question: "Which sentence best matches software QA?",
+      options: [
+        "QA is only the act of finding as many bugs as possible",
+        "QA is the process of ensuring a product meets defined quality standards before it reaches users",
+        "QA starts only after deployment",
+        "QA is a replacement for the entire SDLC"
+      ],
+      correctAnswer: 1,
+      explanation: "Finding bugs is part of testing. QA is the wider process that aims at agreed standards before users are exposed to the product."
+    },
+    {
+      question: "How does STLC relate to SDLC?",
+      options: [
+        "They are identical lists of phases with different names",
+        "STLC replaces SDLC on agile teams",
+        "STLC is the testing-focused subset of SDLC",
+        "SDLC happens after STLC closure"
+      ],
+      correctAnswer: 2,
+      explanation: "SDLC is how software is built and run. STLC sits inside it and organizes the testing work from analysis through closure."
+    }
+  ]}
+/>

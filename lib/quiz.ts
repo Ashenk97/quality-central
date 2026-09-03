@@ -7,8 +7,12 @@ export type QuizQuestion = {
 }
 
 export type QuizProps = {
-  questions: QuizQuestion[] | string[]
-  options?: string[][]
+  questions?: QuizQuestion[] | string[]
+  /** Single-question authoring: used when `questions` is omitted */
+  question?: string
+  options?: string[] | string[][]
+  correctIndex?: number
+  explanation?: string
   answers?: Array<number | string>
   correctAnswers?: Array<number | string>
   explanations?: string[]
@@ -18,23 +22,54 @@ export type QuizProps = {
   passingScore?: number
 }
 
-export function normalizeQuizQuestions(props: QuizProps): QuizQuestion[] {
-  const { questions, options, answers, correctAnswers, explanations } = props
+function isStringList(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every((item) => typeof item === "string")
+}
 
-  if (questions.length === 0) {
-    return []
+export function normalizeQuizQuestions(props: QuizProps): QuizQuestion[] {
+  const {
+    questions,
+    question,
+    options,
+    correctIndex,
+    explanation,
+    answers,
+    correctAnswers,
+    explanations,
+  } = props
+  const normalized: QuizQuestion[] = []
+
+  if (typeof question === "string" && question.trim()) {
+    normalized.push({
+      question,
+      options: isStringList(options) ? options : [],
+      correctAnswer: correctIndex ?? 0,
+      explanation: explanation ?? "",
+    })
+  }
+
+  if (!questions || questions.length === 0) {
+    return normalized
   }
 
   if (typeof questions[0] === "string") {
-    return (questions as string[]).map((question, index) => ({
-      question,
-      options: options?.[index] ?? [],
-      correctAnswer: (correctAnswers ?? answers)?.[index] ?? 0,
-      explanation: explanations?.[index] ?? "",
-    }))
+    const optionMatrix = Array.isArray(options) && Array.isArray(options[0])
+      ? (options as string[][])
+      : []
+
+    normalized.push(
+      ...(questions as string[]).map((item, index) => ({
+        question: item,
+        options: optionMatrix[index] ?? [],
+        correctAnswer: (correctAnswers ?? answers)?.[index] ?? 0,
+        explanation: explanations?.[index] ?? "",
+      }))
+    )
+    return normalized
   }
 
-  return questions as QuizQuestion[]
+  normalized.push(...(questions as QuizQuestion[]))
+  return normalized
 }
 
 export function correctOptionIndex(question: QuizQuestion) {

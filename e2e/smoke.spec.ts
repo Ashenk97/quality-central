@@ -41,6 +41,7 @@ test.describe("smoke", () => {
     await page.goto("/sandbox")
     await expect(page.getByRole("heading", { name: "The Sandbox" })).toBeVisible()
     await expect(page.getByRole("button", { name: "Report Bug" })).toBeVisible()
+    await expect(page.getByRole("button", { name: "Send Feedback" })).toBeVisible()
   })
 
   test("API playground loads", async ({ page }) => {
@@ -49,5 +50,14 @@ test.describe("smoke", () => {
       page.getByRole("heading", { name: "API Playground" })
     ).toBeVisible()
     await expect(page.getByRole("button", { name: "Send" })).toBeVisible()
+    await expect(page.getByRole("button", { name: "Send Feedback" })).toHaveCount(0)
+  })
+
+  test("lesson page offers Send Feedback", async ({ page }) => {
+    await page.goto("/courses/foundation/istqb")
+    await expect(
+      page.getByRole("heading", { name: "ISTQB Foundation" })
+    ).toBeVisible()
+    await expect(page.getByRole("button", { name: "Send Feedback" })).toBeVisible()
   })
 })

@@ -1,0 +1,177 @@
+---
+title: "Test Case Design: BVA & Equivalence Partitioning"
+description: "Black-box sampling with equivalence partitions and boundary values, using an age field as the worked example."
+category: "Foundation"
+level: "Beginner"
+estimatedTime: "20 mins"
+order: 2
+lessonId: 02-test-design-techniques
+track: manual
+---
+
+## What this lesson covers
+
+Instead of testing every single input value (which is impossible), QA engineers use **black-box test design techniques** to select the most effective test data.
+
+Black-box means you choose data from the *rules of the field*, not from reading the source code.
+
+- Why exhaustive testing fails
+- **Equivalence Partitioning (EP)** — one value stands for a whole group
+- **Boundary Value Analysis (BVA)** — defects love the edges
+- A worked **age** field (18 to 60), then the same ideas on a 1 to 100 field
+
+## Outcome
+
+After this lesson you will be able to split one input into valid and invalid partitions, list the BVA values, and explain why `0, 1, 100, 101` is a BVA set for 1 to 100.
+
+<Info title="Black-box, not a crystal ball">
+You still need an oracle — the spec, a calculation, or an error message — so you know whether `25` should pass. Design techniques choose *which* data to try. They do not invent the expected result.
+</Info>
+
+## Why we do not test every value
+
+An age field that accepts whole numbers from 18 to 60 still has 43 valid ages, plus 0, negatives, 200, decimals, and empty. Trying all of them is slow and mostly repetitive: `25` and `26` should be treated the same if the rule is only "in range."
+
+Analogy: you do not taste every grain of rice to know if the pot is salty. You stir, then taste a representative spoonful. EP picks the spoonful from the middle of a group. BVA picks the spoonfuls from the rim of the pot, where cooks burn the rice.
+
+**Definition:** *Test design* is choosing a small set of inputs that still cover the important groups and edges of a requirement.
+
+## 1. Equivalence Partitioning (EP)
+
+**Definition:** *Equivalence Partitioning* divides input data into **valid** and **invalid partitions**. Testing **one value from a partition** represents the entire group.
+
+If the product should treat every member of a group the same, extra members in that group are duplicate tests.
+
+### Scenario: age input, 18 to 60
+
+| Partition | Meaning | Example to test |
+| --- | --- | --- |
+| Valid | 18 through 60 | `25` |
+| Invalid — too young | Less than 18 | `12` |
+| Invalid — too old | Greater than 60 | `75` |
+
+Three tests now cover the *idea* of the field. You did not need ages 18, 19, 20, … 60 as separate EP cases.
+
+<Warning title="Split the partition if the product treats values differently">
+If age 18–25 is "student" and 26–60 is "adult," those are **two valid partitions**, not one. EP follows the product's rules, not a generic 18–60 table from a textbook.
+</Warning>
+
+### Step-by-step: build EP for any range field
+
+1. Underline the numbers in the spec (here: 18 and 60).
+2. Name the valid group (inside the range, correct type).
+3. Name each invalid group (below, above, empty, letters, decimals — if the field can receive them).
+4. Pick **one representative** per group.
+5. Write the expected result from the spec (accept vs error), not from "whatever today's build does."
+
+```json
+{
+  "field": "age",
+  "spec": "integer 18-60 inclusive",
+  "equivalence": [
+    { "id": "EP-V", "partition": "valid 18-60", "input": 25, "expected": "accepted" },
+    { "id": "EP-LO", "partition": "invalid below 18", "input": 12, "expected": "rejected" },
+    { "id": "EP-HI", "partition": "invalid above 60", "input": 75, "expected": "rejected" }
+  ]
+}
+```
+
+## 2. Boundary Value Analysis (BVA)
+
+**Definition:** *Boundary Value Analysis* is used because **defects cluster near the boundaries** of input ranges. Off-by-one mistakes in code (`greater than` vs `greater than or equal`) show up at the edge, not at a comfortable middle like `25`.
+
+Test the boundary values:
+
+- Minimum
+- Minimum + 1
+- Maximum − 1
+- Maximum
+
+And the invalid neighbors just outside:
+
+- Minimum − 1
+- Maximum + 1
+
+### Scenario: same age field (18–60)
+
+| Value | Role | Valid? |
+| --- | --- | --- |
+| `17` | Just below minimum | Invalid |
+| `18` | Valid minimum | Valid |
+| `19` | Valid minimum + 1 | Valid |
+| `59` | Valid maximum − 1 | Valid |
+| `60` | Valid maximum | Valid |
+| `61` | Just above maximum | Invalid |
+
+Analogy: a roller-coaster sign says "at least 120 cm." You do not only measure a 180 cm adult. You check 119, 120, and 121. Software range checks are that sign.
+
+<Info title="EP and BVA work together">
+EP says "one typical valid age is enough for the middle." BVA says "still test 18 and 60 (and 17 and 61)." You do not skip boundaries because you already tested `25`.
+</Info>
+
+### Step-by-step: add BVA on top of EP
+
+1. Keep your valid representative (`25`).
+2. Add the four on-boundary valids: min, min+1, max−1, max.
+3. Add the two invalids hugging the range: min−1 and max+1.
+4. Execute invalids after you know a valid age still works — so a broken form is not mistaken for a range bug.
+
+```json
+{
+  "field": "age",
+  "bva": [
+    { "input": 17, "expected": "rejected", "note": "min-1" },
+    { "input": 18, "expected": "accepted", "note": "min" },
+    { "input": 19, "expected": "accepted", "note": "min+1" },
+    { "input": 59, "expected": "accepted", "note": "max-1" },
+    { "input": 60, "expected": "accepted", "note": "max" },
+    { "input": 61, "expected": "rejected", "note": "max+1" }
+  ]
+}
+```
+
+## Same techniques, new numbers: 1 to 100
+
+Interviewers love this range. If an input accepts values from **1 to 100**:
+
+| Technique | Example data | Why |
+| --- | --- | --- |
+| EP (typical) | `50` valid; `0` or `-10` too low; `200` too high | One per group |
+| BVA (edges) | `0`, `1`, `100`, `101` | On and just around 1 and 100 |
+| BVA (full set) | `0`, `1`, `2`, `99`, `100`, `101` | Also min+1 and max−1 |
+
+`5, 50, 95` are all *inside* the valid partition — useful as extras, not as BVA. `1, 2, 3, 4` never touch the top boundary. `-10, 50, 200` is EP-ish (low, mid, high) but skips the actual edges `1` and `100`.
+
+## Knowledge check
+
+<Quiz
+  title="BVA and Equivalence Partitioning"
+  question="If an input accepts values from 1 to 100, which set of test data represents BVA?"
+  options={["0, 1, 100, 101", "5, 50, 95", "-10, 50, 200", "1, 2, 3, 4"]}
+  correctIndex={0}
+  explanation="Boundary Value Analysis focuses on values directly on and around the boundaries (1 and 100)."
+  questions={[
+    {
+      question: "An age field accepts 18 through 60. Which value is the best single Equivalence Partitioning pick for the valid group?",
+      options: [
+        "18, 19, 20, and every age through 60",
+        "25, as one representative of 18-60",
+        "17 only, because invalid tests find more bugs",
+        "The empty field only"
+      ],
+      correctAnswer: 1,
+      explanation: "EP uses one value to stand for a partition. 25 sits inside the valid group. 18 and 60 are still needed — that is BVA, not extra EP duplicates of the middle."
+    },
+    {
+      question: "For the same 18-60 age field, which list is the BVA set taught in this lesson?",
+      options: [
+        "25, 30, and 40",
+        "12 and 75 only",
+        "17, 18, 19, 59, 60, and 61",
+        "18 only"
+      ],
+      correctAnswer: 2,
+      explanation: "BVA uses min-1, min, min+1, max-1, max, and max+1: 17, 18, 19, 59, 60, 61."
+    }
+  ]}
+/>

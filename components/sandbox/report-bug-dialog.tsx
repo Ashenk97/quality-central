@@ -1,9 +1,10 @@
 "use client"
 
 import { type FormEvent, useState } from "react"
-import { BugIcon, CheckIcon } from "lucide-react"
+import { BugIcon, CheckIcon, PartyPopperIcon } from "lucide-react"
 
 import { DifficultyBadge } from "@/components/difficulty-badge"
+import { QaModeToggle } from "@/components/sandbox/qa-mode"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -27,15 +28,19 @@ import { useProgress } from "@/lib/progress"
 import {
   evaluateSandboxReport,
   MAX_SANDBOX_POINTS,
+  SANDBOX_COORDINATES,
   SANDBOX_DEFECTS,
+  type BugFieldErrors,
   type BugVerdict,
   type SandboxBugCategory,
+  type SandboxCoordinateId,
 } from "@/lib/sandbox-defects"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 
 const EMPTY_FORM = {
   category: "" as SandboxBugCategory | "",
+  coordinate: "" as SandboxCoordinateId | "",
   steps: "",
   expected: "",
   actual: "",
@@ -50,6 +55,7 @@ export function SandboxHunter() {
   } = useProgress()
   const [open, setOpen] = useState(false)
   const [form, setForm] = useState(EMPTY_FORM)
+  const [fieldErrors, setFieldErrors] = useState<BugFieldErrors>({})
   const [verdict, setVerdict] = useState<(BugVerdict & { alreadyFound?: boolean }) | null>(
     null
   )
@@ -58,6 +64,7 @@ export function SandboxHunter() {
 
   function resetForm() {
     setForm(EMPTY_FORM)
+    setFieldErrors({})
     setVerdict(null)
   }
 
@@ -65,15 +72,30 @@ export function SandboxHunter() {
     event.preventDefault()
     const result = evaluateSandboxReport(form)
     if (!result.ok) {
-      setVerdict(result)
+      setFieldErrors(result.fields ?? {})
+      const firstFieldMessage = result.fields
+        ? Object.values(result.fields)[0]
+        : undefined
+      setVerdict(result.message === firstFieldMessage ? null : result)
       return
     }
 
+    setFieldErrors({})
     const alreadyFound = isSandboxBugResolved(result.defectId)
+    const remainingAfter = SANDBOX_DEFECTS.filter(
+      (defect) =>
+        defect.id !== result.defectId && !isSandboxBugResolved(defect.id)
+    ).length
+
     if (!alreadyFound) {
       resolveSandboxBug(result.defectId)
-      toast.success(`Bug resolved: ${result.title}`, {
-        description: `+${result.points} points added to Sandbox hunter.`,
+      toast.success("Nice catch!", {
+        icon: <PartyPopperIcon className="size-4" />,
+        description:
+          remainingAfter === 0
+            ? `${result.title} confirmed. All three seeded defects are logged. +${result.points} pts.`
+            : `${result.title} confirmed. +${result.points} pts · ${remainingAfter} left.`,
+        duration: 6000,
       })
     } else {
       toast.message(`Already logged: ${result.title}`, {
@@ -103,121 +125,185 @@ export function SandboxHunter() {
         <VerifiedList />
       </div>
 
-      <Dialog
-        open={open}
-        onOpenChange={(next) => {
-          setOpen(next)
-          if (next) {
-            resetForm()
-          }
-        }}
-      >
-        <DialogTrigger asChild>
-          <Button className="transition-transform duration-200 active:scale-[0.97]">
-            <BugIcon data-icon="inline-start" />
-            Report Bug
-          </Button>
-        </DialogTrigger>
-        <DialogContent className="sm:max-w-lg">
-          <form onSubmit={submit} className="grid gap-4">
-            <DialogHeader>
-              <DialogTitle>Report a defect</DialogTitle>
-              <DialogDescription>
-                Log what you found. Reports are checked against the seeded
-                Sandbox bugs — only a matching, specific write-up is credited.
-              </DialogDescription>
-            </DialogHeader>
+      <div className="flex flex-wrap items-center gap-2">
+        <QaModeToggle />
+        <Dialog
+          open={open}
+          onOpenChange={(next) => {
+            setOpen(next)
+            if (next) {
+              resetForm()
+            }
+          }}
+        >
+          <DialogTrigger asChild>
+            <Button className="transition-transform duration-200 active:scale-[0.97]">
+              <BugIcon data-icon="inline-start" />
+              Report Bug
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-lg">
+            <form onSubmit={submit} noValidate className="grid gap-4">
+              <DialogHeader>
+                <DialogTitle>Report a defect</DialogTitle>
+                <DialogDescription>
+                  Log what you found. Reports are checked against the seeded
+                  Sandbox coordinates — only a matching, specific write-up is
+                  credited.
+                </DialogDescription>
+              </DialogHeader>
 
-            <div className="grid gap-3">
-              <div className="grid gap-1.5">
-                <Label htmlFor="bug-category">Bug category</Label>
-                <Select
-                  value={form.category}
-                  onValueChange={(value) =>
-                    setForm((current) => ({
-                      ...current,
-                      category: value as SandboxBugCategory,
-                    }))
-                  }
+              <div className="grid gap-3">
+                <div className="grid gap-1.5">
+                  <Label htmlFor="bug-category">Bug category</Label>
+                  <Select
+                    value={form.category}
+                    onValueChange={(value) => {
+                      setForm((current) => ({
+                        ...current,
+                        category: value as SandboxBugCategory,
+                      }))
+                      setFieldErrors((current) => ({
+                        ...current,
+                        category: undefined,
+                      }))
+                    }}
+                  >
+                    <SelectTrigger
+                      id="bug-category"
+                      className="w-full"
+                      aria-invalid={Boolean(fieldErrors.category)}
+                    >
+                      <SelectValue placeholder="Select a category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="visual">Visual / layout</SelectItem>
+                      <SelectItem value="validation">Validation</SelectItem>
+                      <SelectItem value="calculation">
+                        Calculation / pricing
+                      </SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FieldError message={fieldErrors.category} />
+                </div>
+
+                <div className="grid gap-1.5">
+                  <Label htmlFor="bug-coordinate">Where did you observe it?</Label>
+                  <Select
+                    value={form.coordinate}
+                    onValueChange={(value) => {
+                      setForm((current) => ({
+                        ...current,
+                        coordinate: value as SandboxCoordinateId,
+                      }))
+                      setFieldErrors((current) => ({
+                        ...current,
+                        coordinate: undefined,
+                      }))
+                    }}
+                  >
+                    <SelectTrigger
+                      id="bug-coordinate"
+                      className="w-full"
+                      aria-invalid={Boolean(fieldErrors.coordinate)}
+                    >
+                      <SelectValue placeholder="Select a checkout location" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {SANDBOX_COORDINATES.map((coordinate) => (
+                        <SelectItem key={coordinate.id} value={coordinate.id}>
+                          {coordinate.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FieldError message={fieldErrors.coordinate} />
+                </div>
+
+                <div className="grid gap-1.5">
+                  <Label htmlFor="bug-steps">Steps to reproduce</Label>
+                  <Textarea
+                    id="bug-steps"
+                    value={form.steps}
+                    aria-invalid={Boolean(fieldErrors.steps)}
+                    onChange={(event) =>
+                      setForm((current) => ({
+                        ...current,
+                        steps: event.target.value,
+                      }))
+                    }
+                    placeholder="1. Resize the viewport… 2. Try the payment fields…"
+                    rows={4}
+                  />
+                  <FieldError message={fieldErrors.steps} />
+                </div>
+
+                <div className="grid gap-1.5">
+                  <Label htmlFor="bug-expected">Expected result</Label>
+                  <Textarea
+                    id="bug-expected"
+                    value={form.expected}
+                    aria-invalid={Boolean(fieldErrors.expected)}
+                    onChange={(event) =>
+                      setForm((current) => ({
+                        ...current,
+                        expected: event.target.value,
+                      }))
+                    }
+                    placeholder="What should happen for a correct checkout?"
+                    rows={3}
+                  />
+                  <FieldError message={fieldErrors.expected} />
+                </div>
+
+                <div className="grid gap-1.5">
+                  <Label htmlFor="bug-actual">Actual result</Label>
+                  <Textarea
+                    id="bug-actual"
+                    value={form.actual}
+                    aria-invalid={Boolean(fieldErrors.actual)}
+                    onChange={(event) =>
+                      setForm((current) => ({
+                        ...current,
+                        actual: event.target.value,
+                      }))
+                    }
+                    placeholder="What did you observe instead?"
+                    rows={3}
+                  />
+                  <FieldError message={fieldErrors.actual} />
+                </div>
+              </div>
+
+              {verdict ? <VerdictAlert verdict={verdict} /> : null}
+
+              <DialogFooter>
+                <Button
+                  type="submit"
+                  disabled={!ready}
+                  className="transition-transform duration-200 active:scale-[0.97]"
                 >
-                  <SelectTrigger id="bug-category" className="w-full">
-                    <SelectValue placeholder="Select a category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="visual">Visual / layout</SelectItem>
-                    <SelectItem value="validation">Validation</SelectItem>
-                    <SelectItem value="calculation">
-                      Calculation / pricing
-                    </SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="grid gap-1.5">
-                <Label htmlFor="bug-steps">Steps to reproduce</Label>
-                <Textarea
-                  id="bug-steps"
-                  value={form.steps}
-                  onChange={(event) =>
-                    setForm((current) => ({
-                      ...current,
-                      steps: event.target.value,
-                    }))
-                  }
-                  placeholder="1. Resize the viewport… 2. Try the payment fields…"
-                  rows={4}
-                />
-              </div>
-
-              <div className="grid gap-1.5">
-                <Label htmlFor="bug-expected">Expected result</Label>
-                <Textarea
-                  id="bug-expected"
-                  value={form.expected}
-                  onChange={(event) =>
-                    setForm((current) => ({
-                      ...current,
-                      expected: event.target.value,
-                    }))
-                  }
-                  placeholder="What should happen for a correct checkout?"
-                  rows={3}
-                />
-              </div>
-
-              <div className="grid gap-1.5">
-                <Label htmlFor="bug-actual">Actual result</Label>
-                <Textarea
-                  id="bug-actual"
-                  value={form.actual}
-                  onChange={(event) =>
-                    setForm((current) => ({
-                      ...current,
-                      actual: event.target.value,
-                    }))
-                  }
-                  placeholder="What did you observe instead?"
-                  rows={3}
-                />
-              </div>
-            </div>
-
-            {verdict ? <VerdictAlert verdict={verdict} /> : null}
-
-            <DialogFooter>
-              <Button
-                type="submit"
-                disabled={!ready}
-                className="transition-transform duration-200 active:scale-[0.97]"
-              >
-                Submit report
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+                  Submit report
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+      </div>
     </div>
+  )
+}
+
+function FieldError({ message }: { message?: string }) {
+  if (!message) {
+    return null
+  }
+
+  return (
+    <p role="alert" className="text-xs text-destructive">
+      {message}
+    </p>
   )
 }
 

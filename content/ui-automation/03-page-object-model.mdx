@@ -1,0 +1,259 @@
+---
+title: "The Page Object Model (POM)"
+description: "Separate selectors into a LoginPage class, keep assertions in the spec, and stop duplicating locators across every login test."
+category: "UI Automation"
+level: "Advanced"
+estimatedTime: "30 mins"
+order: 3
+lessonId: 03-page-object-model
+track: automation
+---
+
+## What this lesson covers
+
+The **Page Object Model (POM)** is a design pattern: one class per screen (or major widget) owns locators and user actions. Specs call those methods and then **assert**. When the login email field changes from `#email` to `#user-email`, you edit **one** page class — not every spec that still copies `page.fill("#email", ...)`.
+
+- What POM is and why it kills duplication
+- Selectors in a **page class**, assertions in a **test spec**
+- A TypeScript `LoginPage` plus a Playwright spec that uses it
+- Failure modes: god objects, hidden assertions, leaking locators back into specs
+
+This lesson assumes you can already write an async Playwright test (`goto`, `fill`, `click`, `expect`) from [Your First Playwright Test](/courses/ui-automation/02-first-playwright-test).
+
+## Outcome
+
+After this lesson you will be able to split a login journey into `pages/login.page.ts` and `login.spec.ts`, and explain the **architectural** reason teams adopt POM: a single place to change UI details.
+
+<Info title="POM is a convention, not a Playwright feature">
+Playwright does not require page objects. The runner only needs `test()` and `expect()`. POM is how *you* keep a suite maintainable once you have more than one login spec.
+</Info>
+
+## The duplication problem
+
+Without POM, every journey that signs in pastes the same three lines:
+
+```ts
+await page.goto("/login")
+await page.fill("#email", "qa@nimbus.test")
+await page.fill("#password", process.env.QA_PASSWORD ?? "test-only")
+await page.click('button[type="submit"]')
+```
+
+That block appears in checkout specs, dashboard specs, and "wrong password" specs. Six months later the designer wraps the email field and the id becomes `#user-email`. CI goes red in **every** file that still says `#email`. The bug is not the product — it is **copy-paste architecture**.
+
+| Symptom | Cause |
+| --- | --- |
+| Same `fill` / `click` in ten files | Selectors live in specs |
+| One UI tweak breaks the whole pack | No single owner for the login screen |
+| Specs read like implementation | Tests describe CSS, not the user journey |
+
+**Definition:** The *Page Object Model* puts that screen behind a small API (`goto`, `signIn`) so specs describe **behavior** and the page class describes **how the DOM is driven**.
+
+## Why POM prevents duplication
+
+POM is **separation of concerns** applied to UI tests:
+
+1. **Page class** — locators (how to find the email field) and actions (how a user signs in).
+2. **Spec** — Arrange / Act / Assert for a *scenario* (happy path, wrong password, locked account).
+
+When eight specs call `login.signIn(...)`, they share **one** implementation. A selector change is one pull request, not a hunt through `grep "#email"`.
+
+That is the primary architectural benefit: **centralize UI coupling** so tests stay cheap to change. Speed, prettier logs, and "more OOP" are side effects, not the reason to adopt the pattern.
+
+<Warning title="Do not hide assertions in the page class">
+`signIn` should fill and click. `expect(page).toHaveURL(...)` belongs in the spec. If the page object asserts internally, failures become "something in LoginPage broke" instead of "dashboard URL never appeared."
+</Warning>
+
+## Step by step: page class vs spec
+
+Walk this in order. Do not start by rewriting every file — extract **login** first (it is the most duplicated screen).
+
+### 1. Name the screen and the file
+
+Convention used here:
+
+```text
+e2e/
+  pages/
+    login.page.ts
+  specs/
+    login.spec.ts
+    checkout.spec.ts
+```
+
+One class per file. `LoginPage` maps to the `/login` route. Checkout gets `CheckoutPage` later — do not dump the whole app into `AppPage`.
+
+### 2. Move selectors into the class
+
+List every control the tests actually use. Prefer the locators from [DOM and Locators](/courses/ui-automation/01-dom-and-locators): roles and labels first; ids when they are a stable contract.
+
+| Control | Owned by LoginPage |
+| --- | --- |
+| Email field | `emailInput` |
+| Password field | `passwordInput` |
+| Submit | `submitButton` |
+| Error banner | `errorAlert` (for negative specs) |
+
+### 3. Expose actions, not raw CSS, to the spec
+
+Specs should not know `#email`. They should call `signIn(email, password)`. Navigation is `goto()` so every test does not repeat the login URL.
+
+### 4. Keep assertions in the spec
+
+Happy path asserts dashboard URL and heading. Negative path asserts the alert and that the URL still looks like `/login`. Both tests **reuse** `LoginPage`; only the expects differ.
+
+### 5. Refactor one duplicated spec, then the rest
+
+Replace the pasted `fill` / `click` block with `new LoginPage(page)`. Repeat until `grep page.fill("#email"` returns nothing under `e2e/specs`.
+
+## LoginPage in TypeScript
+
+Page class — locators and actions only. Paste as `e2e/pages/login.page.ts`:
+
+```ts
+import { type Locator, type Page } from "@playwright/test"
+
+export class LoginPage {
+  readonly page: Page
+  readonly emailInput: Locator
+  readonly passwordInput: Locator
+  readonly submitButton: Locator
+  readonly errorAlert: Locator
+
+  constructor(page: Page) {
+    this.page = page
+    this.emailInput = page.locator("#email")
+    this.passwordInput = page.locator("#password")
+    this.submitButton = page.locator('button[type="submit"]')
+    this.errorAlert = page.getByRole("alert")
+  }
+
+  async goto() {
+    await this.page.goto("/login")
+  }
+
+  async signIn(email: string, password: string) {
+    await this.emailInput.fill(email)
+    await this.passwordInput.fill(password)
+    await this.submitButton.click()
+  }
+}
+```
+
+Locator-first variant of the same class (same public API, better names):
+
+```ts
+this.emailInput = page.getByLabel("Email")
+this.passwordInput = page.getByLabel("Password")
+this.submitButton = page.getByRole("button", { name: "Sign in" })
+```
+
+The spec does not change when you swap locator strategy inside `LoginPage`. That is POM doing its job.
+
+## Playwright spec that uses LoginPage
+
+Assertions stay here. Two scenarios, one page class:
+
+```ts
+import { test, expect } from "@playwright/test"
+import { LoginPage } from "../pages/login.page"
+
+test("guest can sign in and see the dashboard", async ({ page }) => {
+  const login = new LoginPage(page)
+
+  await login.goto()
+  await login.signIn("qa@nimbus.test", process.env.QA_PASSWORD ?? "test-only")
+
+  await expect(page).toHaveURL(/\/dashboard/)
+  await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible()
+})
+
+test("wrong password shows an error and stays on login", async ({ page }) => {
+  const login = new LoginPage(page)
+
+  await login.goto()
+  await login.signIn("qa@nimbus.test", "not-the-password")
+
+  await expect(login.errorAlert).toBeVisible()
+  await expect(page.getByText(/invalid email or password/i)).toBeVisible()
+  await expect(page).toHaveURL(/\/login/)
+})
+```
+
+Compare to the duplicated version from the previous lesson: the Act steps are one line. The Assert steps are still explicit, so a failure points at URL, alert, or heading — not at a generic `signIn` timeout unless the click itself never became actionable.
+
+| Layer | Owns | Example |
+| --- | --- | --- |
+| `LoginPage` | Selectors and gestures | `goto`, `signIn`, `errorAlert` |
+| `login.spec.ts` | Scenarios and oracles | dashboard URL, error text |
+
+Checkout can do `await login.signIn(...)` then `new CheckoutPage(page)` — still no copied `#email`.
+
+## What good POM is not
+
+| Anti-pattern | Why it hurts |
+| --- | --- |
+| One `BasePage` with every locator in the app | You reintroduced a 2,000-line dump |
+| `signInAndExpectDashboard()` on the page class | Assertions hide in the action; specs cannot reuse sign-in for negative tests |
+| Specs still calling `page.fill("#email")` | You did not adopt POM; you added a class nobody uses |
+| Returning `void` from every getter | Specs cannot `expect(login.errorAlert)` without extra methods |
+
+Expose **locators** you need to assert on (`errorAlert`). Keep **workflows** as methods (`signIn`). Do not invent `verifyLoginSuccess()` unless a huge suite already standardized on assertion helpers — even then, keep them out of the locator file if you can.
+
+<Info title="Fixtures vs constructors">
+Teams often wrap `new LoginPage(page)` in a Playwright fixture so specs receive `login` already built. That is still POM: the class owns the UI; the fixture only injects it. Start with `new LoginPage(page)` until the pattern is boring.
+</Info>
+
+## Try this
+
+1. Copy `LoginPage` into a local Playwright project (or paste the spec shape into the [Automation Playground](/ui-automation/playground) to check `test()` syntax).
+2. Change the email locator **only** in the page class and confirm both specs still compile.
+3. Add a third spec that needs a logged-in user: call `login.signIn`, then assert something on the dashboard — do not paste `#password` again.
+
+```json
+{
+  "pattern": "page-object-model",
+  "pageClass": "LoginPage",
+  "owns": ["locators", "goto", "signIn"],
+  "specOwns": ["expect dashboard", "expect error alert"]
+}
+```
+
+## Knowledge check
+
+<Quiz
+  title="Page Object Model"
+  question="What is the primary architectural benefit of the Page Object Model in an automation framework?"
+  options={[
+    "It makes Playwright launch a real browser from the Quality Central playground",
+    "It centralizes locators and page actions in one class so a UI change is updated once instead of in every duplicated spec",
+    "It replaces auto-waiting expect with a fixed five-second sleep",
+    "It stores production passwords inside the page class so specs stay empty"
+  ]}
+  correctIndex={1}
+  explanation="POM concentrates UI coupling in page classes. Specs stay scenario-focused. When the email field id changes, you edit LoginPage, not ten copies of page.fill."
+  questions={[
+    {
+      question: "In a clean POM split, where should expect(page).toHaveURL for the dashboard live?",
+      options: [
+        "Inside LoginPage.signIn so every caller is forced to land on the dashboard",
+        "In the test spec, after calling signIn, so happy-path and wrong-password tests can assert different outcomes",
+        "In playwright.config.ts next to baseURL",
+        "Only in a Postman Tests tab"
+      ],
+      correctAnswer: 1,
+      explanation: "Actions in the page class; oracles in the spec. Wrong-password tests reuse signIn but must not assert a dashboard URL."
+    },
+    {
+      question: "Eight specs paste the same page.fill for the email field. The designer changes the id. With POM, how many files should you need to update for that selector?",
+      options: [
+        "All eight specs plus the config file",
+        "Only the LoginPage class that owns the email locator",
+        "None — POM ignores locator changes",
+        "Every Markdown lesson in Foundation"
+      ],
+      correctAnswer: 1,
+      explanation: "That is the duplication POM exists to prevent: one owner for the login screen locators."
+    }
+  ]}
+/>

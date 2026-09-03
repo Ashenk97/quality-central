@@ -1,0 +1,271 @@
+---
+title: "SQL Basics: Verifying Backend Data"
+description: "Use SELECT, WHERE, ORDER BY, and INNER JOIN so a UI click is proven in the users and orders tables — not only on the screen."
+category: "Technical Core"
+level: "Intermediate"
+estimatedTime: "30 mins"
+order: 1
+lessonId: 01-sql-for-qa
+track: technical
+---
+
+## What this lesson covers
+
+A green toast is not proof. **SQL** is how a QA engineer asks the database whether the click, the API, or the job **actually persisted**. If checkout says "Order placed" but `orders.status` is still `pending`, you found a real bug — the UI lied or the write never committed.
+
+- Why testers read the database (and why staging, not production, is the default)
+- Core read syntax: `SELECT`, `FROM`, `WHERE`, plus sort and filter
+- **INNER JOIN** between `users` and `orders`
+- Queries you will reuse: users created today, an order that should be `Shipped`
+- Finding a user by email (the quiz)
+
+## Outcome
+
+After this lesson you will be able to write a `SELECT` with a `WHERE` on email, join a user to their orders, and explain why that check belongs next to a UI or API assertion — not instead of one.
+
+<Info title="Read replica, staging, read-only">
+QA SQL is almost always **SELECT**. You confirm state. You do not "fix" production rows with UPDATE. Use a staging database or a read-only account. Copy-pasting a DELETE from a blog into prod is an incident, not a test.
+</Info>
+
+## Why QA needs SQL
+
+The UI is a **projection**. Caches, optimistic updates, and CDNs can show success before the write finishes — or show success when the write failed.
+
+| You clicked… | SQL answers… |
+| --- | --- |
+| Sign up | Is there a `users` row with that email and a hashed password, not the plaintext? |
+| Place order | Is there an `orders` row for that `user_id` with the right total and status? |
+| Mark shipped | Did `status` change to `Shipped`, and did `updated_at` move? |
+| Forgot password | Is there a reset token row, expiry in the future, unused? |
+
+SQL does not replace [test cases](/courses/foundation/05-writing-test-cases) or [API checks](/courses/api-testing/01-introduction-to-api-testing). It is a **third oracle**: screen, HTTP body, and row in the table should agree. When they disagree, you have a defect (or a replica lag story — note the timestamp).
+
+**Definition:** *Backend verification* is asserting persisted state (tables, columns, timestamps) after a user or API action, using a query whose expected result you wrote **before** you ran it.
+
+## The tables this lesson uses
+
+Nimbus staging (simplified):
+
+```sql
+-- users
+-- id | email              | created_at           | role
+-- 11 | qa@nimbus.test     | 2026-09-03 09:14:00  | tester
+-- 12 | alex@nimbus.test   | 2026-09-02 18:02:00  | customer
+
+-- orders
+-- id   | user_id | status   | total_cents | updated_at
+-- 1042 | 11      | Shipped  | 4999        | 2026-09-03 10:01:00
+-- 1043 | 12      | pending  | 1200        | 2026-09-03 08:40:00
+```
+
+You will not memorize a vendor dialect. PostgreSQL-style `SELECT` is enough to start. Column names differ per product; the **shape** of the questions does not.
+
+## SELECT, FROM, WHERE
+
+Read this as English: **select** these columns **from** this table **where** this condition is true.
+
+```sql
+SELECT id, email, created_at
+FROM users
+WHERE email = 'qa@nimbus.test';
+```
+
+| Clause | Job |
+| --- | --- |
+| `SELECT` | Which columns (or `*` for all — fine in staging, noisy in huge tables) |
+| `FROM` | Which table |
+| `WHERE` | Which rows. **Without WHERE you scan the whole table.** |
+
+String literals use **single quotes** in SQL. `qa@nimbus.test` without quotes is an identifier, not an email. Numbers (`1042`) and booleans stay unquoted.
+
+Filter with more than one predicate:
+
+```sql
+SELECT id, email, role
+FROM users
+WHERE role = 'customer'
+  AND created_at >= TIMESTAMP '2026-09-01';
+```
+
+`AND` narrows. `OR` widens (and is easy to get wrong — use parentheses when you mix them). `LIKE` is for patterns: `'%@nimbus.test'` matches that domain if your dialect treats `LIKE` as case-sensitive (PostgreSQL `ILIKE` is case-insensitive).
+
+<Warning title="WHERE is the difference between a check and a dump">
+`SELECT * FROM users` is a data dump. A test oracle is `WHERE email = 'qa@nimbus.test'` (or `WHERE id = 11`). If the query returns two rows for a unique email, that is also a bug.
+</Warning>
+
+## Sorting and limiting
+
+After a signup flood, you want the **newest** accounts first:
+
+```sql
+SELECT id, email, created_at
+FROM users
+ORDER BY created_at DESC
+LIMIT 20;
+```
+
+`ASC` is oldest first (often the default). `DESC` is newest first. `LIMIT` keeps the result small enough to eyeball. Pair `ORDER BY` with `LIMIT` when you mean "latest," or the database may return any 20 rows.
+
+Filter **then** sort: `WHERE` chooses the set; `ORDER BY` orders that set.
+
+## Users created today
+
+A QA check after a "create account" run, or after overnight batch imports:
+
+```sql
+SELECT id, email, created_at
+FROM users
+WHERE created_at >= CURRENT_DATE
+ORDER BY created_at DESC;
+```
+
+`CURRENT_DATE` is midnight today in the session time zone. If staging is UTC and you are not, "today" can surprise you — prefer an explicit window:
+
+```sql
+SELECT id, email, created_at
+FROM users
+WHERE created_at >= TIMESTAMP '2026-09-03 00:00:00'
+  AND created_at <  TIMESTAMP '2026-09-04 00:00:00'
+ORDER BY created_at DESC;
+```
+
+Expected result for a single test user you just created: **one** row, that email, `created_at` within the last few minutes. Zero rows: the UI succeeded and the write did not (or you queried the wrong schema). Two rows with the same email: uniqueness failed.
+
+## Order status updated to Shipped
+
+UI: warehouse clicks **Mark shipped**. API might `PATCH /orders/1042`. SQL:
+
+```sql
+SELECT id, user_id, status, updated_at
+FROM orders
+WHERE id = 1042;
+```
+
+You already know the id from the UI or the API response. Assert:
+
+- `status` is `Shipped` (exact spelling — `shipped` vs `Shipped` is a real bug)
+- `updated_at` is after the click (not yesterday)
+
+A stricter oracle that fails if status is still `pending`:
+
+```sql
+SELECT id, status, updated_at
+FROM orders
+WHERE id = 1042
+  AND status = 'Shipped';
+```
+
+Zero rows means the update did not land **or** you used the wrong id. Do not "fix" it with `UPDATE orders SET status = 'Shipped'` in a shared staging DB unless the test plan says you are seeding — that hides the product bug.
+
+```json
+{
+  "check": "order-shipped",
+  "orderId": 1042,
+  "sql": "SELECT id, status FROM orders WHERE id = 1042 AND status = 'Shipped'",
+  "expectRows": 1
+}
+```
+
+## INNER JOIN: users and orders
+
+An order row stores `user_id`, not the email. The UI showed `qa@nimbus.test` placed order 1042. Prove **both** tables:
+
+```sql
+SELECT
+  u.id AS user_id,
+  u.email,
+  o.id AS order_id,
+  o.status,
+  o.total_cents
+FROM users AS u
+INNER JOIN orders AS o
+  ON o.user_id = u.id
+WHERE u.email = 'qa@nimbus.test'
+ORDER BY o.id DESC;
+```
+
+**Definition:** An *INNER JOIN* returns only rows that **match on the join key**. A user with no orders disappears from this result. An order whose `user_id` points at a missing user also disappears (orphans — often worth a separate query).
+
+| Piece | Meaning |
+| --- | --- |
+| `FROM users AS u` | Left table, alias `u` |
+| `INNER JOIN orders AS o` | Right table, alias `o` |
+| `ON o.user_id = u.id` | Match rule (foreign key) |
+| `WHERE u.email = '...'` | Filter after (or conceptually with) the match |
+
+To list **orders that shipped today** with the buyer email:
+
+```sql
+SELECT o.id, u.email, o.status, o.updated_at
+FROM orders AS o
+INNER JOIN users AS u
+  ON u.id = o.user_id
+WHERE o.status = 'Shipped'
+  AND o.updated_at >= CURRENT_DATE
+ORDER BY o.updated_at DESC;
+```
+
+If the UI says three shipments and this returns two, you have a discrepancy to file — include both the query and the row counts in the bug report.
+
+LEFT JOIN (not required for the quiz) keeps users even with zero orders. Start with INNER JOIN until "missing matches" is a question you mean to ask.
+
+## A small QA query habit
+
+1. Write the **expected row count and columns** in the test case (expected result).
+2. Run the `SELECT`.
+3. Compare. Paste the query and a redacted result into the defect if it fails.
+4. Do not change the query after the fact to make it pass unless the oracle was wrong.
+
+```sql
+-- Find the test user (quiz target)
+SELECT id, email, created_at
+FROM users
+WHERE email = 'qa@nimbus.test';
+```
+
+That last statement is the one the knowledge check asks you to recognize: **SELECT the user row whose email equals the address under test.**
+
+## Try this
+
+1. On a local or staging DB you are allowed to read, run the "users created today" query and screenshot the result (no production PII).
+2. After a sandbox or staging checkout, grab the order id from the UI and run the `status = 'Shipped'` query (or `pending`, if that is the real state).
+3. Join your user to orders by email and confirm the count matches what the order history page shows.
+
+## Knowledge check
+
+<Quiz
+  title="SQL for QA"
+  question="Which query finds the user with email qa@nimbus.test?"
+  options={[
+    "SELECT * FROM users WHERE email = 'qa@nimbus.test'",
+    "SELECT * FROM orders WHERE status = 'Shipped'",
+    "DELETE FROM users WHERE email = 'qa@nimbus.test'",
+    "SELECT * FROM users with no WHERE clause, returning every row"
+  ]}
+  correctIndex={0}
+  explanation="SELECT plus WHERE email equals the address under test returns that user. The orders query answers shipment state. DELETE is not a verification. A SELECT with no WHERE is a dump, not a user lookup."
+  questions={[
+    {
+      question: "Why do QA engineers run SQL after a UI action such as Place order?",
+      options: [
+        "To replace all UI testing so the browser is never opened",
+        "To verify the action persisted in the database, not only on the screen",
+        "To update production rows until the dashboard looks green",
+        "To generate Playwright locators from table names"
+      ],
+      correctAnswer: 1,
+      explanation: "The UI can show success while the write failed or lagged. A SELECT on orders or users is an independent oracle."
+    },
+    {
+      question: "An INNER JOIN between users and orders ON orders.user_id = users.id returns:",
+      options: [
+        "Every user even if they have never placed an order",
+        "Only rows where a user and an order match on that user id",
+        "A DELETE of unmatched orders",
+        "Only the email column from Postman"
+      ],
+      correctAnswer: 1,
+      explanation: "INNER JOIN keeps matches. Users with zero orders drop out of this result. That is useful when you are proving a specific purchase."
+    }
+  ]}
+/>

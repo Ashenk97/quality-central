@@ -1,0 +1,248 @@
+---
+title: Agile and Scrum QA
+description: How testers work in sprints — stories, acceptance criteria, definition of done, and shift-left.
+category: foundation
+level: beginner
+estimatedTime: 15
+order: 4
+lessonId: 04-agile-and-scrum-qa
+track: manual
+---
+
+## What this lesson covers
+
+Most product teams you will join do not wait for a six-month "QA phase." They ship in **short cycles**. That does not mean "no testing." It means testing is **inside the cycle**, not a parking lot at the end.
+
+- Agile in plain language (vs a giant waterfall handoff)
+- Scrum roles, artifacts, and events a tester actually attends
+- User stories and acceptance criteria
+- Definition of Done
+- Shift-left: testing while the story is still clay
+
+## Outcome
+
+After this lesson you will be able to describe a tester's job in a two-week sprint, turn a story into checks, and explain why "QA week after coding" is a risk.
+
+<Info title="Scrum is one flavor of agile">
+Agile is a family of ideas: small batches, feedback, adapting. Scrum is a popular operating system for that (sprints, backlog, roles). Kanban is another. Learn Scrum here because interviews use its words. Then copy whatever board your team actually runs.
+</Info>
+
+## Waterfall vs agile — the traffic analogy
+
+**Definition:** *Waterfall* (as testers meet it) is a long sequence: decide everything, build everything, then test everything. Testing starts when "dev is done."
+
+**Definition:** *Agile* delivery works in **small increments** of working software, with regular feedback from users and from tests, and the plan is allowed to change.
+
+Analogy: waterfall is ordering a custom house and only walking through it after the roof is on. Agile is visiting the frame, then the kitchen mockup, then the first livable room — and changing the closet after you see it.
+
+| | Waterfall-style handoff | Agile team |
+| --- | --- | --- |
+| When testers arrive | After a big coding freeze | From refinement onward |
+| Feedback speed | Late and expensive | Early and cheap |
+| Tester identity | Gate at the end | Information specialist in the squad |
+| Risk | Surprises at the "QA week" | Surprises in a single story — still work, smaller blast radius |
+
+Agile does **not** mean "no documents" or "no test cases." It means documents that help *this* increment, and tests that keep pace with change.
+
+<Warning title="Agile is not an excuse to skip testing">
+"We are agile" is not a get-out-of-quality card. If a team ships every two weeks with zero time to test, they are just waterfall with shorter panic. Your job is to make risk visible, not to pretend the calendar is a strategy.
+</Warning>
+
+## Scrum in one page
+
+**Definition:** *Scrum* is a lightweight framework: a Product Owner, a Scrum Master, and Developers (testers included) deliver a **Done** increment each **Sprint**.
+
+### Roles (as a tester hears them)
+
+| Role | What they optimize for | How you work with them |
+| --- | --- | --- |
+| Product Owner (PO) | Valuable backlog order | Ask "what does Done mean for this story?" |
+| Scrum Master | A healthy process | Flag blocked testing, environment pain, unclear stories |
+| Developers | A Done increment | Pair on acceptance, review builds, reproduce bugs together |
+
+In Scrum, **tester is not a separate caste**. You are a developer in the Scrum sense: you help create the increment. Your specialty is investigating quality.
+
+### Artifacts
+
+- **Product backlog:** ordered list of work (stories, bugs, chores).
+- **Sprint backlog:** the slice the team forecasts for this sprint.
+- **Increment:** the new working product at the end of the sprint — "Done" according to the team.
+
+### Events you should show up for
+
+| Event | Tester habit |
+| --- | --- |
+| Refinement | Turn vague stories into testable acceptance; spot missing rules |
+| Sprint planning | Call out test effort and environment needs; do not silently under-plan |
+| Daily Scrum | "Blocked on test data" is a valid update |
+| Review (demo) | Watch with a user's eyes; note gaps as new backlog, not surprise blame |
+| Retrospective | Talk about escaped bugs and flaky environments without theater |
+
+## User stories and acceptance criteria
+
+**Definition:** A *user story* is a small slice of value, often written as: As a **role**, I want **capability**, so that **benefit**.
+
+**Definition:** *Acceptance criteria (AC)* are the conditions that must be true for the story to be accepted. They are your first oracles.
+
+Example Nimbus story:
+
+> As a shopper, I want to apply one promo code at checkout so that I can receive the advertised discount without stacking.
+
+Weak AC: "Promo works."
+
+Strong AC is checkable:
+
+```text
+Acceptance criteria
+- A valid unused code SAVE20 takes 20% off merchandise for a single-item cart.
+- Applying a second code is rejected and the first code stays.
+- An expired code shows a clear error and does not change the total.
+- Removing the code restores the pre-discount merchandise amount.
+```
+
+The same idea in a Given / When / Then sketch (keep this in a fence so the words stay literal):
+
+```gherkin
+Feature: Single promo code
+
+  Scenario: Second code is rejected
+    Given the cart merchandise is 10.00
+    And SAVE20 is already applied
+    When the shopper applies WELCOME10
+    Then the active code is still SAVE20
+    And merchandise is 8.00
+```
+
+You do not have to use Gherkin on the job. You **do** have to make AC binary enough that two people would agree pass or fail.
+
+### Step-by-step: from story to first-day tests
+
+1. Read the story and AC out loud. Circle numbers, "one," "must," and "never."
+2. List happy path (one valid code).
+3. List negatives from the AC (second code, expired).
+4. Add one exploratory charter: "Can I apply a code in two tabs?"
+5. After the build lands, execute, then file defects with the AC quoted as expected result.
+
+```json
+{
+  "story": "Nimbus-142 single promo",
+  "checks": [
+    {
+      "from": "AC-1",
+      "type": "happy",
+      "data": "SAVE20 on $10 mug",
+      "expected": "merchandise 8.00"
+    },
+    {
+      "from": "AC-2",
+      "type": "negative",
+      "data": "second code WELCOME10",
+      "expected": "rejected; SAVE20 remains"
+    },
+    {
+      "from": "charter",
+      "type": "exploratory",
+      "data": "same code in two checkout tabs",
+      "expected": "still one discount; no double charge"
+    }
+  ]
+}
+```
+
+## Definition of Done
+
+**Definition:** *Definition of Done (DoD)* is the team's shared quality bar for calling work complete. It applies to the increment, not to a single person's opinion.
+
+A starter DoD a QA-minded team might use:
+
+| Bar | Example |
+| --- | --- |
+| Built | Code merged, feature flag understood |
+| Reviewed | Peer review happened |
+| Tested | AC checked on a current build; critical bugs fixed or explicitly waived |
+| Observable | Logs or analytics for the new path, if that is the team standard |
+| Documented | Help text or changelog if users will see a change |
+
+Without a DoD, "Done" means "I stopped typing." With a DoD, "Done" means **we would be willing to show this to a user**.
+
+Testers help write and defend the DoD. They do not privately raise the bar after the demo to punish the team. If the bar should rise, that is a retrospective item.
+
+## Shift-left (and a little shift-right)
+
+**Definition:** *Shift-left* means moving testing and quality activities **earlier**: questions in refinement, examples before code, unit tests, pairing, reviewing API contracts before the UI exists.
+
+**Definition:** *Shift-right* means learning from production: monitoring, canary releases, real-user data (ethically), support tickets as test ideas.
+
+Beginners should shift-left first. The cheapest bug is the one that never becomes code.
+
+Analogy: tasting the batter (shift-left) versus waiting for a Yelp review (shift-right). You want both; batter is cheaper.
+
+### What shift-left looks like on Monday
+
+- You sit in refinement and ask, "What if the shopper double-clicks Apply?"
+- You write AC before development starts, not after the demo.
+- You request test accounts and a build URL as part of planning, not on the last afternoon.
+- You test APIs or feature flags when the UI is not ready — information still counts.
+
+## "How do I start on an agile team?" — a first-sprint script
+
+1. Learn the DoD and where builds live.
+2. Pick the sprint's riskiest story (money, login, data).
+3. Turn AC into a short checklist (lesson 2 techniques).
+4. Test as soon as a slice is available — not only on the last day.
+5. Report defects as in lesson 3; bring blockers to the daily Scrum.
+6. At review, confirm what was **not** tested (time, environments). Honesty is professional.
+
+Then continue Foundation: ISTQB language, SDLC/STLC, and deeper manual practice. After that, API and UI automation tracks, then the Sandbox.
+
+## Knowledge check
+
+<Quiz
+  title="Agile and Scrum QA check"
+  questions={[
+    {
+      question: "In Scrum, when should a tester first influence a story?",
+      options: [
+        "Only during a dedicated QA week after developers freeze the sprint",
+        "As early as refinement, by making acceptance criteria testable",
+        "Never; testers must stay independent and silent until release",
+        "Only in the retrospective after users complain"
+      ],
+      correctAnswer: 1,
+      explanation: "Shift-left starts in refinement. Waiting for a freeze recreates waterfall inside a sprint-shaped box."
+    },
+    {
+      question: "What are acceptance criteria for?",
+      options: [
+        "Decorating the Jira description so it looks complete",
+        "Giving the team checkable conditions for 'this story is done'",
+        "Replacing the need for any exploratory testing",
+        "Proving the product has zero defects"
+      ],
+      correctAnswer: 1,
+      explanation: "AC are oracles for the story. They do not replace exploration or prove absence of all bugs."
+    },
+    {
+      question: "Definition of Done is best described as:",
+      options: [
+        "Whatever the fastest developer claims in Slack",
+        "The team's shared bar for calling an increment complete",
+        "A tester-only checklist hidden from developers",
+        "A government form you file yearly"
+      ],
+      correctAnswer: 1,
+      explanation: "DoD is collective. Testers help shape it; they should not secretly move the goalposts after the fact."
+    },
+    {
+      question: "A team ships every two weeks but always 'runs out of time to test.' What is the honest diagnosis?",
+      options: [
+        "They are perfectly agile, so testing is optional",
+        "The sprint is not including testing in the forecast; quality work is being squeezed to the end",
+        "Scrum forbids testers from speaking in planning",
+        "Two-week sprints make defects impossible"
+      ],
+      correctAnswer: 1,
+      explanation: "Cadence without test capacity is a squeezed waterfall. Planning must include investigation, retest, and environments."
+    }
+  ]}
+/>

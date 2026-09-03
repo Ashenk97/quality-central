@@ -1,0 +1,254 @@
+---
+title: "Writing Real-World Test Cases"
+description: "Test case anatomy, positive vs negative vs edge cases, and a Forgot Password suite you can paste into a test management tool."
+category: "Foundation"
+level: "Beginner"
+estimatedTime: "25 mins"
+order: 5
+lessonId: 05-writing-test-cases
+track: manual
+---
+
+## What this lesson covers
+
+A **test scenario** is a one-line *what* ("Forgot password for a registered user"). A **test case** is the *how*: id, title, pre-conditions, numbered steps, expected result — plus actual result and status filled **when you run it**.
+
+This lesson turns [BVA and Equivalence Partitioning](/courses/foundation/02-test-design-techniques) into documents another tester can execute without a meeting.
+
+- Anatomy of a complete test case (id through status)
+- **Positive**, **negative**, and **edge** testing — and why you need all three
+- A worked **Forgot Password** suite for Nimbus
+- Scenario vs case (the quiz)
+
+## Outcome
+
+After this lesson you will be able to write a Forgot Password case with every field in the anatomy table, and explain why "Verify reset email" is a scenario while `TC-FP-01` is a case.
+
+<Info title="Design vs execution">
+You write id, title, pre-conditions, steps, and expected result **before** the run. Actual result and status are blank until someone executes the case on a named build.
+</Info>
+
+## Anatomy of a test case
+
+Use this as a template. One row is one field you should be able to fill.
+
+| Field | When you fill it | What good looks like |
+| --- | --- | --- |
+| **Test Case ID** | Design | Stable unique id (`TC-FP-01`). Never reuse an id after a case is retired. |
+| **Title** | Design | Observable outcome, not "test forgot password." Example: `Registered email receives a reset link`. |
+| **Pre-conditions** | Design | Known starting world: account exists, inbox you can open, not rate-limited, named environment. |
+| **Test Steps** | Design | Numbered. One action per step. Start from the pre-condition, not "do the usual." |
+| **Expected Result** | Design | Oracle from the spec: message text, email sent, URL, what must *not* happen. |
+| **Actual Result** | Execution | What this build did. Facts and quotes. Empty until you run. |
+| **Status** | Execution | Typically Pass, Fail, Blocked, or Not Run. Fail means actual did not match expected. |
+
+Same case as structured notes you can paste into TestRail, Zephyr, Azure Test Plans, or a spreadsheet:
+
+```json
+{
+  "id": "TC-FP-01",
+  "title": "Registered email receives a password reset link",
+  "preconditions": [
+    "User qa@nimbus.test exists and can receive mail",
+    "Staging build; reset emails go to the QA inbox",
+    "Account is not locked or rate-limited"
+  ],
+  "steps": [
+    "Open /login",
+    "Click Forgot password",
+    "Enter qa@nimbus.test",
+    "Click Send reset link",
+    "Open the latest mail for that address"
+  ],
+  "expected": "Success message on screen; inbox contains one reset mail with a single-use link",
+  "actual": "",
+  "status": "Not Run"
+}
+```
+
+### What each field is doing
+
+**Test Case ID.** Traceability. A bug report can say "failed `TC-FP-01` on build 128." If you only have titles, search becomes guesswork.
+
+**Title.** Searchable and specific. Include the actor and the outcome. Avoid "Forgot password test 1."
+
+**Pre-conditions.** If the user does not exist, the case is **Blocked**, not Failed. Blocked means you could not start; Failed means you started and the product disagreed with the expected result.
+
+**Test Steps.** Another person (or you in three months) follows them cold. "Reset as usual" is not a step.
+
+**Expected Result.** Comes from the requirement or a reasonable oracle — not from "whatever yesterday's build did."
+
+**Actual Result.** The evidence. If it fails, this paragraph should be enough to file a defect using the [bug report anatomy](/courses/foundation/03-bug-life-cycle) (steps, expected, actual).
+
+**Status.** Pass / Fail / Blocked / Not Run covers most teams. Some add Skipped or Passed with remarks. Do not mark Pass if you skipped a step.
+
+<Warning title="Never put real customer emails in a case">
+Use dedicated test accounts. Reset links are credentials. Do not screenshot a live user's inbox into the test run.
+</Warning>
+
+## Positive, negative, and edge cases
+
+You do not "test forgot password" once. You sample **three kinds of intent**.
+
+| Kind | Question it answers | Forgot Password example |
+| --- | --- | --- |
+| **Positive testing** | Does the happy path work with valid, typical data? | Registered email, fresh account, user completes reset and signs in. |
+| **Negative testing** | Does the product reject invalid, missing, or unauthorized input? | Empty email, bad format, unknown address, wrong HTTP method if you also test the API. |
+| **Edge cases** | What happens at limits, timing, and "almost valid"? | Expired token, already-used link, max-length email, rapid resend (rate limit). |
+
+**Definition:** *Positive testing* confirms the product does what the spec allows. *Negative testing* confirms it refuses what the spec forbids. *Edge cases* sit on boundaries — time, length, reuse, concurrency — where off-by-one and expiry bugs live.
+
+Positive tests that always pass while negative tests are missing is how "reset works in the demo" and "anyone can reset the CEO" both exist.
+
+| If you only write… | You will miss… |
+| --- | --- |
+| Positive | Enumeration of accounts, empty submit, XSS in the email field |
+| Negative | The actual mail, the link, the new-password form |
+| Edge | Tokens that work forever, double-submit, clock skew |
+
+Edge cases often come from the same design techniques as lesson 2: length limits (BVA), expired vs not expired (partitions), used vs unused token (state).
+
+## Worked example: Forgot Password
+
+**Product slice:** Nimbus login offers **Forgot password**. A registered user requests a link, sets a new password that meets the policy, and signs in. Unknown emails must not confirm whether the address exists (no account-enumeration). Links expire after 30 minutes and work once.
+
+**Test scenario (high-level):** Verify password reset for a registered Nimbus user.
+
+That sentence is **not** executable. The cases below are.
+
+### Suite map
+
+| ID | Kind | Title |
+| --- | --- | --- |
+| TC-FP-01 | Positive | Registered email receives a reset link |
+| TC-FP-02 | Positive | Valid reset link lets the user set a new password and sign in |
+| TC-FP-03 | Negative | Empty email shows a validation message and sends no mail |
+| TC-FP-04 | Negative | Unknown email shows a generic message (no "user not found") |
+| TC-FP-05 | Negative | Malformed email is rejected before send |
+| TC-FP-06 | Edge | Expired reset link cannot change the password |
+| TC-FP-07 | Edge | Used reset link cannot be reused |
+| TC-FP-08 | Edge | Rapid resend is rate-limited |
+
+### TC-FP-01 — full anatomy (positive, request)
+
+| Field | Content |
+| --- | --- |
+| **Test Case ID** | `TC-FP-01` |
+| **Title** | Registered email receives a password reset link |
+| **Pre-conditions** | Account `qa@nimbus.test` exists. QA can open that mailbox. Staging build. User is logged out. Account is not locked. |
+| **Test Steps** | 1. Open `/login`. 2. Click **Forgot password**. 3. Enter `qa@nimbus.test` in Email. 4. Click **Send reset link**. 5. Open the QA inbox for that address. |
+| **Expected Result** | Page shows a generic success message (for example "If an account exists, we sent a link"). Inbox has one new mail with a HTTPS reset URL. No password is shown in the mail. |
+| **Actual Result** | *(blank until execution)* |
+| **Status** | Not Run |
+
+### TC-FP-02 — full anatomy (positive, complete the reset)
+
+| Field | Content |
+| --- | --- |
+| **Test Case ID** | `TC-FP-02` |
+| **Title** | Valid reset link sets a new password and allows sign-in |
+| **Pre-conditions** | `TC-FP-01` just produced an unused, unexpired link. New password meets policy (length and character rules). Old password is known so you can prove it stopped working. |
+| **Test Steps** | 1. Open the reset URL from the mail. 2. Enter a new valid password and confirm it. 3. Submit. 4. Sign in at `/login` with `qa@nimbus.test` and the **new** password. 5. Attempt sign-in with the **old** password (may be a separate case if you split it). |
+| **Expected Result** | Reset form accepts the new password. Sign-in with the new password reaches the dashboard. Old password is rejected. |
+| **Actual Result** | *(blank until execution)* |
+| **Status** | Not Run |
+
+### TC-FP-03 — negative (empty email)
+
+| Field | Content |
+| --- | --- |
+| **Test Case ID** | `TC-FP-03` |
+| **Title** | Empty email does not send a reset mail |
+| **Pre-conditions** | Logged out. Inbox for `qa@nimbus.test` is empty or you note the current latest message time. |
+| **Test Steps** | 1. Open `/login`. 2. Click **Forgot password**. 3. Leave Email empty. 4. Click **Send reset link**. 5. Check the inbox. |
+| **Expected Result** | Inline or form error that email is required. No new reset mail. URL stays on the forgot-password page. |
+| **Actual Result** | *(blank until execution)* |
+| **Status** | Not Run |
+
+### TC-FP-04 and TC-FP-05 — negative (unknown and malformed)
+
+| ID | Pre-conditions | Steps (short) | Expected Result |
+| --- | --- | --- | --- |
+| TC-FP-04 | Address `nobody-unknown@nimbus.test` is **not** a user | Submit that address on Forgot password | Same generic success (or same generic error) as a real user — **do not** show "User not found." No mail to a real mailbox you control unless the product truly sent nothing. |
+| TC-FP-05 | — | Enter `not-an-email` and submit | Client or server validation; no send. |
+
+TC-FP-04 is security-aware negative testing: a case that "fails" by revealing *whether the email is registered* is a **Fail** against an anti-enumeration requirement — even if the page "looks helpful."
+
+### TC-FP-06, TC-FP-07, TC-FP-08 — edge
+
+| ID | Edge | How to set it up | Expected Result |
+| --- | --- | --- | --- |
+| TC-FP-06 | Time | Generate a link, wait past 30 minutes (or set server clock in a test env), open the URL | Error that the link expired; password unchanged. |
+| TC-FP-07 | Reuse | Complete `TC-FP-02`, then open the **same** URL again | Link invalid; password not changed a second time. |
+| TC-FP-08 | Rate | Click **Send reset link** many times in a few seconds with the same email | After the allowed count, request is rejected or delayed; you do not get an unbounded pile of valid tokens. |
+
+```json
+{
+  "feature": "forgot-password",
+  "scenario": "Verify password reset for a registered Nimbus user",
+  "cases": ["TC-FP-01", "TC-FP-02", "TC-FP-03", "TC-FP-04", "TC-FP-05", "TC-FP-06", "TC-FP-07", "TC-FP-08"]
+}
+```
+
+One scenario, eight cases. That is the split the quiz is after.
+
+## Scenario vs case (do not mix the documents)
+
+| | Test scenario | Test case |
+| --- | --- | --- |
+| Level | High | Low |
+| Grain | Feature or user goal | One executable path |
+| Contains | A sentence (maybe a trace id to a story) | Id, title, pre-conditions, steps, expected, then actual and status at run time |
+| Count | Few per feature | Many per scenario |
+| Example | Verify forgot password for a registered user | `TC-FP-01` through `TC-FP-08` |
+
+If a manager asks "did we test forgot password?" the **scenario** is the headline. If a tester asks "what do I click?" they need the **case**.
+
+<Info title="Traceability">
+Story or requirement → scenario → cases → bugs. `TC-FP-04` failing should point at the enumeration requirement, not at a vague "login is broken."
+</Info>
+
+## Try this
+
+1. Pick another Nimbus slice (promo code, change password while logged in). Write **one scenario** and at least one positive, one negative, and one edge **case** with every anatomy field.
+2. Execute `TC-FP-03` on the [Sandbox](/sandbox) or a local build if you have forgot-password; fill Actual Result and Status for real.
+3. If it fails, file a defect from the case — do not paste a new vague paragraph. Reuse steps, expected, and actual.
+
+## Knowledge check
+
+<Quiz
+  title="Test scenarios vs test cases"
+  question="What is the difference between a Test Scenario and a Test Case?"
+  options={[
+    "A Test Scenario is a high-level what to test; a Test Case is the low-level how, with pre-conditions, steps, and expected result",
+    "They are two names for the same document and always share one Test Case ID",
+    "A Test Scenario includes Actual Result and Status; a Test Case is only a title",
+    "A Test Case is only used in API tools; scenarios are only for UI automation"
+  ]}
+  correctIndex={0}
+  explanation="A scenario is the headline goal. A case is executable: id, title, pre-conditions, steps, expected result, then actual and status when you run it. Forgot Password is one scenario with many cases."
+  questions={[
+    {
+      question: "When is the Actual Result field of a test case filled in?",
+      options: [
+        "During design, by copying Expected Result so the case looks complete",
+        "During or after execution, with what this build actually did",
+        "Only in the ISTQB handbook, never in a spreadsheet",
+        "Never — testers only set Status"
+      ],
+      correctAnswer: 1,
+      explanation: "Expected Result is the oracle written up front. Actual Result is evidence from the run. Status follows that comparison."
+    },
+    {
+      question: "A Forgot Password form rejects an empty email and sends no mail. That case is best classified as:",
+      options: [
+        "Positive testing of the happy path only",
+        "Negative testing — invalid or missing input should be refused",
+        "An edge case about token expiry only",
+        "A Test Scenario with no steps or id"
+      ],
+      correctAnswer: 1,
+      explanation: "Empty email is invalid input. Negative cases check rejection. Expiry of a once-valid link is an edge case, not this one."
+    }
+  ]}
+/>

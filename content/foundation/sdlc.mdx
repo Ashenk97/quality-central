@@ -4,20 +4,70 @@ description: Software development life cycle and where QA fits.
 category: foundation
 lessonId: sdlc
 track: manual
-order: 2
+order: 7
+difficulty: beginner
+readingTime: 9
 ---
 
 ## What this lesson covers
 
-This module maps the **software development life cycle** and the points where QA adds the most value.
+The **software development life cycle** is how an idea becomes running software — and how it stays running. Testers who only appear at the end inherit everyone else's ambiguity.
 
-- Common SDLC models
-- Where testing sits in each phase
-- How QA partners with product and engineering
+- Common SDLC models and what they optimize
+- Where testing belongs in each phase
+- Shift-left habits that still respect delivery dates
 
 ## Outcome
 
-After this lesson you will be able to explain where testing belongs in a delivery cycle.
+After this lesson you will be able to point to a story, a design, or a release plan and say what QA should do **now**, not just after code-complete.
+
+## Models you will actually meet
+
+| Model | Cadence | QA implication |
+| --- | --- | --- |
+| Waterfall / V-model | Long phases, late integration | Formal entry/exit; test basis locked early |
+| Iterative / incremental | Slices of value | Regression grows every slice |
+| Scrum / Kanban | Continuous flow | Testers in the team; definition of done includes test evidence |
+| Continuous delivery | Many small releases | Automation carries the boring path; humans target new risk |
+
+<Info title="The V-model in one sentence">
+Each development activity has a matching test activity: requirements map to acceptance, architecture to system tests, detailed design to integration, code to component tests.
+</Info>
+
+You will rarely run a textbook V-model. You will still use the mapping: if nobody wrote acceptance examples, you do not have a test basis for "done."
+
+## Where QA adds leverage
+
+```text
+Idea → story → design → code → build → release → operate
+         ^        ^               ^        ^         ^
+     ambiguity  testability   fast fail  evidence  production signals
+```
+
+- **Stories:** challenge missing actors, error paths, and data rules.
+- **Design:** ask which states, roles, and integrations are in scope.
+- **Code/build:** pair on testability (ids, logs, feature flags).
+- **Release:** confirm the slice of risk you claimed to cover.
+- **Operate:** feed incidents back into the next test charter.
+
+<Warning title="Hardening weeks are a smell">
+A calendar block named "QA week" usually means testing was treated as a phase, not a skill. Use it as a signal to pull test design earlier next sprint — do not make it your identity.
+</Warning>
+
+## Practical example: a payment story
+
+Story: "As a shopper I can pay with a saved card so checkout is faster."
+
+Shift-left questions a tester asks **before** code:
+
+- What happens when the saved card is expired?
+- Can a shopper have zero cards, one card, or many?
+- Is the card tokenized, or is PAN in our database?
+- Which environments have a real payment sandbox?
+
+Those questions are cheaper than finding a PCI surprise in staging.
+
+## Knowledge check
 
 <Quiz
   title="SDLC check"
@@ -43,6 +93,17 @@ After this lesson you will be able to explain where testing belongs in a deliver
       ],
       correctAnswer: 0,
       explanation: "Shift-left moves questions about risk and testability earlier, before code exists."
+    },
+    {
+      question: "In a continuous-delivery SDLC, which statement is most accurate?",
+      options: [
+        "Manual testing replaces automation because releases are small",
+        "Every SDLC phase still exists, but they overlap and shrink",
+        "Acceptance testing is skipped because users will find issues",
+        "Integration testing only happens once a quarter"
+      ],
+      correctAnswer: 1,
+      explanation: "CD compresses the cycle. You still analyze, build, test, and release — just in smaller batches with more automation on the boring path."
     }
   ]}
 />

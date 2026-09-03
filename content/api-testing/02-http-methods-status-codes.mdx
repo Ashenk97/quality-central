@@ -1,0 +1,230 @@
+---
+title: "HTTP Methods & Status Codes"
+description: "GET, POST, PUT/PATCH, DELETE, status-code families, and a QA map of method to expected status — including 401 vs 403."
+category: "API Testing"
+level: "Intermediate"
+estimatedTime: "20 mins"
+order: 2
+lessonId: 02-http-methods-status-codes
+track: api
+---
+
+## What this lesson covers
+
+HTTP **methods** say what you want the server to do. **Status codes** say what actually happened. A QA engineer who only glances at the JSON body will miss a GET that changes data or a 200 that is wrapping an error.
+
+- Primary methods: **GET** (Read), **POST** (Create), **PUT / PATCH** (Update), **DELETE** (Remove)
+- Status ranges: **2xx** success, **3xx** redirection, **4xx** client errors, **5xx** server errors
+- A real-world table: method + scenario + the status you should expect
+- The interview trap: **401 Unauthorized** vs **403 Forbidden**
+
+## Outcome
+
+After this lesson you will be able to pick a method for a CRUD action, name the status family it should land in, and explain 401 vs 403 without mixing them up.
+
+<Info title="Status is an oracle">
+The status line is part of the contract. Assert it on every call, then assert the body. The [API Playground](/api-testing/playground) is a safe place to practice reading 200 vs 404 vs 500.
+</Info>
+
+## Primary HTTP methods
+
+Think **CRUD**: Create, Read, Update, Delete. HTTP already has verbs for that.
+
+| Method | CRUD | Intent | Typical body |
+| --- | --- | --- | --- |
+| **GET** | Read | Fetch a representation. Must not change server state. | None |
+| **POST** | Create | Create a member, or trigger a process (apply coupon, start job). | JSON of the new thing |
+| **PUT** | Update (replace) | Send the **full** replacement of a member. | Complete resource |
+| **PATCH** | Update (partial) | Send a **delta** — only the fields that change. | Partial JSON |
+| **DELETE** | Remove | Delete a member. | Often none |
+
+### GET (Read)
+
+```http
+GET /api/users/101
+Accept: application/json
+```
+
+Expect **200** and a user object if 101 exists. Expect **404** if it does not. Repeating GET must not create users or charge cards. If it does, that is a defect.
+
+### POST (Create)
+
+```http
+POST /api/users
+Content-Type: application/json
+```
+
+```json
+{
+  "name": "Alex Smith",
+  "roles": ["tester"]
+}
+```
+
+Expect **201 Created** when a new user is minted (often with a `Location` header or an `id` in the body). Some APIs return **200** instead — freeze what *your* spec says and assert it. Invalid JSON is **400**. Duplicate email might be **409**.
+
+### PUT and PATCH (Update)
+
+**PUT** replaces the whole resource. **PATCH** patches a few fields.
+
+```http
+PUT /api/users/101
+Content-Type: application/json
+```
+
+```json
+{
+  "name": "Alex Smith",
+  "is_active": true,
+  "roles": ["tester"]
+}
+```
+
+```http
+PATCH /api/users/101
+Content-Type: application/json
+```
+
+```json
+{ "is_active": false }
+```
+
+If PATCH with only `is_active` also wipes `roles`, the server is behaving like PUT. File it unless the docs say replace-on-PATCH.
+
+Unknown id: **404** (or an upsert **200/201** — the contract must say which).
+
+### DELETE (Remove)
+
+```http
+DELETE /api/users/101
+```
+
+First call: **200** or **204** (no body). Second call: still **204** or **404**, never **500**. Then GET should be **404**.
+
+<Warning title="GET that writes is a Critical bug">
+Prefetch, crawlers, and retries will replay GET. If GET `/api/pay` captures money, users get double-charged. Status 200 does not make that OK.
+</Warning>
+
+## HTTP status code ranges
+
+| Range | Name | Tester meaning |
+| --- | --- | --- |
+| **2xx** | Success | The request was understood and processed as a success. Still assert the body. |
+| **3xx** | Redirection | Go elsewhere (or do not follow — per spec). |
+| **4xx** | Client error | *Your* request is the problem: auth, path, payload, or permission. |
+| **5xx** | Server error | The server failed. This is not a "valid negative test" unless you are chaos-testing. |
+
+### 2xx Success — 200, 201
+
+| Code | When QA expects it |
+| --- | --- |
+| **200 OK** | GET of an existing resource; some POST/PATCH/DELETE that succeed with a body |
+| **201 Created** | POST (or PUT upsert) that created a new member |
+
+Also common: **204 No Content** on DELETE.
+
+### 3xx Redirection
+
+The resource moved, or the client must call a different URL. Testers decide whether the client **follows** the redirect or treats it as a contract change. A login flow that 302s to an error page is still a finding if the spec promised 401.
+
+### 4xx Client errors — 400, 401, 403, 404
+
+| Code | Meaning | QA example |
+| --- | --- | --- |
+| **400 Bad Request** | Malformed syntax or JSON the server cannot parse | POST body is truncated or not valid JSON |
+| **401 Unauthorized** | **Not authenticated** — missing, expired, or invalid credentials | No `Authorization` header; bad token |
+| **403 Forbidden** | **Authenticated but not allowed** — identity is known, permission is denied | Tester token on `DELETE /api/users/1` |
+| **404 Not Found** | No resource at that URL (or hidden) | GET `/api/users/999999` |
+
+**401 vs 403** is the pair people swap. Memory hook:
+
+- **401** = the restaurant does not know *who you are* (no reservation name).
+- **403** = they know who you are and still will not seat you in the kitchen.
+
+A 401 body often invites you to log in. A 403 must **not** leak whether the hidden admin user exists if that would be an information leak — but many APIs still return 403 with a clear message. Assert what *your* spec promises, then challenge unsafe leaks.
+
+### 5xx Server errors — 500, 503
+
+| Code | Meaning | QA example |
+| --- | --- | --- |
+| **500 Internal Server Error** | Unhandled crash. Never your happy-path expected result. | Null pointer after a valid POST |
+| **503 Service Unavailable** | Temporarily down (deploy, overload). Retry-After may be present. | Gateway drained during release |
+
+**502/504** (bad/gateway timeout) sit in the same family: infrastructure, not a clever negative test.
+
+<Warning title="200 with an error object is a smell">
+If HTTP is 200 and the JSON says `"success": false`, assert both layers and file a contract bug. Clients and caches trust the status line.
+</Warning>
+
+## Real-world QA scenarios
+
+Nimbus user and cart APIs. Use this as a checklist when you write cases.
+
+| Scenario | Method | Expected status |
+| --- | --- | --- |
+| Fetch profile for user 101 (exists, you are allowed) | GET `/api/users/101` | **200** |
+| Fetch a user id that was never issued | GET `/api/users/0` | **404** |
+| Create a user with a valid body | POST `/api/users` | **201** (or 200 if spec says so) |
+| Create a user with broken JSON | POST `/api/users` | **400** |
+| Replace the whole profile | PUT `/api/users/101` | **200** |
+| Deactivate only `is_active` | PATCH `/api/users/101` | **200**; other fields unchanged |
+| Remove the user | DELETE `/api/users/101` | **200** or **204** |
+| Call the same DELETE again | DELETE `/api/users/101` | **204** or **404** (not 500) |
+| Apply `SAVE10` the first time | POST `/api/carts/1/coupons` | **200** |
+| Apply `SAVE10` a second time (no stack) | POST `/api/carts/1/coupons` | **409** (or 200 with unchanged totals) |
+| Hit a protected admin route with no token | GET `/api/admin/metrics` | **401** |
+| Hit that route as a tester who is not an admin | GET `/api/admin/metrics` | **403** |
+| Kitchen process crashed on a valid order | POST `/api/orders` | **500** |
+| API is draining for a deploy | GET `/api/health` | **503** |
+
+```json
+{
+  "pack": "nimbus-http-oracles",
+  "cases": [
+    { "name": "admin without token", "method": "GET", "path": "/api/admin/metrics", "expect": 401 },
+    { "name": "tester not admin", "method": "GET", "path": "/api/admin/metrics", "expect": 403 },
+    { "name": "missing user", "method": "GET", "path": "/api/users/0", "expect": 404 }
+  ]
+}
+```
+
+## Knowledge check
+
+The first item is the pair you will be asked in almost every API interview.
+
+<Quiz
+  title="HTTP methods and status codes"
+  question="What is the difference between 401 Unauthorized and 403 Forbidden?"
+  options={[
+    "They are identical; both mean the URL was not found",
+    "401 means the client is not authenticated; 403 means the client is authenticated but not allowed",
+    "401 means forbidden; 403 means the server crashed",
+    "403 means you forgot JSON; 401 means you used PATCH instead of PUT"
+  ]}
+  correctIndex={1}
+  explanation="401 is an authentication problem (who are you?). 403 is an authorization problem (we know who you are, and you may not do this). 404 is missing resource; 500 is the server failing."
+  questions={[
+    {
+      question: "Which method is the Read in CRUD and must not change server state?",
+      options: [
+        "POST",
+        "GET",
+        "DELETE",
+        "PATCH"
+      ],
+      correctAnswer: 1,
+      explanation: "GET is Read. Side effects on GET (charging a card, deleting a row) are defects even if the status is 200."
+    },
+    {
+      question: "A valid POST /api/users creates a member. Which 2xx code is the most precise success if the spec follows common REST?",
+      options: [
+        "201 Created",
+        "301 Moved Permanently",
+        "401 Unauthorized",
+        "503 Service Unavailable"
+      ],
+      correctAnswer: 0,
+      explanation: "201 means a new resource was created. 200 is used by some APIs; 301 is redirection; 401/503 are not success."
+    }
+  ]}
+/>

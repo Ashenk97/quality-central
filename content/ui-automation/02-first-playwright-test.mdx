@@ -1,0 +1,200 @@
+---
+title: "Your First Playwright Test"
+description: "Install Playwright, Arrange-Act-Assert, and an async TypeScript login spec with goto, fill, click, and auto-waiting expect."
+category: "UI Automation"
+level: "Advanced"
+estimatedTime: "25 mins"
+order: 2
+lessonId: 02-first-playwright-test
+track: automation
+---
+
+## What this lesson covers
+
+**Playwright** drives a real browser from TypeScript. A spec is not a pile of clicks — it is **Arrange**, **Act**, **Assert** (AAA). Playwright **auto-waits**: `expect(locator).toBeVisible()` retries until the element is ready or the timeout hits. That is cheaper and less flaky than `sleep(5000)`.
+
+- Setting up Playwright
+- AAA on a login journey
+- `page.goto()`, `page.fill()`, `page.click()`, and `expect()`
+- A complete login flow you can paste into a spec (or the [Automation Playground](/ui-automation/playground) for syntax practice)
+
+## Outcome
+
+After this lesson you will be able to read a login spec, point at Arrange vs Act vs Assert, and explain why `toBeVisible()` is an auto-waiting assertion.
+
+<Info title="Playground vs real browser">
+Quality Central's playground checks that your file looks like Playwright tests. It does not launch Chrome. Install Playwright locally when you want a real headed run.
+</Info>
+
+## Setting up Playwright
+
+From a Node project:
+
+```bash
+npm init playwright@latest
+npx playwright install
+npx playwright test
+```
+
+That scaffolds `playwright.config.ts`, an `e2e` (or `tests`) folder, and browsers. Config you will actually change:
+
+```ts
+import { defineConfig } from "@playwright/test"
+
+export default defineConfig({
+  testDir: "./e2e",
+  use: {
+    baseURL: "https://staging.nimbus.test",
+    screenshot: "only-on-failure",
+    trace: "on-first-retry",
+  },
+})
+```
+
+`baseURL` lets tests call `page.goto("/login")` instead of a hardcoded host. Staging credentials belong in env vars, not in the repo.
+
+<Warning title="Do not use production passwords">
+Login specs need a dedicated test user. Rotate anything that was pasted into Slack.
+</Warning>
+
+## Arrange, Act, Assert
+
+**Definition:** *Arrange* sets the world (open the page, seed data). *Act* is the user gesture (fill, click). *Assert* checks an observable outcome (URL, heading, error text).
+
+| Phase | Login example |
+| --- | --- |
+| Arrange | `goto` the login URL; optionally clear cookies |
+| Act | `fill` email and password; `click` Sign in |
+| Assert | dashboard heading is visible; URL includes `/dashboard` |
+
+If you mix them (assert in the middle of filling), failures become "something in login broke" instead of "password field never appeared."
+
+## Async tests in TypeScript
+
+Almost every Playwright call returns a Promise. You **await** navigation, fills, clicks, and assertions that retry.
+
+Core API for this lesson:
+
+| Call | Job |
+| --- | --- |
+| `page.goto(url)` | Navigate (Arrange) |
+| `page.fill(selector, value)` | Type into a field (Act). Prefer locators + `locator.fill` in new code; `page.fill` is the classic tutorial form. |
+| `page.click(selector)` | Click (Act) |
+| `expect(locator).toBeVisible()` | Auto-wait until visible or timeout (Assert) |
+
+Locator-first style (same AAA, more resilient names from the DOM lesson):
+
+```ts
+await page.getByLabel("Email").fill("qa@nimbus.test")
+await page.getByRole("button", { name: "Sign in" }).click()
+await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible()
+```
+
+`page.fill("#email", "qa@nimbus.test")` is acceptable when the id is a stable contract.
+
+## Complete login flow
+
+```ts
+import { test, expect } from "@playwright/test"
+
+test("guest can sign in and see the dashboard", async ({ page }) => {
+  // Arrange
+  await page.goto("/login")
+  await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible()
+
+  // Act
+  await page.fill("#email", "qa@nimbus.test")
+  await page.fill("#password", process.env.QA_PASSWORD ?? "test-only")
+  await page.click('button[type="submit"]')
+
+  // Assert — auto-waits; do not sleep
+  await expect(page).toHaveURL(/\/dashboard/)
+  await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible()
+  await expect(page.getByText("qa@nimbus.test")).toBeVisible()
+})
+```
+
+Negative path (wrong password) is a second test, not an `if` inside the happy path:
+
+```ts
+test("wrong password shows an error and stays on login", async ({ page }) => {
+  await page.goto("/login")
+  await page.fill("#email", "qa@nimbus.test")
+  await page.fill("#password", "not-the-password")
+  await page.click('button[type="submit"]')
+
+  await expect(page.getByRole("alert")).toBeVisible()
+  await expect(page.getByText(/invalid email or password/i)).toBeVisible()
+  await expect(page).toHaveURL(/\/login/)
+})
+```
+
+### Why `expect().toBeVisible()` exists
+
+After Sign in, the dashboard heading is **not** in the DOM on the same tick. The browser is navigating, JS is hydrating, a spinner may show. `toBeVisible()` **retries** until the heading is visible or `expect` timeout (default often 5s, configurable).
+
+`waitForTimeout(5000)` always waits five seconds, even when the heading appeared at 200ms — and still flakes when CI is slower than five seconds.
+
+| Approach | Behavior |
+| --- | --- |
+| `expect(locator).toBeVisible()` | Poll until visible or fail with a useful timeout error |
+| `expect(page).toHaveURL(/dashboard/)` | Poll until the URL matches |
+| `page.waitForTimeout(5000)` | Fixed sleep — slow and still racy |
+
+Actions (`click`, `fill`) also auto-wait for actionability (visible, enabled, stable). You still **assert** the outcome; a click without `expect` is a script, not a test.
+
+## Step-by-step: run it
+
+1. Create `e2e/login.spec.ts` with the happy-path spec above.
+2. Put `QA_PASSWORD` in a local env file that is gitignored.
+3. Run `npx playwright test e2e/login.spec.ts --headed` once to watch AAA.
+4. Fail it on purpose: expect a heading named `Dashbord` (typo). Confirm the assertion error, not a mysterious click timeout.
+5. Optional: paste a trimmed spec into the Automation Playground to check `test()` shape.
+
+```json
+{
+  "spec": "login-happy-path",
+  "arrange": "goto /login",
+  "act": ["fill email", "fill password", "click submit"],
+  "assert": ["url dashboard", "heading visible"]
+}
+```
+
+## Knowledge check
+
+<Quiz
+  title="First Playwright test"
+  question="What is the purpose of an auto-waiting assertion such as expect(locator).toBeVisible()?"
+  options={[
+    "It always sleeps a fixed five seconds even if the element appeared immediately",
+    "It retries until the locator is visible or the expect timeout is reached, which is faster and less flaky than a hard sleep",
+    "It skips the Act step so tests never click",
+    "It only works for GET requests in Postman"
+  ]}
+  correctIndex={1}
+  explanation="toBeVisible polls the UI until the condition is true or time runs out. A fixed sleep is either too short (flake) or too long (slow CI)."
+  questions={[
+    {
+      question: "In Arrange-Act-Assert, filling the password field and clicking Sign in is:",
+      options: [
+        "Arrange only",
+        "Act — the user gestures under test",
+        "Assert — outcomes belong in fill",
+        "A Playwright config file"
+      ],
+      correctAnswer: 1,
+      explanation: "Arrange opens login. Act is fill and click. Assert is dashboard URL, heading, or error alert."
+    },
+    {
+      question: "Which call navigates the browser tab to the login page?",
+      options: [
+        "page.click only",
+        "page.goto with the login path or URL",
+        "expect().toBeVisible with no goto",
+        "Newman collection runner"
+      ],
+      correctAnswer: 1,
+      explanation: "page.goto is Arrange for a UI journey. Then fill, click, and expect."
+    }
+  ]}
+/>
