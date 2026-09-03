@@ -14,6 +14,9 @@ export function LessonCompleteIcon({ href }: { href: string }) {
   }
 
   return (
-    <CheckIcon className="ml-auto size-3.5 text-success" aria-label="Completed" />
+    <CheckIcon
+      className="mt-0.5 ml-auto size-3.5 shrink-0 self-start text-success"
+      aria-label="Completed"
+    />
   )
 }

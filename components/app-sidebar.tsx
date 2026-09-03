@@ -52,57 +52,49 @@ export function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="gap-0.5">
-              {curriculum.map((section) => {
-                const isActive =
-                  pathname === section.href ||
-                  Boolean(
-                    section.category &&
-                      pathname.startsWith(`/courses/${section.category}`)
-                  ) ||
-                  pathname.startsWith(`${section.href}/`)
-
-                return (
-                  <SidebarMenuItem key={section.href}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={pathname === section.href || isActive}
-                      tooltip={section.title}
-                      className="transition-colors duration-200 data-active:bg-sidebar-primary/10 data-active:font-medium data-active:text-sidebar-primary"
-                    >
-                      <Link href={section.href}>
-                        <section.icon />
-                        <span className="flex min-w-0 flex-1 items-center gap-2">
-                          <span className="truncate">{section.title}</span>
-                          {section.difficulty ? (
-                            <DifficultyBadge
-                              difficulty={section.difficulty}
-                              className="ml-auto h-4 px-1.5 text-[10px] group-data-[collapsible=icon]:hidden"
-                            />
-                          ) : null}
-                        </span>
-                      </Link>
-                    </SidebarMenuButton>
-                    {section.items ? (
-                      <SidebarMenuSub className="border-sidebar-border/80">
-                        {section.items.map((topic) => (
-                          <SidebarMenuSubItem key={topic.href}>
-                            <SidebarMenuSubButton
-                              asChild
-                              isActive={pathname === topic.href}
-                              className="transition-colors duration-200 data-active:bg-sidebar-primary/10 data-active:text-sidebar-primary"
-                            >
-                              <Link href={topic.href}>
-                                <span>{topic.title}</span>
-                                <LessonCompleteIcon href={topic.href} />
-                              </Link>
-                            </SidebarMenuSubButton>
-                          </SidebarMenuSubItem>
-                        ))}
-                      </SidebarMenuSub>
-                    ) : null}
-                  </SidebarMenuItem>
-                )
-              })}
+              {curriculum.map((section) => (
+                <SidebarMenuItem key={section.href}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={pathname === section.href}
+                    tooltip={section.title}
+                    className="transition-colors duration-200 data-active:bg-sidebar-primary/10 data-active:font-medium data-active:text-sidebar-primary"
+                  >
+                    <Link href={section.href}>
+                      <section.icon />
+                      <span className="flex min-w-0 flex-1 items-center gap-2">
+                        <span className="truncate">{section.title}</span>
+                        {section.difficulty ? (
+                          <DifficultyBadge
+                            difficulty={section.difficulty}
+                            className="ml-auto h-4 px-1.5 text-[10px] group-data-[collapsible=icon]:hidden"
+                          />
+                        ) : null}
+                      </span>
+                    </Link>
+                  </SidebarMenuButton>
+                  {section.items ? (
+                    <SidebarMenuSub className="mt-1 border-sidebar-border/80 py-1">
+                      {section.items.map((topic) => (
+                        <SidebarMenuSubItem key={topic.href}>
+                          <SidebarMenuSubButton
+                            asChild
+                            isActive={pathname === topic.href}
+                            className="h-auto min-h-7 items-start overflow-visible py-1.5 whitespace-normal [&>span:last-child]:overflow-visible [&>span:last-child]:text-clip [&>span:last-child]:whitespace-normal transition-colors duration-200 data-active:bg-sidebar-primary/10 data-active:text-sidebar-primary"
+                          >
+                            <Link href={topic.href} className="items-start">
+                              <span className="min-w-0 flex-1 leading-snug whitespace-normal">
+                                {topic.title}
+                              </span>
+                              <LessonCompleteIcon href={topic.href} />
+                            </Link>
+                          </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
+                      ))}
+                    </SidebarMenuSub>
+                  ) : null}
+                </SidebarMenuItem>
+              ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
