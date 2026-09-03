@@ -94,9 +94,11 @@ export function FeedbackWidget() {
           reset()
           setOpen(true)
         }}
+        aria-haspopup="dialog"
+        aria-expanded={open}
         className={cn(
           "print:hidden fixed z-40 gap-2 shadow-card",
-          "right-4 bottom-4 md:right-6 md:bottom-6"
+          "right-4 bottom-20 md:right-6 md:bottom-24"
         )}
       >
         <MessageSquarePlusIcon data-icon="inline-start" />

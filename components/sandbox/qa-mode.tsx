@@ -114,6 +114,8 @@ export function QaModeToggle({ className }: { className?: string }) {
       variant={qaMode ? "destructive" : "outline"}
       aria-pressed={qaMode}
       aria-expanded={drawerOpen}
+      aria-haspopup="dialog"
+      aria-label={qaMode ? "Open QA Mode, currently on" : "Open QA Mode"}
       onClick={() => {
         setDrawerOpen(true)
         if (!qaMode) {
@@ -122,7 +124,7 @@ export function QaModeToggle({ className }: { className?: string }) {
       }}
       className={cn("transition-transform duration-200 active:scale-[0.97]", className)}
     >
-      <ScanSearchIcon data-icon="inline-start" />
+      <ScanSearchIcon data-icon="inline-start" aria-hidden />
       QA Mode
       <span
         aria-hidden
@@ -164,11 +166,12 @@ function QaModeDrawer() {
             aria-label="Highlight seeded defects"
             onClick={() => setQaMode(!qaMode)}
             className={cn(
-              "relative h-6 w-11 shrink-0 rounded-full transition-colors",
+              "relative h-6 w-11 shrink-0 rounded-full transition-colors focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
               qaMode ? "bg-destructive" : "bg-muted"
             )}
           >
             <span
+              aria-hidden
               className={cn(
                 "absolute top-0.5 size-5 rounded-full bg-white shadow transition-transform",
                 qaMode ? "translate-x-5" : "translate-x-0.5"

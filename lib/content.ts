@@ -25,6 +25,8 @@ export type LessonFrontmatter = {
   level?: Difficulty | string
   /** Alias for readingTime, in minutes */
   estimatedTime?: number | string
+  /** When true, the body can be gated if monetization is enabled. */
+  isPremium?: boolean
 }
 
 export type Lesson = LessonFrontmatter & {
@@ -65,6 +67,66 @@ function parseCategory(value: unknown, fallback: string) {
   }
 
   return fallback
+}
+
+function parseIsPremium(value: unknown) {
+  return value === true || value === "true"
+}
+
+function isMarkdownParagraph(block: string) {
+  const trimmed = block.trim()
+  if (!trimmed) {
+    return false
+  }
+  if (trimmed.startsWith("#")) {
+    return false
+  }
+  if (trimmed.startsWith("```") || trimmed.startsWith("~~~")) {
+    return false
+  }
+  if (trimmed.startsWith("<")) {
+    return false
+  }
+  if (trimmed.startsWith(">") || trimmed.startsWith("|")) {
+    return false
+  }
+  if (trimmed.startsWith("- ") || trimmed.startsWith("* ") || trimmed.startsWith("+ ")) {
+    return false
+  }
+  if (/^\d+\.\s/.test(trimmed)) {
+    return false
+  }
+
+  return true
+}
+
+/** Visible teaser (through the first paragraph) vs the remaining MDX body. */
+export function splitLessonPreview(content: string) {
+  const normalized = content.replace(/\r\n/g, "\n").trim()
+  if (!normalized) {
+    return { preview: "", remainder: "" }
+  }
+
+  const segments = normalized.split(/\n{2,}/)
+  const preview: string[] = []
+  let index = 0
+
+  for (; index < segments.length; index++) {
+    preview.push(segments[index])
+    if (isMarkdownParagraph(segments[index])) {
+      index += 1
+      break
+    }
+  }
+
+  if (preview.length === 0) {
+    return { preview: normalized, remainder: "" }
+  }
+
+  return {
+    preview: preview.join("\n\n"),
+    remainder: segments.slice(index).join("\n\n").trim(),
+  }
 }
 
 function parseDifficulty(value: unknown): Difficulty | undefined {
@@ -119,6 +181,7 @@ export function getLesson(
       frontmatter.readingTime ?? frontmatter.estimatedTime,
       content
     ),
+    isPremium: parseIsPremium(frontmatter.isPremium),
     content,
   }
 }

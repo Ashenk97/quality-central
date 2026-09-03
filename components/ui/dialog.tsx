@@ -73,9 +73,9 @@ function DialogContent({
               variant="ghost"
               className="absolute top-2 right-2"
               size="icon-sm"
+              aria-label="Close dialog"
             >
-              <XIcon
-              />
+              <XIcon aria-hidden />
               <span className="sr-only">Close</span>
             </Button>
           </DialogPrimitive.Close>

@@ -23,7 +23,7 @@ export default async function CertificatePage() {
 
   return (
     <div className="min-h-svh bg-slate-950 text-slate-100 print:min-h-0 print:bg-slate-950">
-      <header className="print:hidden flex h-14 items-center justify-between border-b border-slate-800 px-4 md:px-8">
+      <header className="print:hidden flex h-14 items-center justify-between border-b border-border px-4 md:px-8">
         <Brand className="text-slate-100 [&_span:last-child]:text-slate-400" />
         <div className="flex items-center gap-2">
           <Button variant="ghost" className="text-slate-200 hover:bg-slate-800" asChild>
@@ -35,7 +35,10 @@ export default async function CertificatePage() {
         </div>
       </header>
 
-      <main className="flex justify-center px-4 py-8 md:px-8 print:p-0">
+      <main
+        id="main-content"
+        className="flex justify-center px-4 py-8 pb-24 md:px-8 print:p-0"
+      >
         <PrintableCertificate
           recipientName={recipientName}
           completedOn={formatCompletionDate(completedOn)}

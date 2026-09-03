@@ -5,6 +5,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 
 import { UserMenu } from "@/components/auth/user-menu"
+import { ProMemberBadge } from "@/components/pro-member-badge"
 import { ModeToggle } from "@/components/mode-toggle"
 import {
   Breadcrumb,
@@ -22,7 +23,13 @@ import {
   type CurriculumSection,
 } from "@/lib/curriculum"
 
-export function LearnHeader({ email }: { email: string | null }) {
+export function LearnHeader({
+  email,
+  isProMember = false,
+}: {
+  email: string | null
+  isProMember?: boolean
+}) {
   const pathname = usePathname()
   const section = findSection(pathname)
   const match = findTopic(pathname)
@@ -58,6 +65,7 @@ export function LearnHeader({ email }: { email: string | null }) {
           })}
         </BreadcrumbList>
       </Breadcrumb>
+      {isProMember ? <ProMemberBadge /> : null}
       <UserMenu email={email} />
       <ModeToggle />
     </header>

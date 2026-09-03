@@ -177,6 +177,13 @@ export const curriculum: CurriculumSection[] = [
         difficulty: "intermediate",
         description: "Send GET/POST requests against a dummy API",
       },
+      {
+        title: "Custom Mock Server",
+        href: "/mock-server",
+        kind: "tool",
+        difficulty: "intermediate",
+        description: "Host your own GET/POST/PUT fixtures for Postman and Playwright",
+      },
     ],
   },
   {

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, type ReactNode } from "react"
+import { useState, type ReactNode } from "react"
 import Link from "next/link"
 import { AwardIcon, CheckIcon } from "lucide-react"
 import { toast } from "sonner"
@@ -48,13 +48,7 @@ export function CapstoneSubmit() {
   const [spec, setSpec] = useState(DEFAULT_CAPSTONE_SPEC)
   const [errors, setErrors] = useState<CapstonePhaseErrors>({})
   const [passed, setPassed] = useState(false)
-  const [unlocked, setUnlocked] = useState(false)
-
-  useEffect(() => {
-    if (loadCapstoneClaim()) {
-      setUnlocked(true)
-    }
-  }, [])
+  const [unlocked, setUnlocked] = useState(() => Boolean(loadCapstoneClaim()))
 
   function submit() {
     const nextErrors = validateCapstone({
@@ -187,7 +181,7 @@ export function CapstoneSubmit() {
         <TabsContent value="sql" className="mt-4 space-y-3">
           <PhaseHint error={errors.sql}>
             Query the mock GENKI orders table. The grader looks for SELECT, FROM,
-            and WHERE order_status = 'Failed'.
+            and WHERE order_status = &apos;Failed&apos;.
           </PhaseHint>
           <Label htmlFor="capstone-sql">SQL</Label>
           <Textarea

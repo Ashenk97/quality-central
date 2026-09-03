@@ -13,7 +13,11 @@ import { cn } from "@/lib/utils"
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
   ssr: false,
   loading: () => (
-    <div className="flex h-full items-center justify-center bg-muted text-sm text-muted-foreground">
+    <div
+      role="status"
+      aria-live="polite"
+      className="flex h-full items-center justify-center bg-muted text-sm text-muted-foreground"
+    >
       Loading editor…
     </div>
   ),
@@ -41,8 +45,14 @@ export function CodeEditor({
   const { resolvedTheme } = useTheme()
   const theme = resolvedTheme === "light" ? QC_LIGHT_THEME : QC_DARK_THEME
 
+  const label = ariaLabel ?? (readOnly ? "Read-only code editor" : "Code editor")
+
   return (
-    <div className={cn("overflow-hidden", className)} aria-label={ariaLabel}>
+    <div
+      role="region"
+      aria-label={label}
+      className={cn("overflow-hidden", className)}
+    >
       <MonacoEditor
         height={height}
         language={language}
@@ -52,9 +62,11 @@ export function CodeEditor({
         beforeMount={defineQcEditorThemes}
         options={{
           readOnly,
+          ariaLabel: label,
+          tabIndex: 0,
           minimap: { enabled: false },
           fontSize: 13,
-          fontFamily: "Geist Mono, ui-monospace, SFMono-Regular, monospace",
+          fontFamily: "JetBrains Mono, ui-monospace, SFMono-Regular, monospace",
           scrollBeyondLastLine: false,
           automaticLayout: true,
           tabSize: 2,

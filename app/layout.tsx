@@ -1,17 +1,23 @@
 import type { Metadata } from "next"
-import { Geist, Geist_Mono } from "next/font/google"
+import { Inter, JetBrains_Mono, Space_Grotesk } from "next/font/google"
 
+import { GridBackground } from "@/components/GridBackground"
 import { Providers } from "@/components/providers"
 
 import "./globals.css"
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
 })
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-space-grotesk",
+  subsets: ["latin"],
+})
+
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains",
   subsets: ["latin"],
 })
 
@@ -28,11 +34,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full`}
+      className={`${inter.variable} ${spaceGrotesk.variable} ${jetbrainsMono.variable} dark h-full`}
       suppressHydrationWarning
     >
-      <body className="min-h-full bg-background text-foreground antialiased">
-        <Providers>{children}</Providers>
+      <body className="relative min-h-full bg-background font-sans text-foreground antialiased">
+        <GridBackground />
+        <div className="relative z-10 min-h-full">
+          <Providers>{children}</Providers>
+        </div>
       </body>
     </html>
   )

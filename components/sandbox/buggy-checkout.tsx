@@ -153,7 +153,7 @@ export function BuggyCheckout() {
               aria-label="Toggle QA Mode"
               title="Toggle QA Mode"
               className={cn(
-                "size-2.5 rounded-full transition-opacity",
+                "size-6 rounded-full transition-opacity focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
                 qaMode
                   ? "bg-destructive opacity-100"
                   : "bg-foreground/40 opacity-70"

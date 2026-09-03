@@ -37,6 +37,28 @@ test.describe("core routing smoke", () => {
     ).toBeVisible()
   })
 
+  test("mock server route redirects or loads without a 500", async ({
+    page,
+  }) => {
+    const response = await page.goto("/mock-server", {
+      waitUntil: "domcontentloaded",
+    })
+    expect(response?.status() ?? 200).toBeLessThan(500)
+    await expect(page).toHaveURL(/\/(mock-server|login)/)
+  })
+
+  test("unknown custom mock slug returns 404", async ({ request }) => {
+    const response = await request.get("/api/custom-mock/does-not-exist-qc")
+    expect([404, 503]).toContain(response.status())
+  })
+
+  test("chat API rejects anonymous interview turns", async ({ request }) => {
+    const response = await request.post("/api/chat", {
+      data: { messages: [], questionId: "vending-machine" },
+    })
+    expect(response.status()).toBe(401)
+  })
+
   test("sandbox loads without uncaught exceptions", async ({ page }) => {
     await gotoWithoutUncaughtExceptions(page, "/sandbox")
     await expect(page).toHaveURL(/\/sandbox/)

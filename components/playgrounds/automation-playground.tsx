@@ -44,7 +44,11 @@ export function AutomationPlayground() {
   }
 
   return (
-    <div className="overflow-hidden rounded-xl ring-1 ring-foreground/10">
+    <div
+      role="region"
+      aria-label="Automation playground"
+      className="overflow-hidden rounded-xl ring-1 ring-foreground/10"
+    >
       <div className="flex flex-wrap items-center justify-between gap-2 border-b bg-card px-3 py-2">
         <div>
           <p className="font-heading text-sm font-semibold">
@@ -71,14 +75,17 @@ export function AutomationPlayground() {
         ariaLabel="Playwright spec"
       />
 
-      <div className="border-t bg-zinc-950 dark:bg-zinc-950">
-        <p className="border-b border-zinc-800 px-3 py-1.5 font-mono text-[10px] tracking-wide text-zinc-400 uppercase">
+      <div className="border-t border-border bg-background">
+        <p className="border-b border-border px-3 py-1.5 font-mono text-[10px] tracking-wide text-muted-foreground uppercase">
           Terminal
         </p>
         <pre
+          role="status"
+          aria-live="polite"
+          aria-label="Simulated test output"
           className={cn(
             "max-h-64 overflow-auto p-3 font-mono text-xs leading-relaxed transition-colors duration-200",
-            passed === false ? "text-red-400" : "text-emerald-300"
+            passed === false ? "text-qa-bug" : "text-qa-success"
           )}
         >
           {output}

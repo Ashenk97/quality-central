@@ -1,13 +1,12 @@
 import type { Config } from "tailwindcss"
 
 /**
- * Design tokens live in `app/globals.css` (`:root` / `.dark` + `@theme`).
- * This file documents the developer-focused palette and is loaded via `@config`.
+ * Design tokens live in `app/globals.css` (`:root` / `.dark` / `html.light` + `@theme`).
  *
- * Neutrals — Slate (light) / Zinc (dark)
- * Primary  — Indigo
- * Success  — Emerald (passed tests, completed modules)
- * Warning  — Amber (warnings, bugs)
+ * Background — #0A0A0A
+ * qa-primary — Electric indigo #6366F1
+ * qa-success — Neon emerald #10B981
+ * qa-bug     — Crimson #F43F5E
  */
 const config = {
   darkMode: "class",
@@ -19,6 +18,27 @@ const config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: [
+          "Inter",
+          "Inter Fallback",
+          "ui-sans-serif",
+          "system-ui",
+          "sans-serif",
+        ],
+        heading: [
+          "Space Grotesk",
+          "Space Grotesk Fallback",
+          "ui-sans-serif",
+          "sans-serif",
+        ],
+        mono: [
+          "JetBrains Mono",
+          "JetBrains Mono Fallback",
+          "ui-monospace",
+          "monospace",
+        ],
+      },
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
@@ -61,6 +81,9 @@ const config = {
         border: "var(--border)",
         input: "var(--input)",
         ring: "var(--ring)",
+        "qa-primary": "var(--qa-primary)",
+        "qa-success": "var(--qa-success)",
+        "qa-bug": "var(--qa-bug)",
         sidebar: {
           DEFAULT: "var(--sidebar)",
           foreground: "var(--sidebar-foreground)",
@@ -78,9 +101,14 @@ const config = {
         sm: "calc(var(--radius) * 0.6)",
       },
       boxShadow: {
-        card: "0 1px 2px oklch(0.208 0.042 265.755 / 4%), 0 8px 24px oklch(0.208 0.042 265.755 / 6%)",
+        card: "0 0 0 1px rgb(255 255 255 / 0.06), 0 8px 32px rgb(0 0 0 / 0.45)",
         "card-hover":
-          "0 1px 2px oklch(0.511 0.262 276.966 / 8%), 0 12px 32px oklch(0.511 0.262 276.966 / 12%)",
+          "0 0 0 1px color-mix(in srgb, var(--qa-primary) 35%, transparent), 0 0 28px color-mix(in srgb, var(--qa-primary) 22%, transparent)",
+        glow: "0 0 24px color-mix(in srgb, var(--qa-primary) 40%, transparent)",
+        "glow-success":
+          "0 0 24px color-mix(in srgb, var(--qa-success) 40%, transparent)",
+        "glow-bug":
+          "0 0 24px color-mix(in srgb, var(--qa-bug) 40%, transparent)",
       },
       transitionDuration: {
         theme: "200ms",

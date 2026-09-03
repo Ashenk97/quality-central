@@ -5,6 +5,8 @@ export type UserRow = {
   email: string
   display_name: string | null
   beta_welcome_seen_at: string | null
+  is_pro_member: boolean
+  stripe_customer_id: string | null
   created_at: string
   updated_at: string
 }
@@ -28,6 +30,42 @@ export type ModuleRow = {
   category: string
   lesson_id: string | null
   sort_order: number
+  created_at: string
+}
+
+export type MockEndpointRow = {
+  id: string
+  user_id: string
+  slug: string
+  method: "GET" | "POST" | "PUT"
+  status_code: number
+  response_body: unknown
+  created_at: string
+  updated_at: string
+}
+
+export type UserBadgeRow = {
+  id: string
+  user_id: string
+  badge_id: string
+  earned_at: string
+}
+
+export type LessonCommentRow = {
+  id: string
+  user_id: string
+  category: string
+  lesson_id: string
+  parent_id: string | null
+  body: string
+  author_name: string
+  vote_count: number
+  created_at: string
+}
+
+export type LessonCommentVoteRow = {
+  comment_id: string
+  user_id: string
   created_at: string
 }
 

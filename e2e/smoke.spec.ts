@@ -53,11 +53,51 @@ test.describe("smoke", () => {
     await expect(page.getByRole("button", { name: "Send Feedback" })).toHaveCount(0)
   })
 
+  test("mock server redirects unauthenticated users to login", async ({
+    page,
+  }) => {
+    await page.goto("/mock-server")
+    await expect(page).toHaveURL(/\/login/)
+    await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible()
+  })
+
+  test("unknown custom mock slug returns 404", async ({ request }) => {
+    const response = await request.get("/api/custom-mock/does-not-exist-qc")
+    expect([404, 503]).toContain(response.status())
+  })
+
+  test("stripe webhook stays hidden when monetization is off", async ({
+    request,
+  }) => {
+    const response = await request.post("/api/webhooks/stripe", {
+      data: { type: "checkout.session.completed" },
+      headers: { "stripe-signature": "t=1,v1=test" },
+    })
+    // NEXT_PUBLIC_ENABLE_MONETIZATION is false in CI / local by default.
+    expect(response.status()).toBe(404)
+  })
+
+  test("chat API requires a signed-in user", async ({ request }) => {
+    const response = await request.post("/api/chat", {
+      data: { messages: [], questionId: "vending-machine" },
+    })
+    expect(response.status()).toBe(401)
+  })
+
   test("lesson page offers Send Feedback", async ({ page }) => {
     await page.goto("/courses/foundation/istqb")
     await expect(
       page.getByRole("heading", { name: "ISTQB Foundation" })
     ).toBeVisible()
+    await expect(
+      page.getByRole("heading", { name: "Error, defect, failure" })
+    ).toBeVisible()
     await expect(page.getByRole("button", { name: "Send Feedback" })).toBeVisible()
+    await expect(page.getByRole("heading", { name: "Discussion" })).toBeVisible()
+    await expect(
+      page
+        .getByRole("link", { name: "Sign in to join the discussion" })
+        .or(page.getByRole("button", { name: "Post question" }))
+    ).toBeVisible()
   })
 })

@@ -1,3 +1,5 @@
+"use client"
+
 import Link from "next/link"
 import {
   ArrowRightIcon,
@@ -16,14 +18,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { StaggerItem, StaggerList } from "@/components/stagger-list"
 import { statusLabel, type ResolvedModule } from "@/lib/catalog"
 import { cn } from "@/lib/utils"
 
 const statusStyles: Record<ResolvedModule["status"], string> = {
-  completed:
-    "border-l-success hover:ring-success/25 hover:shadow-success/10",
-  "in-progress":
-    "border-l-primary hover:ring-primary/25 hover:shadow-primary/5",
+  completed: "border-l-success",
+  "in-progress": "border-l-primary",
   locked: "border-l-border opacity-80",
 }
 
@@ -42,12 +43,8 @@ export function ModuleCard({ module }: { module: ResolvedModule }) {
   return (
     <Card
       data-status={module.status}
-      className={cn(
-        "border-l-2 transition-all duration-200",
-        statusStyles[module.status],
-        !locked &&
-          "hover:-translate-y-0.5 hover:shadow-md"
-      )}
+      interactive={!locked}
+      className={cn("h-full border-l-2", statusStyles[module.status])}
     >
       <CardHeader>
         <div className="flex items-start justify-between gap-3">
@@ -139,10 +136,15 @@ export function ModuleGrid({ modules }: { modules: ResolvedModule[] }) {
   }
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+    <StaggerList
+      key={modules.map((module) => module.id).join("|")}
+      className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3"
+    >
       {modules.map((module) => (
-        <ModuleCard key={module.id} module={module} />
+        <StaggerItem key={module.id} className="h-full">
+          <ModuleCard module={module} />
+        </StaggerItem>
       ))}
-    </div>
+    </StaggerList>
   )
 }

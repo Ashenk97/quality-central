@@ -4,7 +4,11 @@ import { useMemo, useState } from "react"
 import Link from "next/link"
 import { CheckIcon } from "lucide-react"
 
+import { StaggerItem, StaggerList } from "@/components/stagger-list"
+import { ProMemberBadge } from "@/components/pro-member-badge"
 import { DailyChallenge } from "@/components/DailyChallenge"
+import { MockInterviewer } from "@/components/MockInterviewer"
+import { SkillTree } from "@/components/SkillTree"
 import { CatalogFilterTabs } from "@/components/catalog/catalog-tabs"
 import { ModuleGrid } from "@/components/catalog/module-card"
 import { DifficultyBadge } from "@/components/difficulty-badge"
@@ -32,7 +36,11 @@ import {
 } from "@/lib/sandbox-defects"
 import { cn } from "@/lib/utils"
 
-export function DashboardProgress() {
+export function DashboardProgress({
+  isProMember = false,
+}: {
+  isProMember?: boolean
+}) {
   const {
     ready,
     isComplete,
@@ -105,13 +113,18 @@ export function DashboardProgress() {
       />
 
       <div className="relative space-y-2">
-        <h1 className="font-heading text-2xl font-semibold tracking-tight">
-          Dashboard
-        </h1>
+        <div className="flex flex-wrap items-center gap-2.5">
+          <h1 className="font-heading text-2xl font-semibold tracking-tight">
+            Dashboard
+          </h1>
+          {isProMember ? <ProMemberBadge /> : null}
+        </div>
         <p className="text-muted-foreground">{persistenceHint}</p>
       </div>
 
       <DailyChallenge />
+      <SkillTree />
+      <MockInterviewer />
 
       <div className="relative grid gap-4 lg:grid-cols-4 sm:grid-cols-2">
         <Card className="lg:col-span-1">
@@ -176,19 +189,20 @@ export function DashboardProgress() {
         />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-4 sm:grid-cols-2">
+      <StaggerList className="grid gap-4 lg:grid-cols-4 sm:grid-cols-2">
         {tracks.map((track) => (
+          <StaggerItem key={track.filterId} className="h-full">
           <button
-            key={track.filterId}
             type="button"
             aria-pressed={filter === track.filterId}
             onClick={() => setFilter(track.filterId)}
-            className="text-left"
+            className="h-full w-full text-left"
           >
             <Card
+              interactive
               className={cn(
-                "h-full transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:shadow-success/10 hover:ring-success/20",
-                filter === track.filterId && "ring-success/30"
+                "h-full",
+                filter === track.filterId && "border-qa-primary/50"
               )}
             >
               <CardHeader>
@@ -231,8 +245,9 @@ export function DashboardProgress() {
               </CardContent>
             </Card>
           </button>
+          </StaggerItem>
         ))}
-      </div>
+      </StaggerList>
 
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

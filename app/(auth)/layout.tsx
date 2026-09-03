@@ -14,7 +14,10 @@ export default function AuthLayout({
         <Brand />
         <ModeToggle />
       </header>
-      <main className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-12">
+      <main
+        id="main-content"
+        className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-12 pb-24"
+      >
         {children}
       </main>
     </div>

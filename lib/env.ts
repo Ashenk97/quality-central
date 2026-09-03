@@ -5,6 +5,9 @@
  *   NEXT_PUBLIC_SUPABASE_URL
  *   NEXT_PUBLIC_SUPABASE_ANON_KEY
  *   NEXT_PUBLIC_SITE_URL   (canonical origin, e.g. https://quality-central.vercel.app)
+ *   NEXT_PUBLIC_ENABLE_MONETIZATION  (hidden Pro tier; only "true" enables it)
+ *   STRIPE_SECRET_KEY / STRIPE_WEBHOOK_SECRET / SUPABASE_SERVICE_ROLE_KEY
+ *   (server-only; required to grant/revoke Pro via Stripe webhooks)
  *
  * NEXT_PUBLIC_* values are inlined at build time. After changing them in
  * Vercel, trigger a new deployment so the client bundle picks them up.
@@ -43,6 +46,37 @@ export function getSupabaseAnonKey() {
 
 export function isSupabaseConfigured() {
   return Boolean(getSupabaseUrl() && getSupabaseAnonKey())
+}
+
+export function isMonetizationEnabled() {
+  return process.env.NEXT_PUBLIC_ENABLE_MONETIZATION === "true"
+}
+
+export function getStripeSecretKey() {
+  return process.env.STRIPE_SECRET_KEY?.trim() || null
+}
+
+export function getStripePublishableKey() {
+  return process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY?.trim() || null
+}
+
+export function getStripeProPriceId() {
+  return process.env.STRIPE_PRO_PRICE_ID?.trim() || null
+}
+
+export function getStripeWebhookSecret() {
+  return process.env.STRIPE_WEBHOOK_SECRET?.trim() || null
+}
+
+export function getSupabaseServiceRoleKey() {
+  return process.env.SUPABASE_SERVICE_ROLE_KEY?.trim() || null
+}
+
+export function isAiGatewayConfigured() {
+  return Boolean(
+    process.env.AI_GATEWAY_API_KEY?.trim() ||
+      process.env.VERCEL_OIDC_TOKEN?.trim()
+  )
 }
 
 export function getSupabaseEnv() {

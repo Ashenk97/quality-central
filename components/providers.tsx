@@ -2,6 +2,9 @@
 
 import { ThemeProvider } from "next-themes"
 
+import { GamificationWatcher } from "@/components/gamification-watcher"
+import { SiteBugReporter } from "@/components/site-bug-reporter"
+import { SkipToContent } from "@/components/skip-to-content"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { Toaster } from "@/components/ui/sonner"
 import { ProgressProvider } from "@/lib/progress"
@@ -14,10 +17,14 @@ export function Providers({ children }: { children: React.ReactNode }) {
       enableSystem
       disableTransitionOnChange
       storageKey="qc-theme"
+      value={{ light: "light", dark: "dark" }}
     >
       <TooltipProvider delayDuration={0}>
         <ProgressProvider>
+          <SkipToContent />
           {children}
+          <SiteBugReporter />
+          <GamificationWatcher />
           <Toaster position="top-right" closeButton />
         </ProgressProvider>
       </TooltipProvider>

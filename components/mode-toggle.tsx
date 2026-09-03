@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useSyncExternalStore } from "react"
 import { MonitorIcon, MoonIcon, SunIcon } from "lucide-react"
 import { useTheme } from "next-themes"
 
@@ -16,11 +16,11 @@ import {
 
 export function ModeToggle() {
   const { theme, setTheme, resolvedTheme } = useTheme()
-  const [mounted, setMounted] = useState(false)
-
-  useEffect(() => {
-    setMounted(true)
-  }, [])
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  )
 
   const current = mounted ? (theme ?? "system") : "system"
   const isDark = mounted && resolvedTheme === "dark"
@@ -51,15 +51,15 @@ export function ModeToggle() {
         </DropdownMenuLabel>
         <DropdownMenuRadioGroup value={current} onValueChange={setTheme}>
           <DropdownMenuRadioItem value="light" className="gap-2">
-            <SunIcon className="size-3.5 text-warning" />
+            <SunIcon className="size-3.5 text-warning" aria-hidden />
             Light
           </DropdownMenuRadioItem>
           <DropdownMenuRadioItem value="dark" className="gap-2">
-            <MoonIcon className="size-3.5 text-primary" />
+            <MoonIcon className="size-3.5 text-primary" aria-hidden />
             Dark
           </DropdownMenuRadioItem>
           <DropdownMenuRadioItem value="system" className="gap-2">
-            <MonitorIcon className="size-3.5 text-muted-foreground" />
+            <MonitorIcon className="size-3.5 text-muted-foreground" aria-hidden />
             System
           </DropdownMenuRadioItem>
         </DropdownMenuRadioGroup>

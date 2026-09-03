@@ -3,7 +3,12 @@ export const SIGNUP_PATH = "/signup"
 export const DEFAULT_AUTH_NEXT = "/dashboard"
 
 export function isProtectedPath(pathname: string) {
-  return pathname === "/dashboard" || pathname.startsWith("/dashboard/")
+  return (
+    pathname === "/dashboard" ||
+    pathname.startsWith("/dashboard/") ||
+    pathname === "/mock-server" ||
+    pathname.startsWith("/mock-server/")
+  )
 }
 
 export function isAuthPath(pathname: string) {

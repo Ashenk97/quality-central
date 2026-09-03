@@ -42,6 +42,9 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Accessibility lint
+        run: npm run lint:a11y
+
       - name: Typecheck (Next.js build)
         run: npm run build
 

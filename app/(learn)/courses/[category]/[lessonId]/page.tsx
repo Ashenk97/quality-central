@@ -1,34 +1,24 @@
 import { Suspense } from "react"
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
-import {
-  MDXRemote,
-  type MDXRemoteOptions,
-} from "next-mdx-remote-client/rsc"
-import remarkGfm from "remark-gfm"
 import { ClockIcon } from "lucide-react"
 
+import { LessonComments } from "@/components/LessonComments"
 import { MarkCompleteButton } from "@/components/mark-complete-button"
-import { MDXWrapper } from "@/components/MDXWrapper"
-import { mdxComponents } from "@/components/mdx/mdx-components"
-import { MdxError } from "@/components/mdx/mdx-error"
+import { PremiumLessonBody } from "@/components/premium-lesson-body"
 import { DifficultyBadge } from "@/components/difficulty-badge"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { getLesson, getLessonParams } from "@/lib/content"
 import { findTopic } from "@/lib/curriculum"
+import { getStripeProPriceId } from "@/lib/env"
+import { resolvePremiumGate } from "@/lib/premium"
 
 type LessonPageProps = {
   params: Promise<{
     category: string
     lessonId: string
   }>
-}
-
-const mdxOptions: MDXRemoteOptions = {
-  mdxOptions: {
-    remarkPlugins: [remarkGfm],
-  },
 }
 
 export async function generateStaticParams() {
@@ -62,6 +52,8 @@ export default async function LessonPage({ params }: LessonPageProps) {
   const topic = findTopic(`/courses/${category}/${lessonId}`)
   const difficulty =
     lesson.difficulty ?? topic?.topic.difficulty ?? topic?.section.difficulty
+  const gate = await resolvePremiumGate(lesson.isPremium === true)
+  const lessonHref = `/courses/${category}/${lessonId}`
 
   return (
     <article className="mx-auto flex w-full max-w-3xl flex-col gap-8">
@@ -85,17 +77,19 @@ export default async function LessonPage({ params }: LessonPageProps) {
       </header>
 
       <Suspense fallback={<LessonBodySkeleton />}>
-        <MDXWrapper>
-          <MDXRemote
-            source={lesson.content}
-            components={mdxComponents}
-            options={mdxOptions}
-            onError={MdxError}
-          />
-        </MDXWrapper>
+        <PremiumLessonBody
+          content={lesson.content}
+          gated={gate.gated}
+          signedIn={gate.signedIn}
+          priceId={getStripeProPriceId()}
+          nextPath={lessonHref}
+        />
       </Suspense>
 
-      <MarkCompleteButton category={category} lessonId={lessonId} />
+      {gate.gated ? null : (
+        <MarkCompleteButton category={category} lessonId={lessonId} />
+      )}
+      <LessonComments category={category} lessonId={lessonId} />
     </article>
   )
 }

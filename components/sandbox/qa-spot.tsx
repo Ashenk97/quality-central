@@ -24,6 +24,8 @@ export function QaSpot({
     <div
       id={sandboxDefectAnchor(defectId)}
       data-sandbox-spot={defectId}
+      role={active ? "region" : undefined}
+      aria-label={active ? `${id}: ${title}` : undefined}
       className={cn(
         "relative scroll-mt-24",
         active && "rounded-lg ring-2 ring-destructive ring-offset-2 ring-offset-background",

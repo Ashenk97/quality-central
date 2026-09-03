@@ -64,32 +64,38 @@ export function Warning({
 }
 
 export const mdxTypography = {
-  h1: ({ className, ...props }) => (
+  h1: ({ className, children, ...props }) => (
     <h1
       className={cn(
         "font-heading text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-50",
         className
       )}
       {...props}
-    />
+    >
+      {children}
+    </h1>
   ),
-  h2: ({ className, ...props }) => (
+  h2: ({ className, children, ...props }) => (
     <h2
       className={cn(
         "mt-10 scroll-mt-24 border-b border-indigo-500/15 pb-2 font-heading text-xl font-semibold tracking-tight text-slate-900 dark:text-slate-50",
         className
       )}
       {...props}
-    />
+    >
+      {children}
+    </h2>
   ),
-  h3: ({ className, ...props }) => (
+  h3: ({ className, children, ...props }) => (
     <h3
       className={cn(
         "mt-6 font-heading text-lg font-semibold tracking-tight text-indigo-800 dark:text-indigo-200",
         className
       )}
       {...props}
-    />
+    >
+      {children}
+    </h3>
   ),
   p: ({ className, ...props }) => (
     <p
@@ -180,7 +186,7 @@ export const mdxTypography = {
     />
   ),
   table: ({ className, ...props }) => (
-    <div className="my-6 overflow-x-auto rounded-xl border border-slate-200 dark:border-white/10">
+    <div className="my-6 overflow-x-auto rounded-xl border border-border">
       <table
         className={cn("w-full text-left text-sm text-slate-700 dark:text-slate-300", className)}
         {...props}
@@ -204,7 +210,7 @@ export const mdxTypography = {
   ),
   td: ({ className, ...props }) => (
     <td
-      className={cn("border-t border-slate-200 px-3 py-2 dark:border-white/10", className)}
+      className={cn("border-t border-border px-3 py-2", className)}
       {...props}
     />
   ),
