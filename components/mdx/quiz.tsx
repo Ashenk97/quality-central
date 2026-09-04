@@ -42,12 +42,14 @@ export function Quiz(props: QuizProps) {
       saveQuizScore(category, lessonId, scored.percent)
     }
     if (scored.percent >= passingScore) {
-      toast.success(`Quiz passed · ${scored.percent}%`, {
-        description: `${scored.correctCount} of ${questions.length} correct.`,
+      toast.success("Quiz passed", {
+        description: `${scored.percent}% · ${scored.correctCount} of ${questions.length} correct.`,
+        id: "quiz-result",
       })
     } else {
-      toast.warning(`Score ${scored.percent}%`, {
-        description: `Passing score is ${passingScore}%. Try again when you are ready.`,
+      toast.warning("Below passing score", {
+        description: `${scored.percent}% so far · need ${passingScore}% to pass.`,
+        id: "quiz-result",
       })
     }
   }

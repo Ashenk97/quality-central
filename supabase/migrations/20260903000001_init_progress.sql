@@ -1,8 +1,4 @@
 -- Quality Central progress schema (Supabase / PostgreSQL)
--- Tables: users, modules, user_progress
---
--- When Supabase Auth is enabled, point users.id at auth.users(id):
---   id uuid primary key references auth.users(id) on delete cascade
 
 create table if not exists public.users (
   id uuid primary key default gen_random_uuid(),
@@ -12,9 +8,6 @@ create table if not exists public.users (
   updated_at timestamptz not null default now()
 );
 
--- Curriculum units. Track values match the three learning tracks:
--- Manual (foundation), API, Automation.
--- Lesson rows also store category + lesson_id for /courses/[category]/[lessonId].
 create table if not exists public.modules (
   id uuid primary key default gen_random_uuid(),
   slug text not null unique,

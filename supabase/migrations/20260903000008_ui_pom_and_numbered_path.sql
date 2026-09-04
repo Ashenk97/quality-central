@@ -1,5 +1,4 @@
 -- Numbered UI path: DOM, first Playwright spec, Page Object Model.
--- Existing intro / old DOM / frameworks / first-test slugs shift later.
 
 insert into public.modules (slug, title, description, track, category, lesson_id, sort_order)
 values

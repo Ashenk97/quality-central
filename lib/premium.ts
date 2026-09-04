@@ -41,15 +41,10 @@ export async function getProMembership() {
   }
 }
 
-/** Pro badge / pricing UI only when monetization is explicitly enabled. */
 export function shouldSurfaceProUi(isProMember: boolean) {
   return isMonetizationEnabled() && isProMember
 }
 
-/**
- * Profile fetch for chrome that shows Pro. Returns false when the feature
- * flag is off so badges and checkout entry points stay completely hidden.
- */
 export async function getVisibleProMembership() {
   if (!isMonetizationEnabled()) {
     return {

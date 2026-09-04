@@ -1,7 +1,4 @@
 -- Beta feedback inbox + first-run welcome flag.
--- Feedback inserts are allowed for signed-in learners (own user_id)
--- and anonymous testers (user_id null). Rows are readable only by
--- the author; operators use the Supabase dashboard / service role.
 
 alter table public.users
   add column if not exists beta_welcome_seen_at timestamptz;

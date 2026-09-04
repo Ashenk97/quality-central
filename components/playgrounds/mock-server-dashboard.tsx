@@ -128,6 +128,7 @@ export function MockServerDashboard() {
       ])
       toast.success("Mock endpoint saved", {
         description: `${saved.method} ${mockEndpointPath(saved.slug)} → ${saved.statusCode}`,
+        id: "mock-endpoint-save",
       })
     } catch (saveError) {
       const message =
@@ -135,7 +136,10 @@ export function MockServerDashboard() {
           ? saveError.message
           : "Could not save the endpoint."
       setError(message)
-      toast.error(message)
+      toast.error("Save failed", {
+        description: message,
+        id: "mock-endpoint-save",
+      })
     } finally {
       setSaving(false)
     }
@@ -147,20 +151,28 @@ export function MockServerDashboard() {
       setEndpoints((current) =>
         current.filter((item) => item.id !== endpoint.id)
       )
-      toast.message(`Removed ${endpoint.method} /${endpoint.slug}`)
+      toast.message("Endpoint removed", {
+        description: `${endpoint.method} /${endpoint.slug}`,
+        id: "mock-endpoint-delete",
+      })
     } catch (deleteError) {
-      toast.error(
-        deleteError instanceof Error
-          ? deleteError.message
-          : "Could not delete the endpoint."
-      )
+      toast.error("Delete failed", {
+        description:
+          deleteError instanceof Error
+            ? deleteError.message
+            : "Could not delete the endpoint.",
+        id: "mock-endpoint-delete",
+      })
     }
   }
 
   function copyUrl(endpoint: MockEndpoint) {
     const url = `${origin}${mockEndpointPath(endpoint.slug)}`
     void navigator.clipboard.writeText(url)
-    toast.success("Copied live URL")
+    toast.success("URL copied", {
+      description: url,
+      id: "mock-endpoint-copy",
+    })
   }
 
   return (

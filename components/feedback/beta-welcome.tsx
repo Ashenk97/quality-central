@@ -40,7 +40,6 @@ export function BetaWelcome() {
       try {
         await getLearner(client)
       } catch {
-        // Welcome can still use localStorage if the profile row is delayed.
       }
 
       const seen = await hasSeenBetaWelcome(user.id)

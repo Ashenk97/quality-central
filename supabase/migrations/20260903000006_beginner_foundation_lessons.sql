@@ -1,6 +1,4 @@
--- Zero-knowledge Foundation path first:
--- intro, test design, bug life cycle, agile (1–4),
--- then ISTQB, SDLC, STLC, Manual QA (5–8).
+-- Foundation beginner path (intro → Manual QA).
 
 insert into public.modules (slug, title, description, track, category, lesson_id, sort_order)
 values

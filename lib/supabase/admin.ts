@@ -4,7 +4,6 @@ import { createClient } from "@supabase/supabase-js"
 
 import { getSupabaseServiceRoleKey, getSupabaseUrl } from "@/lib/env"
 
-/** Service-role client for webhooks. Bypasses RLS; never import from the browser. */
 export function createSupabaseAdminClient() {
   const url = getSupabaseUrl()
   const serviceRoleKey = getSupabaseServiceRoleKey()

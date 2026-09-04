@@ -78,7 +78,6 @@ export function BuggyCheckout() {
     event.preventDefault()
     const email = String(new FormData(event.currentTarget).get("email") ?? "")
 
-    // Seeded BUG-02: when validationBypass is true there is no JS check.
     if (jsEmailBlocksSubmit(defects.validationBypass, email)) {
       setEmailError("Enter an email address.")
       return

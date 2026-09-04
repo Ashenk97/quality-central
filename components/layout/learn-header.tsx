@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation"
 
 import { UserMenu } from "@/components/auth/user-menu"
 import { ProMemberBadge } from "@/components/pro-member-badge"
-import { ModeToggle } from "@/components/mode-toggle"
+import { ModeToggle } from "@/components/layout/mode-toggle"
 import {
   Breadcrumb,
   BreadcrumbItem,

@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 
-import { MockServerDashboard } from "@/components/mock-server-dashboard"
+import { MockServerDashboard } from "@/components/playgrounds/mock-server-dashboard"
 import { requireUser } from "@/lib/auth/session"
 
 export const metadata: Metadata = {

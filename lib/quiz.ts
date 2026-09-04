@@ -1,14 +1,12 @@
 export type QuizQuestion = {
   question: string
   options: string[]
-  /** Zero-based index, or the exact option text */
   correctAnswer: number | string
   explanation: string
 }
 
 export type QuizProps = {
   questions?: QuizQuestion[] | string[]
-  /** Single-question authoring: used when `questions` is omitted */
   question?: string
   options?: string[] | string[][]
   correctIndex?: number

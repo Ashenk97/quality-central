@@ -115,6 +115,9 @@ export async function clearRemoteBadges(client: SupabaseClient, userId: string) 
     .eq("user_id", userId)
 
   if (error) {
-    throw error
+    // Missing DELETE policies must not block a progress reset.
+    return false
   }
+
+  return true
 }

@@ -73,7 +73,6 @@ test.describe("smoke", () => {
       data: { type: "checkout.session.completed" },
       headers: { "stripe-signature": "t=1,v1=test" },
     })
-    // NEXT_PUBLIC_ENABLE_MONETIZATION is false in CI / local by default.
     expect(response.status()).toBe(404)
   })
 

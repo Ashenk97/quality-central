@@ -1,5 +1,4 @@
 -- Hidden Pro tier: membership flag + Stripe customer id.
--- is_pro_member is server-only (webhooks / service role). Clients cannot flip it.
 
 alter table public.users
   add column if not exists is_pro_member boolean not null default false,

@@ -12,12 +12,17 @@ concurrency:
 
 permissions:
   contents: read
+  pull-requests: read
 
 jobs:
   quality:
     name: Lint, build, and smoke tests
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    # Fail closed if someone weakens the workflow on a fork PR later.
+    permissions:
+      contents: read
+      pull-requests: read
 
     env:
       NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3000

@@ -1,5 +1,4 @@
 -- Numbered API Testing and UI Automation beginner path (sort 1–4).
--- Existing rest / http-methods / postman / frameworks / dom shift later.
 
 insert into public.modules (slug, title, description, track, category, lesson_id, sort_order)
 values

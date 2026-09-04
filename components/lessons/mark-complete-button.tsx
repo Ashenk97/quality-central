@@ -31,14 +31,18 @@ export function MarkCompleteButton({
 
   function completeLesson() {
     markComplete(category, lessonId)
-    toast.success("Lesson marked complete", {
-      description: "Your progress is saved on this path.",
+    toast.success("Lesson complete", {
+      description: "Progress saved on this path.",
+      id: `lesson-complete-${category}-${lessonId}`,
     })
   }
 
   function reopenLesson() {
     markIncomplete(category, lessonId)
-    toast.message("Lesson marked incomplete")
+    toast.message("Lesson reopened", {
+      description: "Marked incomplete so you can work through it again.",
+      id: `lesson-incomplete-${category}-${lessonId}`,
+    })
   }
 
   return (

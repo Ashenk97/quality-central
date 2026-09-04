@@ -1,13 +1,5 @@
 import type { Config } from "tailwindcss"
 
-/**
- * Design tokens live in `app/globals.css` (`:root` / `.dark` / `html.light` + `@theme`).
- *
- * Background — #0A0A0A
- * qa-primary — Electric indigo #6366F1
- * qa-success — Neon emerald #10B981
- * qa-bug     — Crimson #F43F5E
- */
 const config = {
   darkMode: "class",
   content: [

@@ -3,8 +3,8 @@
 import { ThemeProvider } from "next-themes"
 
 import { GamificationWatcher } from "@/components/gamification-watcher"
-import { SiteBugReporter } from "@/components/site-bug-reporter"
-import { SkipToContent } from "@/components/skip-to-content"
+import { SiteBugReporter } from "@/components/feedback/site-bug-reporter"
+import { SkipToContent } from "@/components/layout/skip-to-content"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { Toaster } from "@/components/ui/sonner"
 import { ProgressProvider } from "@/lib/progress"

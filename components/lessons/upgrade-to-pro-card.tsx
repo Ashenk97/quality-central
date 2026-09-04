@@ -28,7 +28,10 @@ export function UpgradeToProCard({
     }
 
     if (!priceId) {
-      toast.error("Pro checkout is not configured yet.")
+      toast.error("Checkout unavailable", {
+        description: "Pro pricing is not configured for this environment yet.",
+        id: "pro-checkout",
+      })
       return
     }
 
@@ -37,7 +40,10 @@ export function UpgradeToProCard({
     setPending(false)
 
     if (!result.ok) {
-      toast.error(result.message)
+      toast.error("Checkout failed", {
+        description: result.message,
+        id: "pro-checkout",
+      })
       return
     }
 
@@ -46,7 +52,10 @@ export function UpgradeToProCard({
       return
     }
 
-    toast.error("Checkout did not return a URL.")
+    toast.error("Checkout failed", {
+      description: "No payment page was returned. Try again in a moment.",
+      id: "pro-checkout",
+    })
   }
 
   return (

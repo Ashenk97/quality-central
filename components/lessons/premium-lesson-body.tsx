@@ -4,8 +4,8 @@ import {
 } from "next-mdx-remote-client/rsc"
 import remarkGfm from "remark-gfm"
 
-import { UpgradeToProCard } from "@/components/upgrade-to-pro-card"
-import { MDXWrapper } from "@/components/MDXWrapper"
+import { UpgradeToProCard } from "@/components/lessons/upgrade-to-pro-card"
+import { MDXWrapper } from "@/components/mdx/mdx-wrapper"
 import { mdxComponents } from "@/components/mdx/mdx-components"
 import { MdxError } from "@/components/mdx/mdx-error"
 import { splitLessonPreview } from "@/lib/content"

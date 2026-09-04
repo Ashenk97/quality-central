@@ -1,8 +1,8 @@
 import type { Metadata } from "next"
 import { Inter, JetBrains_Mono, Space_Grotesk } from "next/font/google"
 
-import { GridBackground } from "@/components/GridBackground"
-import { Providers } from "@/components/providers"
+import { GridBackground } from "@/components/layout/grid-background"
+import { Providers } from "@/components/layout/providers"
 
 import "./globals.css"
 

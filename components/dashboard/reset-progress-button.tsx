@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { RotateCcwIcon } from "lucide-react"
 import { toast } from "sonner"
 
@@ -17,6 +17,8 @@ import {
 } from "@/components/ui/dialog"
 import { useProgress } from "@/lib/progress"
 
+const RESET_TOAST_KEY = "quality-central.reset_toast"
+
 export function ResetProgressButton() {
   const { resetAllProgress, entries } = useProgress()
   const [open, setOpen] = useState(false)
@@ -26,21 +28,48 @@ export function ResetProgressButton() {
     (entry) => entry.completed || entry.quizScore != null
   )
 
+  useEffect(() => {
+    try {
+      const pendingToast = window.sessionStorage.getItem(RESET_TOAST_KEY)
+      if (!pendingToast) {
+        return
+      }
+      window.sessionStorage.removeItem(RESET_TOAST_KEY)
+      toast.success("Progress reset", {
+        description: "You're back at the start of the learning path.",
+        id: "progress-reset",
+      })
+    } catch {
+      // sessionStorage can be blocked in private mode
+    }
+  }, [])
+
   async function onConfirm() {
+    if (pending) {
+      return
+    }
+
     setPending(true)
     try {
       await resetAllProgress()
-      toast.success("Progress reset", {
-        description: "You can start the learning path from the beginning.",
-      })
       setOpen(false)
-      window.location.reload()
+      try {
+        window.sessionStorage.setItem(RESET_TOAST_KEY, "1")
+      } catch {
+        toast.success("Progress reset", {
+          description: "You're back at the start of the learning path.",
+          id: "progress-reset",
+        })
+      }
+      window.location.assign("/dashboard")
     } catch (error) {
-      toast.error("Could not reset progress", {
-        description:
-          error instanceof Error
-            ? error.message
-            : "Try again in a moment.",
+      const detail =
+        error instanceof Error && error.message.trim()
+          ? error.message
+          : "Check your connection and try again."
+      toast.error("Reset didn't finish", {
+        description: detail,
+        id: "progress-reset-error",
       })
       setPending(false)
     }
