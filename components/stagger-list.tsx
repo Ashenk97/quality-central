@@ -34,8 +34,13 @@ export function StaggerList({
     <motion.div
       className={className}
       variants={listVariants}
-      initial={reduceMotion ? false : "hidden"}
+      // The initial variant has to be the same on the server and on the first
+      // client render, so reduced motion collapses the timing instead.
+      initial="hidden"
       animate="show"
+      transition={
+        reduceMotion ? { staggerChildren: 0, delayChildren: 0 } : undefined
+      }
     >
       {children}
     </motion.div>
@@ -49,8 +54,14 @@ export function StaggerItem({
   className?: string
   children: React.ReactNode
 }) {
+  const reduceMotion = useReducedMotion()
+
   return (
-    <motion.div className={className} variants={itemVariants}>
+    <motion.div
+      className={className}
+      variants={itemVariants}
+      transition={reduceMotion ? { duration: 0 } : undefined}
+    >
       {children}
     </motion.div>
   )

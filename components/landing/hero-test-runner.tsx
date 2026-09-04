@@ -191,9 +191,13 @@ export function HeroTestRunner() {
           {visible.map(({ index, line }) => (
             <motion.div
               key={index}
-              initial={reduceMotion ? false : { opacity: 0, y: 6 }}
+              initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.22, ease: "easeOut" }}
+              transition={
+                reduceMotion
+                  ? { duration: 0 }
+                  : { duration: 0.22, ease: "easeOut" }
+              }
               className="truncate"
             >
               <LineContent line={line} />
