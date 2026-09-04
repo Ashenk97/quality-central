@@ -36,38 +36,40 @@ export function LearnHeader({
   const crumbs = buildCrumbs(pathname, section, match?.topic.title)
 
   return (
-    <header className="flex h-14 shrink-0 items-center gap-2 border-b border-border/80 bg-background/80 px-4 backdrop-blur-md">
-      <SidebarTrigger className="-ml-1" />
-      <Separator orientation="vertical" className="mr-2 h-4" />
-      <Breadcrumb className="min-w-0 flex-1">
-        <BreadcrumbList>
-          {crumbs.map((crumb, index) => {
-            const isLast = index === crumbs.length - 1
+    <header className="shrink-0 border-b border-border/80 bg-background/80 pt-[env(safe-area-inset-top,0px)] backdrop-blur-md">
+      <div className="flex h-14 items-center gap-2 px-4">
+        <SidebarTrigger className="-ml-1" />
+        <Separator orientation="vertical" className="mr-2 h-4" />
+        <Breadcrumb className="min-w-0 flex-1">
+          <BreadcrumbList>
+            {crumbs.map((crumb, index) => {
+              const isLast = index === crumbs.length - 1
 
-            return (
-              <Fragment key={crumb.href}>
-                {index > 0 ? <BreadcrumbSeparator /> : null}
-                <BreadcrumbItem className="min-w-0">
-                  {isLast ? (
-                    <BreadcrumbPage className="truncate">
-                      {crumb.label}
-                    </BreadcrumbPage>
-                  ) : (
-                    <BreadcrumbLink asChild>
-                      <Link href={crumb.href} className="truncate">
+              return (
+                <Fragment key={crumb.href}>
+                  {index > 0 ? <BreadcrumbSeparator /> : null}
+                  <BreadcrumbItem className="min-w-0">
+                    {isLast ? (
+                      <BreadcrumbPage className="truncate">
                         {crumb.label}
-                      </Link>
-                    </BreadcrumbLink>
-                  )}
-                </BreadcrumbItem>
-              </Fragment>
-            )
-          })}
-        </BreadcrumbList>
-      </Breadcrumb>
-      {isProMember ? <ProMemberBadge /> : null}
-      <UserMenu email={email} />
-      <ModeToggle />
+                      </BreadcrumbPage>
+                    ) : (
+                      <BreadcrumbLink asChild>
+                        <Link href={crumb.href} className="truncate">
+                          {crumb.label}
+                        </Link>
+                      </BreadcrumbLink>
+                    )}
+                  </BreadcrumbItem>
+                </Fragment>
+              )
+            })}
+          </BreadcrumbList>
+        </Breadcrumb>
+        {isProMember ? <ProMemberBadge /> : null}
+        <UserMenu email={email} />
+        <ModeToggle />
+      </div>
     </header>
   )
 }
