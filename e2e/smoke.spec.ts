@@ -4,7 +4,9 @@ test.describe("smoke", () => {
   test("home introduces the learning hub", async ({ page }) => {
     await page.goto("/")
     await expect(
-      page.getByRole("heading", { name: /Zero to Advanced QA Engineering/i })
+      page.getByRole("heading", {
+        name: /Write tests that survive production/i,
+      })
     ).toBeVisible()
     await expect(page.getByRole("link", { name: "Sign in" })).toBeVisible()
   })
