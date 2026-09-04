@@ -36,6 +36,36 @@ test.describe("smoke", () => {
     await expect(curriculum.getByRole("link", { name: /^View / })).toHaveCount(0)
   })
 
+  test("home previews what a sign-in unlocks", async ({ page }) => {
+    await page.goto("/")
+
+    const features = page.locator("#features")
+    await expect(
+      features.getByRole("heading", { name: /What you unlock when you sign in/i })
+    ).toBeVisible()
+
+    for (const name of [
+      /Your progress dashboard/i,
+      /A skill tree that gates itself/i,
+      /Daily challenge/i,
+      /The Sandbox/i,
+      /Live playgrounds/i,
+      /AI mock interviewer/i,
+      /Capstone and certificate/i,
+    ]) {
+      await expect(features.getByRole("heading", { name })).toBeVisible()
+    }
+
+    // The showcase describes the app rather than linking into it.
+    await expect(features.getByRole("link")).toHaveCount(0)
+
+    // Counts are derived from the curriculum, so they should never render empty.
+    await expect(page.getByText("Guided lessons")).toBeVisible()
+    await expect(
+      page.getByRole("link", { name: /Create a free account/i })
+    ).toBeVisible()
+  })
+
   test("login offers email and GitHub", async ({ page }) => {
     await page.goto("/login")
     await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible()

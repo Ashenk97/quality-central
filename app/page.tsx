@@ -3,7 +3,9 @@ import { LockIcon } from "lucide-react"
 
 import { Brand } from "@/components/brand"
 import { DifficultyBadge } from "@/components/difficulty-badge"
+import { LandingFeatures } from "@/components/landing/landing-features"
 import { LandingHero } from "@/components/landing/landing-hero"
+import { LandingStats } from "@/components/landing/landing-stats"
 import { ModeToggle } from "@/components/layout/mode-toggle"
 import { PageTransition } from "@/components/layout/page-transition"
 import { StaggerItem, StaggerList } from "@/components/stagger-list"
@@ -16,7 +18,7 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { getCurrentUser } from "@/lib/auth/session"
-import { curriculum } from "@/lib/curriculum"
+import { curriculum, getAllTopics } from "@/lib/curriculum"
 import { cn } from "@/lib/utils"
 
 // Bento layout: each row of the 6-column grid adds up to 6.
@@ -29,6 +31,7 @@ const bentoSpan: Record<string, string> = {
 export default async function HomePage() {
   const user = await getCurrentUser()
   const isSignedIn = Boolean(user)
+  const lessonCount = getAllTopics().length
 
   return (
     <div className="relative flex min-h-svh flex-col overflow-x-clip">
@@ -67,7 +70,26 @@ export default async function HomePage() {
         >
           <LandingHero isSignedIn={isSignedIn} />
 
-          <section id="curriculum" className="flex flex-col gap-6">
+          <LandingStats />
+
+          <section id="features" className="flex scroll-mt-20 flex-col gap-6">
+            <div className="flex flex-col gap-2">
+              <h2 className="font-heading text-2xl font-semibold tracking-tight sm:text-3xl">
+                {isSignedIn
+                  ? "What is on your account"
+                  : "What you unlock when you sign in"}
+              </h2>
+              <p className="max-w-2xl text-muted-foreground">
+                {isSignedIn
+                  ? "All of it is live on your account. The dashboard is the way in."
+                  : "There is no half-open version of this. One free account turns on the whole workspace, and your progress follows you to any device you sign in from."}
+              </p>
+            </div>
+
+            <LandingFeatures />
+          </section>
+
+          <section id="curriculum" className="flex scroll-mt-20 flex-col gap-6">
             <div className="flex flex-col gap-2">
               <h2 className="font-heading text-2xl font-semibold tracking-tight sm:text-3xl">
                 The curriculum
@@ -75,7 +97,7 @@ export default async function HomePage() {
               <p className="max-w-2xl text-muted-foreground">
                 {isSignedIn
                   ? "Every track is unlocked on your account. Jump back in from the dashboard."
-                  : "Nine tracks from manual QA fundamentals to Playwright automation and AI-assisted testing. Create a free account to unlock them and track your progress."}
+                  : `The path runs from manual QA fundamentals through API and SQL work into Playwright automation, then finishes on a capstone sprint. Here is every section of it, ${lessonCount} lessons in total.`}
               </p>
             </div>
 
@@ -109,19 +131,38 @@ export default async function HomePage() {
                 </StaggerItem>
               ))}
             </StaggerList>
-
-            {isSignedIn ? null : (
-              <div className="flex flex-col items-start gap-4 rounded-xl border border-white/5 bg-black/40 p-6 backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between light:border-black/5 light:bg-white/70">
-                <p className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <LockIcon className="size-4 shrink-0 text-primary" aria-hidden />
-                  Sign in to unlock every track, the sandbox, and your progress.
-                </p>
-                <Button asChild>
-                  <Link href="/signup">Create a free account</Link>
-                </Button>
-              </div>
-            )}
           </section>
+
+          {isSignedIn ? null : (
+            <section className="relative overflow-hidden rounded-2xl border border-white/5 bg-black/40 p-8 backdrop-blur-xl light:border-black/5 light:bg-white/70 md:p-12">
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-x-0 -top-32 h-64 bg-radial-[ellipse_at_center] from-indigo-500/25 to-transparent"
+              />
+              <div className="relative flex flex-col items-center gap-5 text-center">
+                <span className="inline-flex items-center gap-2 rounded-full border border-white/10 px-3 py-1 text-xs text-muted-foreground light:border-black/10">
+                  <LockIcon className="size-3.5 text-primary" aria-hidden />
+                  Free account, no card required
+                </span>
+                <h2 className="max-w-xl font-heading text-2xl font-semibold tracking-tight text-balance sm:text-3xl">
+                  Create an account and the whole workspace opens up.
+                </h2>
+                <p className="max-w-lg text-muted-foreground">
+                  All {lessonCount} lessons, the playgrounds, the sandbox, and
+                  the capstone certificate, tracked against your progress from
+                  the first lesson on.
+                </p>
+                <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
+                  <Button size="lg" asChild>
+                    <Link href="/signup">Create a free account</Link>
+                  </Button>
+                  <Button size="lg" variant="outline" asChild>
+                    <Link href="/login">I already have one</Link>
+                  </Button>
+                </div>
+              </div>
+            </section>
+          )}
         </main>
       </PageTransition>
     </div>
