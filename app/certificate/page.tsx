@@ -5,6 +5,7 @@ import { Brand } from "@/components/brand"
 import { PrintCertificateButton } from "@/components/certificate/print-button"
 import { PrintableCertificate } from "@/components/certificate/printable-certificate"
 import { Button } from "@/components/ui/button"
+import { requireUser } from "@/lib/auth/session"
 import {
   createVerificationId,
   formatCompletionDate,
@@ -18,6 +19,7 @@ export const metadata: Metadata = {
 }
 
 export default async function CertificatePage() {
+  await requireUser("/certificate")
   const { name: recipientName, userId } = await getCertificateRecipient()
   const completedOn = new Date()
 

@@ -1,4 +1,12 @@
+import { existsSync } from "node:fs"
+
 import { defineConfig, devices } from "@playwright/test"
+
+// `next dev` reads .env.local on its own, but the test process does not. Load it
+// so specs can tell whether the app under test is running with auth enabled.
+if (existsSync(".env.local") && typeof process.loadEnvFile === "function") {
+  process.loadEnvFile(".env.local")
+}
 
 const port = 3000
 const baseURL = `http://127.0.0.1:${port}`

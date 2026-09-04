@@ -3,7 +3,7 @@ import { BetaWelcome } from "@/components/feedback/beta-welcome"
 import { FeedbackWidget } from "@/components/feedback/feedback-widget"
 import { LearnHeader } from "@/components/layout/learn-header"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
-import { getCurrentUser } from "@/lib/auth/session"
+import { requireUser } from "@/lib/auth/session"
 import { getVisibleProMembership } from "@/lib/premium"
 
 export default async function LearnLayout({
@@ -11,7 +11,8 @@ export default async function LearnLayout({
 }: {
   children: React.ReactNode
 }) {
-  const user = await getCurrentUser()
+  // Gates every route in this group even if a request bypasses the proxy.
+  const user = await requireUser()
   const membership = await getVisibleProMembership()
 
   return (
