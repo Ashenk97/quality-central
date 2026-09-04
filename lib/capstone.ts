@@ -158,6 +158,13 @@ export function loadCapstoneClaim(): CapstoneClaim | null {
   }
 }
 
+export function clearCapstoneClaim() {
+  if (typeof window === "undefined") {
+    return
+  }
+  window.localStorage.removeItem(CAPSTONE_CLAIM_KEY)
+}
+
 export const DEFAULT_CAPSTONE_SPEC = `import { test, expect } from "@playwright/test"
 
 test("GENKI hoodie checkout increases the cart counter", async ({ page }) => {

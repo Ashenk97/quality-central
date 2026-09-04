@@ -35,14 +35,14 @@ type TreeNode = {
 }
 
 const TREE_NODES: TreeNode[] = [
-  { id: "foundation", label: "Foundation", x: 50, y: 10 },
-  { id: "api-testing", label: "API", x: 22, y: 34 },
-  { id: "technical-core", label: "SQL", x: 78, y: 34 },
-  { id: "ui-automation", label: "Automation", x: 50, y: 54 },
-  { id: "sandbox", label: "Sandbox", x: 18, y: 74 },
-  { id: "interview-prep", label: "Interview", x: 82, y: 74 },
-  { id: "capstone", label: "Capstone", x: 50, y: 88 },
-  { id: "next-gen", label: "Next-Gen", x: 50, y: 98 },
+  { id: "foundation", label: "Foundation", x: 50, y: 8 },
+  { id: "api-testing", label: "API", x: 22, y: 30 },
+  { id: "technical-core", label: "SQL", x: 78, y: 30 },
+  { id: "ui-automation", label: "Automation", x: 50, y: 48 },
+  { id: "sandbox", label: "Sandbox", x: 18, y: 66 },
+  { id: "interview-prep", label: "Interview", x: 82, y: 66 },
+  { id: "capstone", label: "Capstone", x: 50, y: 82 },
+  { id: "next-gen", label: "Next-Gen", x: 50, y: 100 },
 ]
 
 const TREE_EDGES: [CatalogFilterId, CatalogFilterId][] = [
@@ -59,6 +59,30 @@ const TREE_EDGES: [CatalogFilterId, CatalogFilterId][] = [
 
 function nodeById(id: CatalogFilterId) {
   return TREE_NODES.find((node) => node.id === id)
+}
+
+/** Keep edges outside the circular nodes (viewBox units ≈ node radius). */
+const NODE_EDGE_PAD = 7.2
+
+function shortenEdge(
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+  pad = NODE_EDGE_PAD
+) {
+  const dx = x2 - x1
+  const dy = y2 - y1
+  const length = Math.hypot(dx, dy) || 1
+  const effectivePad = Math.min(pad, Math.max(0, length / 2 - 1))
+  const ux = dx / length
+  const uy = dy / length
+  return {
+    x1: x1 + ux * effectivePad,
+    y1: y1 + uy * effectivePad,
+    x2: x2 - ux * effectivePad,
+    y2: y2 - uy * effectivePad,
+  }
 }
 
 function featuredIcon(badge: BadgeDefinition) {
@@ -153,10 +177,10 @@ export function SkillTree() {
           })}
         </div>
 
-        <div className="relative mx-auto aspect-[4/5] w-full max-w-xl">
+        <div className="relative mx-auto aspect-[3/4] w-full max-w-xl">
           <svg
-            viewBox="0 0 100 108"
-            className="absolute inset-0 size-full"
+            viewBox="0 0 100 112"
+            className="pointer-events-none absolute inset-0 z-0 size-full"
             aria-hidden
           >
             {TREE_EDGES.map(([from, to]) => {
@@ -171,13 +195,14 @@ export function SkillTree() {
                 fromTrack?.status === "completed" &&
                 toTrack?.status === "completed"
               const lit = Boolean(fromTrack?.unlocked && toTrack?.unlocked)
+              const edge = shortenEdge(start.x, start.y, end.x, end.y)
               return (
                 <line
                   key={`${from}-${to}`}
-                  x1={start.x}
-                  y1={start.y}
-                  x2={end.x}
-                  y2={end.y}
+                  x1={edge.x1}
+                  y1={edge.y1}
+                  x2={edge.x2}
+                  y2={edge.y2}
                   className={cn(
                     bothComplete
                       ? "stroke-success"
@@ -186,6 +211,7 @@ export function SkillTree() {
                         : "stroke-muted-foreground/25"
                   )}
                   strokeWidth={bothComplete || lit ? 0.7 : 0.45}
+                  strokeLinecap="round"
                 />
               )
             })}
@@ -235,22 +261,22 @@ function SkillNode({
       aria-label={`${node.label}, ${complete ? "mastered" : unlocked ? `${percent} percent` : "locked"}`}
       tabIndex={unlocked ? 0 : -1}
       className={cn(
-        "absolute flex size-[4.5rem] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full border text-center no-underline transition-all duration-300",
+        "absolute z-10 flex size-[4.5rem] -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full border bg-card text-center no-underline transition-all duration-300",
         complete &&
-          "border-success/60 bg-success/15 text-foreground shadow-[0_0_28px_color-mix(in_oklch,var(--success)_50%,transparent)]",
+          "border-success/70 text-foreground shadow-[0_0_28px_color-mix(in_oklch,var(--success)_50%,transparent)] ring-2 ring-success/25",
         active &&
-          "border-primary/70 bg-primary/15 text-foreground shadow-[0_0_28px_color-mix(in_oklch,var(--primary)_55%,transparent)]",
+          "border-primary/80 text-foreground shadow-[0_0_28px_color-mix(in_oklch,var(--primary)_55%,transparent)] ring-2 ring-primary/30",
         !unlocked &&
-          "pointer-events-none border-border/60 bg-muted/40 text-muted-foreground grayscale blur-[1.5px] opacity-70"
+          "pointer-events-none border-border/70 text-muted-foreground opacity-60 grayscale"
       )}
       style={{ left: `${node.x}%`, top: `${node.y}%` }}
     >
-      <span className="px-1 text-[11px] leading-tight font-medium">
+      <span className="relative z-10 px-1 text-[11px] leading-tight font-medium">
         {node.label}
       </span>
       <Badge
         variant={complete ? "success" : active ? "default" : "outline"}
-        className="mt-1 h-4 px-1.5 text-[9px]"
+        className="relative z-10 mt-1 h-4 px-1.5 text-[9px]"
       >
         {complete ? "Mastered" : unlocked ? `${percent}%` : "Locked"}
       </Badge>

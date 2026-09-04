@@ -21,7 +21,13 @@ import {
   getLearner,
   fetchRemoteProgress,
   upsertRemoteProgress,
+  deleteRemoteProgress,
 } from "@/lib/supabase/progress"
+import {
+  clearLocalBadges,
+  clearRemoteBadges,
+} from "@/lib/supabase/badges"
+import { clearCapstoneClaim } from "@/lib/capstone"
 
 const STORAGE_KEY = "quality-central.user_progress"
 const OWNER_KEY = "quality-central.progress_owner"
@@ -246,6 +252,51 @@ function writeEntry(
   enqueuePersist(() => persistEntry(category, lessonId))
 }
 
+async function resetAllProgressEntries(): Promise<void> {
+  return new Promise((resolve, reject) => {
+    enqueuePersist(async () => {
+      try {
+        snapshot = EMPTY_PROGRESS
+        writeStorage(snapshot)
+        clearLocalBadges()
+        clearCapstoneClaim()
+        emit()
+
+        if (!isSupabaseConfigured()) {
+          setSyncState({ source: "local", error: null })
+          resolve()
+          return
+        }
+
+        const client = createSupabaseBrowserClient()
+        if (!client) {
+          setSyncState({ source: "local", error: null })
+          resolve()
+          return
+        }
+
+        const user = await getLearner(client)
+        if (!user) {
+          setSyncState({ source: "local", error: null })
+          resolve()
+          return
+        }
+
+        await deleteRemoteProgress(client, user.id)
+        await clearRemoteBadges(client, user.id)
+        setSyncState({ source: "supabase", error: null })
+        resolve()
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "Could not reset progress"
+        setSyncState({ source: "local", error: message })
+        reject(error instanceof Error ? error : new Error(message))
+        throw error
+      }
+    })
+  })
+}
+
 type ProgressContextValue = {
   ready: boolean
   entries: ProgressMap
@@ -259,6 +310,7 @@ type ProgressContextValue = {
   isSandboxBugResolved: (bugId: SandboxDefectId) => boolean
   resolveSandboxBug: (bugId: SandboxDefectId) => void
   getSandboxPoints: () => number
+  resetAllProgress: () => Promise<void>
 }
 
 const ProgressContext = createContext<ProgressContextValue | null>(null)
@@ -341,6 +393,8 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
     }, 0)
   }, [entries])
 
+  const resetAllProgress = useCallback(() => resetAllProgressEntries(), [])
+
   const value = useMemo(
     () => ({
       ready,
@@ -355,6 +409,7 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
       isSandboxBugResolved,
       resolveSandboxBug,
       getSandboxPoints,
+      resetAllProgress,
     }),
     [
       ready,
@@ -369,6 +424,7 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
       isSandboxBugResolved,
       resolveSandboxBug,
       getSandboxPoints,
+      resetAllProgress,
     ]
   )
 

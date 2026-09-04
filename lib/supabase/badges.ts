@@ -1,3 +1,5 @@
+import type { SupabaseClient } from "@supabase/supabase-js"
+
 import { isSupabaseConfigured } from "@/lib/supabase/config"
 import { createSupabaseBrowserClient } from "@/lib/supabase/client"
 import { getLearner } from "@/lib/supabase/progress"
@@ -99,5 +101,20 @@ export async function persistBadge(badgeId: string): Promise<"supabase" | "local
     return "supabase"
   } catch {
     return "local"
+  }
+}
+
+export function clearLocalBadges() {
+  writeLocalBadges([])
+}
+
+export async function clearRemoteBadges(client: SupabaseClient, userId: string) {
+  const { error } = await client
+    .from("user_badges")
+    .delete()
+    .eq("user_id", userId)
+
+  if (error) {
+    throw error
   }
 }

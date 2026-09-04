@@ -127,3 +127,14 @@ export async function upsertRemoteProgress(
     throw error
   }
 }
+
+export async function deleteRemoteProgress(client: Client, userId: string) {
+  const { error } = await client
+    .from("user_progress")
+    .delete()
+    .eq("user_id", userId)
+
+  if (error) {
+    throw error
+  }
+}

@@ -8,6 +8,7 @@ import { StaggerItem, StaggerList } from "@/components/stagger-list"
 import { ProMemberBadge } from "@/components/pro-member-badge"
 import { DailyChallenge } from "@/components/DailyChallenge"
 import { MockInterviewer } from "@/components/MockInterviewer"
+import { ResetProgressButton } from "@/components/reset-progress-button"
 import { SkillTree } from "@/components/SkillTree"
 import { CatalogFilterTabs } from "@/components/catalog/catalog-tabs"
 import { ModuleGrid } from "@/components/catalog/module-card"
@@ -113,11 +114,14 @@ export function DashboardProgress({
       />
 
       <div className="relative space-y-2">
-        <div className="flex flex-wrap items-center gap-2.5">
-          <h1 className="font-heading text-2xl font-semibold tracking-tight">
-            Dashboard
-          </h1>
-          {isProMember ? <ProMemberBadge /> : null}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <h1 className="font-heading text-2xl font-semibold tracking-tight">
+              Dashboard
+            </h1>
+            {isProMember ? <ProMemberBadge /> : null}
+          </div>
+          <ResetProgressButton />
         </div>
         <p className="text-muted-foreground">{persistenceHint}</p>
       </div>
