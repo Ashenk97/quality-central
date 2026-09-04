@@ -15,10 +15,10 @@ const levels: Difficulty[] = ["beginner", "intermediate", "advanced"]
 
 export function LandingHero() {
   return (
-    <section className="relative grid items-center gap-12 overflow-hidden lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-10">
+    <section className="relative grid items-center gap-12 overflow-x-clip lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-10">
       <div
         aria-hidden
-        className="pointer-events-none absolute -inset-x-16 -top-24 h-80 rounded-full bg-[radial-gradient(ellipse_at_top,color-mix(in_oklch,var(--primary)_22%,transparent),transparent_70%)] lg:left-0 lg:right-1/3"
+        className="pointer-events-none absolute inset-x-0 -top-24 h-80 rounded-full bg-[radial-gradient(ellipse_at_top,color-mix(in_oklch,var(--primary)_22%,transparent),transparent_70%)] lg:right-1/3"
       />
 
       <div className="relative flex flex-col gap-6">

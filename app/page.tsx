@@ -20,11 +20,11 @@ import { curriculum } from "@/lib/curriculum"
 
 export default function HomePage() {
   return (
-    <PageTransition>
-      <div className="flex min-h-svh flex-col">
-        <header className="sticky top-0 z-20 flex h-14 items-center justify-between border-b border-border/80 bg-background/80 px-4 backdrop-blur-md md:px-8">
-          <Brand />
-          <div className="flex items-center gap-2">
+    <div className="flex min-h-svh flex-col overflow-x-clip">
+      <header className="sticky top-0 z-20 border-b border-border/80 bg-background/80 pt-[env(safe-area-inset-top,0px)] backdrop-blur-md">
+        <div className="flex h-14 min-w-0 items-center justify-between gap-2 px-4 md:px-8">
+          <Brand className="min-w-0" />
+          <div className="flex shrink-0 items-center gap-1 sm:gap-2">
             <Button variant="ghost" asChild>
               <Link href="/login">Sign in</Link>
             </Button>
@@ -33,8 +33,10 @@ export default function HomePage() {
             </Button>
             <ModeToggle />
           </div>
-        </header>
+        </div>
+      </header>
 
+      <PageTransition>
         <main
           id="main-content"
           className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-16 px-4 py-14 pb-24 md:px-8 md:py-20"
@@ -74,7 +76,7 @@ export default function HomePage() {
             ))}
           </StaggerList>
         </main>
-      </div>
-    </PageTransition>
+      </PageTransition>
+    </div>
   )
 }

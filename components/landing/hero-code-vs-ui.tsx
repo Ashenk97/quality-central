@@ -53,7 +53,7 @@ export function HeroCodeVsUi() {
       aria-hidden
       className="relative mx-auto w-full max-w-xl lg:max-w-none"
     >
-      <div className="flex flex-col items-stretch gap-0 sm:flex-row sm:items-center">
+      <div className="flex flex-col items-stretch gap-0 md:flex-row md:items-center">
         <div className="relative z-10 min-w-0 flex-1 overflow-hidden rounded-xl border border-white/10 bg-[#0c0c0f] shadow-[0_0_40px_-12px_color-mix(in_srgb,var(--qa-primary)_45%,transparent)]">
           <div className="flex items-center gap-2 border-b border-white/10 px-3 py-2">
             <span className="size-2 rounded-full bg-[#F43F5E]/80" />
@@ -69,7 +69,7 @@ export function HeroCodeVsUi() {
                 <span className="w-4 shrink-0 text-right text-zinc-600 select-none">
                   {line.n}
                 </span>
-                <span>
+                <span className="min-w-0">
                   {line.parts.map((part, partIndex) => (
                     <span key={`${line.n}-${partIndex}`} className={part.c}>
                       {part.t}
@@ -81,10 +81,10 @@ export function HeroCodeVsUi() {
           </pre>
         </div>
 
-        <div className="relative z-0 flex h-20 shrink-0 items-center justify-center sm:h-auto sm:w-28">
+        <div className="relative z-0 flex h-20 shrink-0 items-center justify-center md:h-auto md:w-28">
           <svg
             viewBox="0 0 112 160"
-            className="h-20 w-full sm:h-40"
+            className="h-20 w-full md:h-40"
             fill="none"
           >
             <defs>
@@ -102,7 +102,7 @@ export function HeroCodeVsUi() {
             </defs>
             <path
               d="M8 86 C 44 86, 68 40, 104 40"
-              className="hidden sm:block"
+              className="hidden md:block"
               stroke="url(#qc-hero-line)"
               strokeWidth="2"
               strokeOpacity="0.35"
@@ -110,14 +110,14 @@ export function HeroCodeVsUi() {
             />
             <path
               d="M8 86 C 44 86, 68 40, 104 40"
-              className="qc-dash-flow hidden sm:block"
+              className="qc-dash-flow hidden md:block"
               stroke="url(#qc-hero-line)"
               strokeWidth="2"
               filter="url(#qc-hero-glow)"
             />
             <path
               d="M56 10 C 56 34, 56 50, 56 78"
-              className="sm:hidden"
+              className="md:hidden"
               stroke="url(#qc-hero-line)"
               strokeWidth="2"
               strokeOpacity="0.35"
@@ -125,7 +125,7 @@ export function HeroCodeVsUi() {
             />
             <path
               d="M56 10 C 56 34, 56 50, 56 78"
-              className="qc-dash-flow sm:hidden"
+              className="qc-dash-flow md:hidden"
               stroke="url(#qc-hero-line)"
               strokeWidth="2"
               filter="url(#qc-hero-glow)"
@@ -133,13 +133,13 @@ export function HeroCodeVsUi() {
             <circle
               r="4"
               fill="#10B981"
-              className="qc-packet hidden sm:block"
+              className="qc-packet hidden md:block"
               style={{ offsetPath: "path('M8 86 C 44 86, 68 40, 104 40')" }}
             />
           </svg>
         </div>
 
-        <div className="relative z-10 w-full shrink-0 overflow-hidden rounded-xl border border-white/10 bg-black/50 p-4 shadow-[0_0_40px_-16px_color-mix(in_srgb,var(--qa-success)_50%,transparent)] backdrop-blur-md sm:w-[220px]">
+        <div className="relative z-10 w-full shrink-0 overflow-hidden rounded-xl border border-white/10 bg-black/50 p-4 shadow-[0_0_40px_-16px_color-mix(in_srgb,var(--qa-success)_50%,transparent)] backdrop-blur-md md:w-[220px]">
           <div className="mb-3 flex items-center justify-between">
             <p className="font-heading text-sm font-semibold text-zinc-100">
               Nimbus checkout

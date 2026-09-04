@@ -10,9 +10,11 @@ export default function AuthLayout({
 }) {
   return (
     <div className="flex min-h-svh flex-col">
-      <header className="flex h-14 items-center justify-between border-b px-4 md:px-8">
-        <Brand />
-        <ModeToggle />
+      <header className="border-b pt-[env(safe-area-inset-top,0px)]">
+        <div className="flex h-14 items-center justify-between px-4 md:px-8">
+          <Brand />
+          <ModeToggle />
+        </div>
       </header>
       <main
         id="main-content"

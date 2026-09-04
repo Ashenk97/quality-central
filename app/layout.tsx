@@ -1,4 +1,4 @@
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { Inter, JetBrains_Mono, Space_Grotesk } from "next/font/google"
 
 import { GridBackground } from "@/components/layout/grid-background"
@@ -30,6 +30,12 @@ export const metadata: Metadata = {
     "Zero to Advanced QA Engineering — a structured learning hub for manual QA, API testing, UI automation, and hands-on bug hunting.",
 }
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+}
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
@@ -39,7 +45,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="relative min-h-full bg-background font-sans text-foreground antialiased">
         <GridBackground />
-        <div className="relative z-10 min-h-full">
+        <div className="relative z-10 min-h-full overflow-x-clip">
           <Providers>{children}</Providers>
         </div>
       </body>
