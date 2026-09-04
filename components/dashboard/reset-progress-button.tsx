@@ -1,6 +1,7 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { RotateCcwIcon } from "lucide-react"
 import { toast } from "sonner"
 
@@ -17,9 +18,8 @@ import {
 } from "@/components/ui/dialog"
 import { useProgress } from "@/lib/progress"
 
-const RESET_TOAST_KEY = "quality-central.reset_toast"
-
 export function ResetProgressButton() {
+  const router = useRouter()
   const { resetAllProgress, entries } = useProgress()
   const [open, setOpen] = useState(false)
   const [pending, setPending] = useState(false)
@@ -27,22 +27,6 @@ export function ResetProgressButton() {
   const hasProgress = Object.values(entries).some(
     (entry) => entry.completed || entry.quizScore != null
   )
-
-  useEffect(() => {
-    try {
-      const pendingToast = window.sessionStorage.getItem(RESET_TOAST_KEY)
-      if (!pendingToast) {
-        return
-      }
-      window.sessionStorage.removeItem(RESET_TOAST_KEY)
-      toast.success("Progress reset", {
-        description: "You're back at the start of the learning path.",
-        id: "progress-reset",
-      })
-    } catch {
-      // sessionStorage can be blocked in private mode
-    }
-  }, [])
 
   async function onConfirm() {
     if (pending) {
@@ -53,15 +37,12 @@ export function ResetProgressButton() {
     try {
       await resetAllProgress()
       setOpen(false)
-      try {
-        window.sessionStorage.setItem(RESET_TOAST_KEY, "1")
-      } catch {
-        toast.success("Progress reset", {
-          description: "You're back at the start of the learning path.",
-          id: "progress-reset",
-        })
-      }
-      window.location.assign("/dashboard")
+      toast.success("Progress reset", {
+        description: "You're back at the start of the learning path.",
+        id: "progress-reset",
+      })
+      router.push("/dashboard")
+      router.refresh()
     } catch (error) {
       const detail =
         error instanceof Error && error.message.trim()
@@ -71,6 +52,7 @@ export function ResetProgressButton() {
         description: detail,
         id: "progress-reset-error",
       })
+    } finally {
       setPending(false)
     }
   }
