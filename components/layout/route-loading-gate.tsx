@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react"
 import { useReducedMotion } from "framer-motion"
 
-import { RouteLoading } from "@/components/route-loading"
+import { RouteLoading } from "@/components/layout/route-loading"
 
 export function RouteLoadingGate({
   children,

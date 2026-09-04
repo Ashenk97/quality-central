@@ -1,6 +1,4 @@
 -- Wire public.users to Supabase Auth and let learners insert their own row.
--- Enable Anonymous sign-ins in the Auth providers dashboard so progress
--- can persist without a full login screen.
 
 do $$
 begin

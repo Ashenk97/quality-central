@@ -25,7 +25,6 @@ for each row execute function public.set_updated_at();
 
 alter table public.mock_endpoints enable row level security;
 
--- Public read so Postman / Playwright can hit /api/custom-mock/:slug without a session.
 drop policy if exists "mock_endpoints_select_all" on public.mock_endpoints;
 create policy "mock_endpoints_select_all"
   on public.mock_endpoints

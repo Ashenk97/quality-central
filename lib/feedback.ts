@@ -90,7 +90,6 @@ export async function hasSeenBetaWelcome(userId: string) {
       return true
     }
   } catch {
-    // Ignore private-mode storage failures and fall through to Supabase.
   }
 
   const client = createSupabaseBrowserClient()
@@ -111,7 +110,6 @@ export async function markBetaWelcomeSeen(userId: string) {
   try {
     window.localStorage.setItem(welcomeStorageKey(userId), "1")
   } catch {
-    // Still persist remotely when localStorage is blocked.
   }
 
   const client = createSupabaseBrowserClient()

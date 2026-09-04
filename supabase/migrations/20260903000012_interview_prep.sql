@@ -1,5 +1,4 @@
 -- Interview Prep track: intern interview lesson (sort 1).
--- Extends modules.track to include 'interview'.
 
 do $$
 begin

@@ -21,11 +21,8 @@ export type LessonFrontmatter = {
   order: number
   difficulty?: Difficulty
   readingTime?: number
-  /** Alias for difficulty in beginner lesson files */
   level?: Difficulty | string
-  /** Alias for readingTime, in minutes */
   estimatedTime?: number | string
-  /** When true, the body can be gated if monetization is enabled. */
   isPremium?: boolean
 }
 
@@ -100,7 +97,6 @@ function isMarkdownParagraph(block: string) {
   return true
 }
 
-/** Visible teaser (through the first paragraph) vs the remaining MDX body. */
 export function splitLessonPreview(content: string) {
   const normalized = content.replace(/\r\n/g, "\n").trim()
   if (!normalized) {

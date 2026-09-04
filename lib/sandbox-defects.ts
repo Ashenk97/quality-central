@@ -23,10 +23,6 @@ export type SandboxDefectState = {
   discountStacking: boolean
 }
 
-/**
- * Seeded student-facing defects. Keep every flag `true`.
- * QA Mode only reveals locations — it must not repair the checkout.
- */
 export const SEEDED_DEFECT_STATE: SandboxDefectState = {
   visualOverlap: true,
   validationBypass: true,

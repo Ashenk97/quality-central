@@ -1,18 +1,3 @@
-/**
- * Central public runtime config for Vercel, local, and CI.
- *
- * Set these in the Vercel project (Production / Preview / Development):
- *   NEXT_PUBLIC_SUPABASE_URL
- *   NEXT_PUBLIC_SUPABASE_ANON_KEY
- *   NEXT_PUBLIC_SITE_URL   (canonical origin, e.g. https://quality-central.vercel.app)
- *   NEXT_PUBLIC_ENABLE_MONETIZATION  (hidden Pro tier; only "true" enables it)
- *   STRIPE_SECRET_KEY / STRIPE_WEBHOOK_SECRET / SUPABASE_SERVICE_ROLE_KEY
- *   (server-only; required to grant/revoke Pro via Stripe webhooks)
- *
- * NEXT_PUBLIC_* values are inlined at build time. After changing them in
- * Vercel, trigger a new deployment so the client bundle picks them up.
- */
-
 function trimOrigin(value: string) {
   return value.replace(/\/$/, "")
 }

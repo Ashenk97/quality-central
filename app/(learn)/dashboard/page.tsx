@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 
-import { DashboardProgress } from "@/components/dashboard-progress"
+import { DashboardProgress } from "@/components/dashboard/dashboard-progress"
 import { requireUser } from "@/lib/auth/session"
 import { getVisibleProMembership } from "@/lib/premium"
 

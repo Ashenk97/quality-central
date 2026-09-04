@@ -1,0 +1,21 @@
+# Default owner for everything in this repository.
+# Reviewers are requested automatically on pull requests that touch matching paths.
+* @Ashenk97
+
+# Core app and learning content
+/app/ @Ashenk97
+/components/ @Ashenk97
+/content/ @Ashenk97
+/lib/ @Ashenk97
+
+# Auth, payments, and infrastructure — treat as sensitive
+/app/actions/ @Ashenk97
+/app/api/webhooks/ @Ashenk97
+/lib/stripe/ @Ashenk97
+/lib/supabase/ @Ashenk97
+/lib/env.ts @Ashenk97
+/.env.example @Ashenk97
+/supabase/ @Ashenk97
+
+# CI and repo automation
+/.github/ @Ashenk97

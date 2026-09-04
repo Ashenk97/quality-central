@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { RotateCcwIcon } from "lucide-react"
 import { toast } from "sonner"
 
@@ -18,6 +19,7 @@ import {
 import { useProgress } from "@/lib/progress"
 
 export function ResetProgressButton() {
+  const router = useRouter()
   const { resetAllProgress, entries } = useProgress()
   const [open, setOpen] = useState(false)
   const [pending, setPending] = useState(false)
@@ -27,21 +29,30 @@ export function ResetProgressButton() {
   )
 
   async function onConfirm() {
+    if (pending) {
+      return
+    }
+
     setPending(true)
     try {
       await resetAllProgress()
-      toast.success("Progress reset", {
-        description: "You can start the learning path from the beginning.",
-      })
       setOpen(false)
-      window.location.reload()
-    } catch (error) {
-      toast.error("Could not reset progress", {
-        description:
-          error instanceof Error
-            ? error.message
-            : "Try again in a moment.",
+      toast.success("Progress reset", {
+        description: "You're back at the start of the learning path.",
+        id: "progress-reset",
       })
+      router.push("/dashboard")
+      router.refresh()
+    } catch (error) {
+      const detail =
+        error instanceof Error && error.message.trim()
+          ? error.message
+          : "Check your connection and try again."
+      toast.error("Reset didn't finish", {
+        description: detail,
+        id: "progress-reset-error",
+      })
+    } finally {
       setPending(false)
     }
   }

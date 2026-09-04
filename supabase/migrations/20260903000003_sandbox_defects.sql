@@ -1,5 +1,4 @@
--- Seed the three hardcoded Sandbox defects as modules so verified
--- finds can persist on user_progress like lesson completion.
+-- Seed Sandbox defects as modules for progress tracking.
 
 do $$
 begin

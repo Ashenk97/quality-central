@@ -60,7 +60,10 @@ export function DailyChallenge() {
 
   async function reveal() {
     if (!choice.trim()) {
-      toast.warning("Pick or type an answer first")
+      toast.warning("Answer needed", {
+        description: "Pick or type an answer before revealing.",
+        id: "daily-challenge",
+      })
       return
     }
 
@@ -75,12 +78,13 @@ export function DailyChallenge() {
     const source = await saveDailyStreak(next)
     setSaving(false)
     toast.success(
-      next.streakCount === 1 ? "Streak started" : `${next.streakCount} day streak`,
+      next.streakCount === 1 ? "Streak started" : `${next.streakCount}-day streak`,
       {
         description:
           source === "supabase"
             ? "Saved to your account."
-            : "Saved in this browser. Sign in to sync.",
+            : "Saved in this browser. Sign in to sync across devices.",
+        id: "daily-challenge",
       }
     )
   }

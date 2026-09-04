@@ -35,14 +35,13 @@ type TreeNode = {
 }
 
 const TREE_NODES: TreeNode[] = [
-  { id: "foundation", label: "Foundation", x: 50, y: 8 },
+  { id: "foundation", label: "Foundation", x: 50, y: 10 },
   { id: "api-testing", label: "API", x: 22, y: 30 },
   { id: "technical-core", label: "SQL", x: 78, y: 30 },
-  { id: "ui-automation", label: "Automation", x: 50, y: 48 },
-  { id: "sandbox", label: "Sandbox", x: 18, y: 66 },
-  { id: "interview-prep", label: "Interview", x: 82, y: 66 },
-  { id: "capstone", label: "Capstone", x: 50, y: 82 },
-  { id: "next-gen", label: "Next-Gen", x: 50, y: 100 },
+  { id: "ui-automation", label: "Automation", x: 50, y: 50 },
+  { id: "sandbox", label: "Sandbox", x: 22, y: 70 },
+  { id: "interview-prep", label: "Interview", x: 78, y: 70 },
+  { id: "capstone", label: "Capstone", x: 50, y: 90 },
 ]
 
 const TREE_EDGES: [CatalogFilterId, CatalogFilterId][] = [
@@ -54,14 +53,12 @@ const TREE_EDGES: [CatalogFilterId, CatalogFilterId][] = [
   ["ui-automation", "interview-prep"],
   ["sandbox", "capstone"],
   ["interview-prep", "capstone"],
-  ["capstone", "next-gen"],
 ]
 
 function nodeById(id: CatalogFilterId) {
   return TREE_NODES.find((node) => node.id === id)
 }
 
-/** Keep edges outside the circular nodes (viewBox units ≈ node radius). */
 const NODE_EDGE_PAD = 7.2
 
 function shortenEdge(
@@ -128,7 +125,7 @@ export function SkillTree() {
   }, [tracks])
 
   return (
-    <Card className="overflow-visible">
+    <Card className="overflow-hidden">
       <CardHeader>
         <CardTitle className="font-heading">Skill tree</CardTitle>
         <CardDescription>
@@ -177,9 +174,9 @@ export function SkillTree() {
           })}
         </div>
 
-        <div className="relative mx-auto aspect-[3/4] w-full max-w-xl">
+        <div className="relative mx-auto aspect-[4/5] w-full max-w-xl">
           <svg
-            viewBox="0 0 100 112"
+            viewBox="0 0 100 100"
             className="pointer-events-none absolute inset-0 z-0 size-full"
             aria-hidden
           >
@@ -233,8 +230,72 @@ export function SkillTree() {
             )
           })}
         </div>
+
+        <NextGenFootnote
+          track={trackMap.get("next-gen")}
+          ready={ready}
+        />
       </CardContent>
     </Card>
+  )
+}
+
+function NextGenFootnote({
+  track,
+  ready,
+}: {
+  track: TrackSummary | undefined
+  ready: boolean
+}) {
+  const status: ModuleStatus = track?.status ?? "locked"
+  const unlocked = ready ? (track?.unlocked ?? false) : false
+  const complete = status === "completed"
+  const active = unlocked && !complete
+  const percent = ready ? (track?.percent ?? 0) : 0
+  const href = track?.href ?? "/next-gen"
+
+  return (
+    <div className="flex flex-col items-center gap-3 border-t border-border/70 pt-5">
+      <div
+        aria-hidden
+        className={cn(
+          "h-6 w-px",
+          complete
+            ? "bg-success"
+            : unlocked
+              ? "bg-primary"
+              : "bg-muted-foreground/25"
+        )}
+      />
+      <Link
+        href={href}
+        aria-disabled={!unlocked}
+        aria-label={`Next-Gen, ${complete ? "mastered" : unlocked ? `${percent} percent` : "locked"}`}
+        tabIndex={unlocked ? 0 : -1}
+        className={cn(
+          "flex size-[4.5rem] flex-col items-center justify-center rounded-full border bg-card text-center no-underline transition-all duration-300",
+          complete &&
+            "border-success/70 text-foreground shadow-[0_0_28px_color-mix(in_oklch,var(--success)_50%,transparent)] ring-2 ring-success/25",
+          active &&
+            "border-primary/80 text-foreground shadow-[0_0_28px_color-mix(in_oklch,var(--primary)_55%,transparent)] ring-2 ring-primary/30",
+          !unlocked &&
+            "pointer-events-none border-border/70 text-muted-foreground opacity-60 grayscale"
+        )}
+      >
+        <span className="px-1 text-[11px] leading-tight font-medium">
+          Next-Gen
+        </span>
+        <Badge
+          variant={complete ? "success" : active ? "default" : "outline"}
+          className="mt-1 h-4 px-1.5 text-[9px]"
+        >
+          {complete ? "Mastered" : unlocked ? `${percent}%` : "Locked"}
+        </Badge>
+      </Link>
+      <p className="max-w-sm text-center text-xs text-muted-foreground">
+        After Capstone — AI prompting and next-wave QA practices.
+      </p>
+    </div>
   )
 }
 

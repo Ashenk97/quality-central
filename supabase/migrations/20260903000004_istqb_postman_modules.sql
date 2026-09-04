@@ -1,5 +1,4 @@
--- ISTQB + Postman lessons, and foundation sort order:
--- istqb (1), sdlc (2), stlc (3), manual-qa (4).
+-- ISTQB + Postman modules and foundation sort order.
 
 insert into public.modules (slug, title, description, track, category, lesson_id, sort_order)
 values

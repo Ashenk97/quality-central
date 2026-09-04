@@ -1,5 +1,4 @@
 -- Technical Core track: SQL for QA (sort 1).
--- Extends modules.track to include 'technical'.
 
 do $$
 begin

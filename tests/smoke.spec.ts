@@ -25,7 +25,9 @@ test.describe("core routing smoke", () => {
     await gotoWithoutUncaughtExceptions(page, "/")
     await expect(page).toHaveURL("/")
     await expect(
-      page.getByRole("heading", { name: /Zero to Advanced QA Engineering/i })
+      page.getByRole("heading", {
+        name: /Write tests that survive production/i,
+      })
     ).toBeVisible()
   })
 

@@ -1,5 +1,4 @@
 -- Foundation numbered path: writing test cases as sort 5.
--- ISTQB, SDLC, STLC, Manual QA shift later.
 
 insert into public.modules (slug, title, description, track, category, lesson_id, sort_order)
 values

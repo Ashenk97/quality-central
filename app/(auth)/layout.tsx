@@ -1,7 +1,7 @@
 import type { ReactNode } from "react"
 
 import { Brand } from "@/components/brand"
-import { ModeToggle } from "@/components/mode-toggle"
+import { ModeToggle } from "@/components/layout/mode-toggle"
 
 export default function AuthLayout({
   children,

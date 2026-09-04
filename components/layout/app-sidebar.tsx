@@ -7,7 +7,7 @@ import { HomeIcon } from "lucide-react"
 
 import { Brand } from "@/components/brand"
 import { DifficultyBadge } from "@/components/difficulty-badge"
-import { LessonCompleteIcon } from "@/components/lesson-complete-icon"
+import { LessonCompleteIcon } from "@/components/lessons/lesson-complete-icon"
 import {
   Sidebar,
   SidebarContent,

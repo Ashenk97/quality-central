@@ -1,19 +1,4 @@
 #!/usr/bin/env node
-/**
- * Scaffold a lesson MDX file from content/_templates/lesson.mdx
- *
- * Usage:
- *   node scripts/new-lesson.mjs <category> <lessonId> [title]
- *
- * Examples:
- *   node scripts/new-lesson.mjs foundation test-types "Test types"
- *   node scripts/new-lesson.mjs api-testing auth
- *
- * Tracks are inferred from category:
- *   foundation     → manual
- *   api-testing    → api
- *   ui-automation  → automation
- */
 
 import fs from "node:fs"
 import path from "node:path"

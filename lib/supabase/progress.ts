@@ -128,13 +128,25 @@ export async function upsertRemoteProgress(
   }
 }
 
-export async function deleteRemoteProgress(client: Client, userId: string) {
-  const { error } = await client
+/** Clears account progress via UPDATE (works with existing RLS). Delete is best-effort. */
+export async function resetRemoteProgress(client: Client, userId: string) {
+  const { error: updateError } = await client
+    .from("user_progress")
+    .update({
+      completed: false,
+      completed_at: null,
+      quiz_score: null,
+    })
+    .eq("user_id", userId)
+
+  if (updateError) {
+    throw updateError
+  }
+
+  const { error: deleteError } = await client
     .from("user_progress")
     .delete()
     .eq("user_id", userId)
 
-  if (error) {
-    throw error
-  }
+  void deleteError
 }

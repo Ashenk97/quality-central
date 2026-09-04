@@ -147,14 +147,39 @@ Open **[http://localhost:3000](http://localhost:3000)** and start hunting 🕵�
 ## 📁 Repo map (the fun tour)
 
 ```text
-app/                 → routes (learn, auth, certificate, APIs)
-components/          → UI, sandbox, skill tree, dashboard, discussions
-content/             → MDX lessons by track
-lib/                 → curriculum, progress, badges, Stripe, Supabase
-supabase/migrations/ → schema + RLS (run these in Supabase!)
-e2e/                 → Playwright smoke & flows
-scripts/             → lesson scaffolding
+app/
+  (auth)/              → login & signup
+  (learn)/             → dashboard, tracks, lessons, sandbox, tools
+  api/                 → route handlers (chat, checkout, mocks, webhooks)
+  actions/             → server actions (Stripe, …)
+  auth/callback/       → OAuth callback
+  certificate/         → printable certificate
+
+components/
+  ui/                  → shadcn primitives
+  layout/              → shell (sidebar, header, providers, transitions)
+  landing/             → marketing hero pieces
+  catalog/             → track & module grids
+  dashboard/           → progress, skill tree, daily challenge, reset
+  lessons/             → complete button, comments, premium gate
+  mdx/                 → MDX wrappers, Quiz
+  capstone/            → submit flow & certificate download
+  sandbox/             → buggy checkout & bug hunter
+  playgrounds/         → API / automation / mock server UIs
+  auth/ · feedback/ · certificate/
+
+content/<track>/       → MDX lessons (numbered path preferred)
+lib/                   → curriculum, progress, badges, Supabase, Stripe
+supabase/migrations/   → schema + RLS (run these in Supabase!)
+e2e/ · tests/          → Playwright e2e + smoke
+scripts/               → lesson scaffolding
 ```
+
+**Conventions**
+- Component files: **kebab-case** (`skill-tree.tsx`, not `SkillTree.tsx`)
+- Group by feature under `components/<area>/`
+- Lessons live at `/courses/[category]/[lessonId]`; old `/{category}/{lessonId}` URLs redirect
+- `tests/` = Playwright smoke project; `e2e/` = fuller flows
 
 ---
 
@@ -178,6 +203,18 @@ Apply everything under `supabase/migrations/` in order (or via CLI). Highlights:
 2. Keep commits conventional (`feat`, `fix`, `docs`, …)
 3. Run `npm run lint` · `npm run typecheck` · `npm run test:smoke`
 4. Open a PR and tell us which bug you crushed 🪲
+
+### 🛡️ Protecting `main` (maintainers)
+
+Repo guardrails live under `.github/` (CODEOWNERS, Dependabot, PR template, CI). After `gh auth login`, apply branch protection:
+
+```bash
+bash scripts/protect-github-repo.sh
+```
+
+That turns on: required PRs, required CI (`Lint, build, and smoke tests`), no force-push/delete on `main`, conversation resolution, squash/rebase merges, delete branch on merge, and Dependabot security alerts.
+
+See [SECURITY.md](./SECURITY.md) for how to report vulnerabilities privately.
 
 ---
 

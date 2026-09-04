@@ -21,7 +21,7 @@ import {
   getLearner,
   fetchRemoteProgress,
   upsertRemoteProgress,
-  deleteRemoteProgress,
+  resetRemoteProgress,
 } from "@/lib/supabase/progress"
 import {
   clearLocalBadges,
@@ -252,49 +252,79 @@ function writeEntry(
   enqueuePersist(() => persistEntry(category, lessonId))
 }
 
+function clearLocalProgressState() {
+  snapshot = EMPTY_PROGRESS
+  writeStorage(snapshot)
+  clearLocalBadges()
+  clearCapstoneClaim()
+  emit()
+}
+
+function resetErrorMessage(error: unknown) {
+  const raw =
+    error && typeof error === "object" && "message" in error
+      ? String((error as { message: unknown }).message).trim()
+      : error instanceof Error
+        ? error.message.trim()
+        : ""
+
+  if (!raw) {
+    return "Your account progress could not be updated. Try again in a moment."
+  }
+
+  const lower = raw.toLowerCase()
+  if (
+    lower.includes("permission") ||
+    lower.includes("row-level security") ||
+    lower.includes("rls") ||
+    lower.includes("42501")
+  ) {
+    return "Your account blocked the reset. Apply the latest Supabase migrations, then try again."
+  }
+
+  return raw
+}
+
 async function resetAllProgressEntries(): Promise<void> {
-  return new Promise((resolve, reject) => {
-    enqueuePersist(async () => {
-      try {
-        snapshot = EMPTY_PROGRESS
-        writeStorage(snapshot)
-        clearLocalBadges()
-        clearCapstoneClaim()
-        emit()
+  await persistChain.catch(() => undefined)
 
-        if (!isSupabaseConfigured()) {
-          setSyncState({ source: "local", error: null })
-          resolve()
-          return
-        }
+  if (!isSupabaseConfigured()) {
+    clearLocalProgressState()
+    setSyncState({ source: "local", error: null })
+    return
+  }
 
-        const client = createSupabaseBrowserClient()
-        if (!client) {
-          setSyncState({ source: "local", error: null })
-          resolve()
-          return
-        }
+  const client = createSupabaseBrowserClient()
+  if (!client) {
+    clearLocalProgressState()
+    setSyncState({ source: "local", error: null })
+    return
+  }
 
-        const user = await getLearner(client)
-        if (!user) {
-          setSyncState({ source: "local", error: null })
-          resolve()
-          return
-        }
+  let user
+  try {
+    user = await getLearner(client)
+  } catch (error) {
+    throw new Error(resetErrorMessage(error))
+  }
 
-        await deleteRemoteProgress(client, user.id)
-        await clearRemoteBadges(client, user.id)
-        setSyncState({ source: "supabase", error: null })
-        resolve()
-      } catch (error) {
-        const message =
-          error instanceof Error ? error.message : "Could not reset progress"
-        setSyncState({ source: "local", error: message })
-        reject(error instanceof Error ? error : new Error(message))
-        throw error
-      }
-    })
-  })
+  if (!user) {
+    clearLocalProgressState()
+    setSyncState({ source: "local", error: null })
+    return
+  }
+
+  try {
+    await resetRemoteProgress(client, user.id)
+    await clearRemoteBadges(client, user.id)
+  } catch (error) {
+    const message = resetErrorMessage(error)
+    setSyncState({ source: "supabase", error: message })
+    throw new Error(message)
+  }
+
+  clearLocalProgressState()
+  setSyncState({ source: "supabase", error: null })
 }
 
 type ProgressContextValue = {

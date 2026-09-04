@@ -91,11 +91,17 @@ export function LessonComments({
 
   async function onVote(comment: LessonComment) {
     if (!userId) {
-      toast.message("Sign in to upvote")
+      toast.message("Sign in required", {
+        description: "Sign in to upvote discussion posts.",
+        id: "lesson-vote",
+      })
       return
     }
     if (comment.userId === userId) {
-      toast.message("You cannot upvote your own comment.")
+      toast.message("Can't upvote yourself", {
+        description: "Upvotes are for other learners' posts.",
+        id: "lesson-vote",
+      })
       return
     }
 
@@ -116,7 +122,10 @@ export function LessonComments({
 
     const result = await toggleLessonCommentVote(comment.id, comment.voted)
     if (!result.ok) {
-      toast.error(result.message)
+      toast.error("Vote failed", {
+        description: result.message,
+        id: "lesson-vote",
+      })
       void load()
     }
   }
@@ -387,7 +396,12 @@ function CommentComposer({
     setBody("")
     setError(null)
     onPosted(result.comment)
-    toast.success(parentId ? "Reply posted" : "Question posted")
+    toast.success(parentId ? "Reply posted" : "Question posted", {
+      description: parentId
+        ? "Your reply is live on this lesson."
+        : "Your question is live on this lesson.",
+      id: "lesson-comment-post",
+    })
   }
 
   return (
