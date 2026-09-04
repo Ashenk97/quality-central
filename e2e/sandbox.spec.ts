@@ -1,6 +1,19 @@
 import { expect, test } from "@playwright/test"
 
+// The sandbox now sits behind the auth gate, so these UI tests need a session.
+// They run wherever the app is unconfigured (CI), and skip against a local
+// Supabase setup until an authenticated storage-state fixture exists.
+const AUTH_ENABLED = Boolean(
+  process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() &&
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim()
+)
+
 test.describe("sandbox", () => {
+  test.skip(
+    AUTH_ENABLED,
+    "The sandbox requires a signed-in session; run without Supabase or add an auth fixture"
+  )
+
   test("QA Mode drawer is always available and outlines seeded defects", async ({
     page,
   }) => {

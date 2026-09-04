@@ -1,5 +1,12 @@
 import { expect, test } from "@playwright/test"
 
+// The app only enforces auth when Supabase is configured; without it there is no
+// sign-in to complete, so every route stays open (see proxy.ts).
+const AUTH_ENABLED = Boolean(
+  process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() &&
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim()
+)
+
 test.describe("smoke", () => {
   test("home introduces the learning hub", async ({ page }) => {
     await page.goto("/")
@@ -9,6 +16,24 @@ test.describe("smoke", () => {
       })
     ).toBeVisible()
     await expect(page.getByRole("link", { name: "Sign in" })).toBeVisible()
+  })
+
+  test("home sends signed-out visitors to sign up, not into the app", async ({
+    page,
+  }) => {
+    await page.goto("/")
+
+    await expect(
+      page.getByRole("link", { name: "Create account" })
+    ).toBeVisible()
+    await expect(
+      page.getByRole("link", { name: /Start Learning Free/i })
+    ).toBeVisible()
+
+    // The curriculum is a preview only: no card links into a gated route.
+    const curriculum = page.locator("#curriculum")
+    await expect(curriculum).toBeVisible()
+    await expect(curriculum.getByRole("link", { name: /^View / })).toHaveCount(0)
   })
 
   test("login offers email and GitHub", async ({ page }) => {
@@ -31,38 +56,6 @@ test.describe("smoke", () => {
     ).toBeVisible()
   })
 
-  test("dashboard redirects unauthenticated users to login", async ({
-    page,
-  }) => {
-    await page.goto("/dashboard")
-    await expect(page).toHaveURL(/\/login/)
-    await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible()
-  })
-
-  test("sandbox hunter is reachable", async ({ page }) => {
-    await page.goto("/sandbox")
-    await expect(page.getByRole("heading", { name: "The Sandbox" })).toBeVisible()
-    await expect(page.getByRole("button", { name: "Report Bug" })).toBeVisible()
-    await expect(page.getByRole("button", { name: "Send Feedback" })).toBeVisible()
-  })
-
-  test("API playground loads", async ({ page }) => {
-    await page.goto("/api-testing/playground")
-    await expect(
-      page.getByRole("heading", { name: "API Playground" })
-    ).toBeVisible()
-    await expect(page.getByRole("button", { name: "Send" })).toBeVisible()
-    await expect(page.getByRole("button", { name: "Send Feedback" })).toHaveCount(0)
-  })
-
-  test("mock server redirects unauthenticated users to login", async ({
-    page,
-  }) => {
-    await page.goto("/mock-server")
-    await expect(page).toHaveURL(/\/login/)
-    await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible()
-  })
-
   test("unknown custom mock slug returns 404", async ({ request }) => {
     const response = await request.get("/api/custom-mock/does-not-exist-qc")
     expect([404, 503]).toContain(response.status())
@@ -83,6 +76,62 @@ test.describe("smoke", () => {
       data: { messages: [], questionId: "vending-machine" },
     })
     expect(response.status()).toBe(401)
+  })
+})
+
+test.describe("gated routes", () => {
+  test.skip(
+    !AUTH_ENABLED,
+    "Supabase is not configured, so the app runs without auth"
+  )
+
+  test("dashboard redirects unauthenticated users to login", async ({
+    page,
+  }) => {
+    await page.goto("/dashboard")
+    await expect(page).toHaveURL(/\/login/)
+    await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible()
+  })
+
+  test("mock server redirects unauthenticated users to login", async ({
+    page,
+  }) => {
+    await page.goto("/mock-server")
+    await expect(page).toHaveURL(/\/login/)
+    await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible()
+  })
+
+  test("a gated deep link is preserved for after sign-in", async ({ page }) => {
+    await page.goto("/courses/foundation/istqb")
+    await expect(page).toHaveURL(
+      `/login?next=${encodeURIComponent("/courses/foundation/istqb")}`
+    )
+    await expect(
+      page.getByRole("link", { name: "Create an account" })
+    ).toHaveAttribute(
+      "href",
+      `/signup?next=${encodeURIComponent("/courses/foundation/istqb")}`
+    )
+  })
+})
+
+test.describe("open app when auth is not configured", () => {
+  test.skip(AUTH_ENABLED, "Supabase is configured, so routes require a session")
+
+  test("sandbox hunter is reachable", async ({ page }) => {
+    await page.goto("/sandbox")
+    await expect(page.getByRole("heading", { name: "The Sandbox" })).toBeVisible()
+    await expect(page.getByRole("button", { name: "Report Bug" })).toBeVisible()
+    await expect(page.getByRole("button", { name: "Send Feedback" })).toBeVisible()
+  })
+
+  test("API playground loads", async ({ page }) => {
+    await page.goto("/api-testing/playground")
+    await expect(
+      page.getByRole("heading", { name: "API Playground" })
+    ).toBeVisible()
+    await expect(page.getByRole("button", { name: "Send" })).toBeVisible()
+    await expect(page.getByRole("button", { name: "Send Feedback" })).toHaveCount(0)
   })
 
   test("lesson page offers Send Feedback", async ({ page }) => {

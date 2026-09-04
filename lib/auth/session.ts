@@ -2,7 +2,8 @@ import "server-only"
 
 import { redirect } from "next/navigation"
 
-import { loginUrl } from "@/lib/auth/paths"
+import { DEFAULT_AUTH_NEXT, loginUrl } from "@/lib/auth/paths"
+import { isSupabaseConfigured } from "@/lib/env"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 
 export async function getCurrentUser() {
@@ -17,9 +18,14 @@ export async function getCurrentUser() {
   return user
 }
 
-export async function requireUser(nextPath = "/dashboard") {
+/**
+ * Server-side backstop for the proxy gate. Returns null instead of redirecting
+ * when Supabase is absent, matching the proxy: with no auth configured there is
+ * no session to require.
+ */
+export async function requireUser(nextPath = DEFAULT_AUTH_NEXT) {
   const user = await getCurrentUser()
-  if (!user) {
+  if (!user && isSupabaseConfigured()) {
     redirect(loginUrl(nextPath))
   }
   return user

@@ -1,5 +1,12 @@
 import { expect, test, type Page } from "@playwright/test"
 
+// The app only enforces auth when Supabase is configured; without it there is no
+// sign-in to complete, so every route stays open (see proxy.ts).
+const AUTH_ENABLED = Boolean(
+  process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() &&
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim()
+)
+
 async function gotoWithoutUncaughtExceptions(page: Page, path: string) {
   const uncaught: string[] = []
   page.on("pageerror", (error) => {
@@ -18,6 +25,20 @@ async function gotoWithoutUncaughtExceptions(page: Page, path: string) {
   expect(uncaught, uncaught.join("\n\n")).toEqual([])
 
   return response
+}
+
+async function expectGated(
+  page: Page,
+  path: string,
+  expectedNext: string | null = path
+) {
+  await page.goto(path)
+  const url = new URL(page.url())
+  expect(url.pathname, `${path} should redirect to the login screen`).toBe(
+    "/login"
+  )
+  expect(url.searchParams.get("next")).toBe(expectedNext)
+  await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible()
 }
 
 test.describe("core routing smoke", () => {
@@ -60,6 +81,47 @@ test.describe("core routing smoke", () => {
     })
     expect(response.status()).toBe(401)
   })
+})
+
+test.describe("signed-out visitors are gated", () => {
+  test.skip(
+    !AUTH_ENABLED,
+    "Supabase is not configured, so the app runs without auth"
+  )
+
+  test("every learning route redirects to login", async ({ page }) => {
+    await expectGated(page, "/dashboard", null)
+    await expectGated(page, "/foundation")
+    await expectGated(page, "/api-testing")
+    await expectGated(page, "/technical-core")
+    await expectGated(page, "/ui-automation")
+    await expectGated(page, "/interview-prep")
+    await expectGated(page, "/next-gen")
+    await expectGated(page, "/capstone")
+    await expectGated(page, "/sandbox")
+    await expectGated(page, "/mock-server")
+    await expectGated(page, "/certificate")
+  })
+
+  test("lessons and playgrounds redirect to login", async ({ page }) => {
+    await expectGated(page, "/courses/foundation/istqb")
+    await expectGated(page, "/api-testing/playground")
+    await expectGated(page, "/ui-automation/playground")
+  })
+
+  test("landing page stays public", async ({ page }) => {
+    await page.goto("/")
+    await expect(page).toHaveURL("/")
+    await expect(
+      page.getByRole("heading", {
+        name: /Write tests that survive production/i,
+      })
+    ).toBeVisible()
+  })
+})
+
+test.describe("open app when auth is not configured", () => {
+  test.skip(AUTH_ENABLED, "Supabase is configured, so routes require a session")
 
   test("sandbox loads without uncaught exceptions", async ({ page }) => {
     await gotoWithoutUncaughtExceptions(page, "/sandbox")

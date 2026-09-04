@@ -9,7 +9,13 @@ export const metadata: Metadata = {
 }
 
 export default async function DashboardPage() {
-  await requireUser("/dashboard")
+  const user = await requireUser("/dashboard")
   const { isProMember } = await getVisibleProMembership()
-  return <DashboardProgress isProMember={isProMember} />
+
+  return (
+    <DashboardProgress
+      isProMember={isProMember}
+      email={user?.email ?? null}
+    />
+  )
 }

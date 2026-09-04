@@ -45,8 +45,11 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  if (isProtectedPath(pathname) && !userId) {
-    return NextResponse.redirect(new URL(loginUrl(pathname), request.url))
+  // Without Supabase there is no sign-in to complete, so gating every route
+  // would lock the app with no way back in. Auth is enforced once it exists.
+  if (env && isProtectedPath(pathname) && !userId) {
+    const next = `${pathname}${request.nextUrl.search}`
+    return NextResponse.redirect(new URL(loginUrl(next), request.url))
   }
 
   if (isAuthPath(pathname) && userId) {
@@ -62,6 +65,6 @@ export async function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!_next|__nextjs|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 }

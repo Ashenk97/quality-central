@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react"
 import Link from "next/link"
-import { CheckIcon } from "lucide-react"
+import { ArrowRightIcon, CheckIcon } from "lucide-react"
 
 import { StaggerItem, StaggerList } from "@/components/stagger-list"
 import { ProMemberBadge } from "@/components/pro-member-badge"
@@ -15,6 +15,7 @@ import { ModuleGrid } from "@/components/catalog/module-card"
 import { DifficultyBadge } from "@/components/difficulty-badge"
 import { RadialProgress, SuccessBar } from "@/components/progress-visuals"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
@@ -29,7 +30,11 @@ import {
   statusLabel,
   type CatalogFilterId,
 } from "@/lib/catalog"
-import { getAllTopics, parseCourseHref } from "@/lib/curriculum"
+import {
+  getAllTopics,
+  parseCourseHref,
+  type CurriculumTopic,
+} from "@/lib/curriculum"
 import { useProgress } from "@/lib/progress"
 import {
   MAX_SANDBOX_POINTS,
@@ -39,8 +44,10 @@ import { cn } from "@/lib/utils"
 
 export function DashboardProgress({
   isProMember = false,
+  email = null,
 }: {
   isProMember?: boolean
+  email?: string | null
 }) {
   const {
     ready,
@@ -95,11 +102,18 @@ export function DashboardProgress({
     (sandboxPoints / MAX_SANDBOX_POINTS) * 100
   )
 
+  const nextLesson = lessons.find((topic) => {
+    const parsed = parseCourseHref(topic.href)
+    return parsed ? !isComplete(parsed.category, parsed.lessonId) : false
+  })
+
   const persistenceHint = syncError
-    ? "Supabase sync failed; showing locally cached progress."
+    ? "Your account could not be reached, so this browser's cached progress is shown."
     : source === "supabase"
-      ? "Progress and quiz scores are loaded from your account."
-      : "Progress is stored in this browser. Sign in to sync across devices."
+      ? "Progress and quiz scores sync to your account."
+      : email
+        ? "Connecting to your account to sync progress…"
+        : "Progress is stored in this browser."
 
   const visibleModules =
     filter === "all"
@@ -123,8 +137,20 @@ export function DashboardProgress({
           </div>
           <ResetProgressButton />
         </div>
+        {email ? (
+          <p className="font-mono text-xs text-muted-foreground">
+            Signed in as {email}
+          </p>
+        ) : null}
         <p className="text-muted-foreground">{persistenceHint}</p>
       </div>
+
+      <ContinueLearningCard
+        ready={ready}
+        nextLesson={nextLesson}
+        completedCount={completedCount}
+        totalCount={lessons.length}
+      />
 
       <DailyChallenge />
       <SkillTree />
@@ -276,6 +302,65 @@ export function DashboardProgress({
         isResolved={isSandboxBugResolved}
       />
     </div>
+  )
+}
+
+function ContinueLearningCard({
+  ready,
+  nextLesson,
+  completedCount,
+  totalCount,
+}: {
+  ready: boolean
+  nextLesson: CurriculumTopic | undefined
+  completedCount: number
+  totalCount: number
+}) {
+  const finished = ready && !nextLesson
+
+  return (
+    <Card className="border-primary/20 bg-primary/[0.04]">
+      <CardHeader>
+        <CardDescription>
+          {finished
+            ? "Every lesson complete"
+            : `${completedCount} of ${totalCount} lessons complete`}
+        </CardDescription>
+        <CardTitle className="font-heading text-lg">
+          {!ready
+            ? "Loading your place…"
+            : finished
+              ? "Claim your capstone certificate"
+              : "Continue where you left off"}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0 space-y-1">
+          {ready ? (
+            <>
+              <p className="truncate font-medium">
+                {nextLesson?.title ?? "Capstone: The QA Sprint Simulation"}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {nextLesson?.description ??
+                  "Finish the sprint simulation to earn your certificate."}
+              </p>
+            </>
+          ) : (
+            <Skeleton className="h-10 w-64" />
+          )}
+        </div>
+        <Button asChild className="shrink-0">
+          <Link
+            href={nextLesson?.href ?? "/capstone"}
+            aria-disabled={!ready}
+          >
+            {finished ? "Open Capstone" : "Resume lesson"}
+            <ArrowRightIcon data-icon="inline-end" />
+          </Link>
+        </Button>
+      </CardContent>
+    </Card>
   )
 }
 
