@@ -62,8 +62,10 @@ jobs:
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
 
-      - name: Playwright smoke tests
-        run: npm run test:smoke
+      # Both projects, not just smoke: the e2e suite went unrun long enough for
+      # a stale locator to sit broken on main without anything reporting it.
+      - name: Playwright smoke and e2e tests
+        run: npm run test:e2e
         env:
           CI: true
 
