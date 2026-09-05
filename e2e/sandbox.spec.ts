@@ -18,7 +18,9 @@ test.describe("sandbox", () => {
     page,
   }) => {
     await page.goto("/sandbox")
-    const qaMode = page.getByRole("button", { name: "QA Mode", exact: true })
+    // The button is labelled "Open QA Mode" and gains ", currently on" once the
+    // highlighting is active, so match the part that does not move.
+    const qaMode = page.getByRole("button", { name: /^Open QA Mode/ })
     await expect(qaMode).toBeVisible()
 
     await qaMode.click()
