@@ -53,7 +53,7 @@ export function LandingHero({ isSignedIn = false }: { isSignedIn?: boolean }) {
             </Link>
           </motion.div>
           <Button variant="outline" size="lg" asChild>
-            <Link href="#curriculum">Explore the curriculum</Link>
+            <Link href="#features">See what is inside</Link>
           </Button>
         </div>
       </div>
