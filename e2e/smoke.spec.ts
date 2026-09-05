@@ -30,10 +30,9 @@ test.describe("smoke", () => {
       page.getByRole("link", { name: /Start Learning Free/i })
     ).toBeVisible()
 
-    // The curriculum is a preview only: no card links into a gated route.
-    const curriculum = page.locator("#curriculum")
-    await expect(curriculum).toBeVisible()
-    await expect(curriculum.getByRole("link", { name: /^View / })).toHaveCount(0)
+    // Nothing on the page links into a gated route.
+    await expect(page.locator("#features article a")).toHaveCount(0)
+    await expect(page.getByRole("link", { name: /^View / })).toHaveCount(0)
   })
 
   test("home previews what a sign-in unlocks", async ({ page }) => {
@@ -45,6 +44,7 @@ test.describe("smoke", () => {
     ).toBeVisible()
 
     for (const name of [
+      /Every track, start to finish/i,
       /Your progress dashboard/i,
       /A skill tree that gates itself/i,
       /Daily challenge/i,
@@ -56,8 +56,16 @@ test.describe("smoke", () => {
       await expect(features.getByRole("heading", { name })).toBeVisible()
     }
 
-    // The showcase describes the app rather than linking into it.
-    await expect(features.getByRole("link")).toHaveCount(0)
+    // The cards describe the app rather than linking into it.
+    await expect(features.locator("article a")).toHaveCount(0)
+
+    // The curriculum now lives here as a card, listing every track by name.
+    const curriculumCard = features.locator("article", {
+      hasText: "Every track, start to finish",
+    })
+    await expect(curriculumCard.getByText("Interview Prep")).toBeVisible()
+    await expect(curriculumCard.getByText("Next-Gen QA")).toBeVisible()
+    await expect(curriculumCard.getByText(/lessons?$/).first()).toBeVisible()
 
     // Counts are derived from the curriculum, so they should never render empty.
     await expect(page.getByText("Guided lessons")).toBeVisible()

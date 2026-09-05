@@ -3,6 +3,7 @@ import {
   AwardIcon,
   BugIcon,
   FlameIcon,
+  GraduationCapIcon,
   LayoutDashboardIcon,
   MessagesSquareIcon,
   NetworkIcon,
@@ -10,8 +11,24 @@ import {
   type LucideIcon,
 } from "lucide-react"
 
+import { DifficultyBadge } from "@/components/difficulty-badge"
+import {
+  getAllTopics,
+  getSectionLessons,
+  getTrackSections,
+} from "@/lib/curriculum"
 import { MAX_SANDBOX_POINTS, SANDBOX_DEFECTS } from "@/lib/sandbox-defects"
 import { cn } from "@/lib/utils"
+
+const tracks = getTrackSections().map((section) => ({
+  href: section.href,
+  title: section.title,
+  icon: section.icon,
+  difficulty: section.difficulty,
+  lessons: getSectionLessons(section).length,
+}))
+
+const lessonCount = getAllTopics().length
 
 function Panel({
   children,
@@ -31,6 +48,28 @@ function Panel({
     >
       {children}
     </div>
+  )
+}
+
+function CurriculumPreview() {
+  return (
+    <Panel className="grid content-center gap-x-8 gap-y-2.5 sm:grid-cols-2">
+      {tracks.map((track) => (
+        <div key={track.href} className="flex min-w-0 items-center gap-2">
+          <track.icon className="size-3.5 shrink-0 text-primary" aria-hidden />
+          <span className="truncate text-xs font-medium">{track.title}</span>
+          <span className="ml-auto shrink-0 text-[10px] text-muted-foreground">
+            {track.lessons === 1 ? "1 lesson" : `${track.lessons} lessons`}
+          </span>
+          {track.difficulty ? (
+            <DifficultyBadge
+              difficulty={track.difficulty}
+              className="shrink-0 px-1.5 py-0 text-[10px]"
+            />
+          ) : null}
+        </div>
+      ))}
+    </Panel>
   )
 }
 
@@ -262,6 +301,13 @@ type Feature = {
 }
 
 const features: Feature[] = [
+  {
+    title: "Every track, start to finish",
+    description: `${lessonCount} lessons across ${tracks.length} tracks, from manual QA fundamentals through API and SQL work into Playwright automation, closing on a capstone sprint.`,
+    icon: GraduationCapIcon,
+    span: "lg:col-span-6",
+    preview: <CurriculumPreview />,
+  },
   {
     title: "Your progress dashboard",
     description:
