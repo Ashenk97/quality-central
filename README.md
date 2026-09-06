@@ -139,7 +139,9 @@ Open **[http://localhost:3000](http://localhost:3000)** and start hunting 🕵�
 | `npm run lint:a11y` | ♿ Accessibility lint gate |
 | `npm run typecheck` | 🧮 `tsc --noEmit` |
 | `npm run test:smoke` | 💨 Playwright smoke |
-| `npm run test:e2e` | 🎭 Full Playwright suite |
+| `npm run test:e2e` | 🎭 Full Playwright suite (setup + smoke + e2e) |
+
+When Supabase is configured, add `E2E_USER_EMAIL` and `E2E_USER_PASSWORD` to `.env.local` so the setup project can save a signed-in storage state. Without those keys the suite fails rather than skipping. CI has no Supabase vars, so setup writes an empty state and every spec still runs.
 | `npm run new-lesson` | 📝 Scaffold a new MDX lesson |
 
 ---
