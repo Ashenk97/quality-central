@@ -49,7 +49,7 @@ export default async function HomePage() {
       <PageTransition>
         <main
           id="main-content"
-          className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-20 px-4 py-14 pb-24 md:px-8 md:py-20"
+          className="mx-auto flex w-full min-w-0 max-w-7xl flex-1 flex-col gap-20 px-4 py-14 pb-24 md:px-8 md:py-20"
         >
           <LandingHero isSignedIn={isSignedIn} />
 
