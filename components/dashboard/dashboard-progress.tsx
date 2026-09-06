@@ -121,7 +121,7 @@ export function DashboardProgress({
       : modules.filter((module) => module.filterId === filter)
 
   return (
-    <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-8 overflow-x-clip">
+    <div className="relative mx-auto flex w-full min-w-0 max-w-7xl flex-col gap-8 overflow-x-clip">
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 -top-10 h-48 rounded-full bg-[radial-gradient(ellipse_at_top,color-mix(in_oklch,var(--success)_16%,transparent),transparent_70%)]"

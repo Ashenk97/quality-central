@@ -57,7 +57,7 @@ export function CourseSectionCatalog({
   const active: CatalogFilterId = filterId ?? "foundation"
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
+    <div className="mx-auto flex w-full min-w-0 max-w-7xl flex-col gap-6">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-2">
