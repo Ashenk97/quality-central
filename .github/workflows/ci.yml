@@ -26,10 +26,12 @@ jobs:
 
     env:
       NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3000
-      # Optional in CI: the app runs without Supabase (auth routes stay local).
-      # Set these in Vercel for production deploys — see .env.example.
+      # Auth is on in CI only when these four are set. The URL is a variable
+      # (it is not secret). The anon key and the test user are secrets.
       NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      E2E_USER_EMAIL: ${{ secrets.E2E_USER_EMAIL }}
+      E2E_USER_PASSWORD: ${{ secrets.E2E_USER_PASSWORD }}
 
     steps:
       - name: Check out
