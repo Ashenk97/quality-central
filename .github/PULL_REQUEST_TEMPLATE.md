@@ -9,7 +9,7 @@
 - [ ] `npm run lint`
 - [ ] `npm run lint:a11y`
 - [ ] `npm run build`
-- [ ] `npm run test:smoke` (or note why skipped)
+- [ ] `npm run test:smoke`
 - [ ] Manual check of touched UI / flows
 
 ## Notes for reviewers

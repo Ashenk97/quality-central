@@ -1,11 +1,6 @@
 import { expect, test } from "@playwright/test"
 
-// The app only enforces auth when Supabase is configured; without it there is no
-// sign-in to complete, so every route stays open (see proxy.ts).
-const AUTH_ENABLED = Boolean(
-  process.env.NEXT_PUBLIC_SUPABASE_URL?.trim() &&
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim()
-)
+import { AUTH_STATE_PATH, isAuthEnabled } from "../playwright/auth"
 
 test.describe("smoke", () => {
   test("home introduces the learning hub", async ({ page }) => {
@@ -117,44 +112,54 @@ test.describe("smoke", () => {
   })
 })
 
-test.describe("gated routes", () => {
-  test.skip(
-    !AUTH_ENABLED,
-    "Supabase is not configured, so the app runs without auth"
-  )
-
-  test("dashboard redirects unauthenticated users to login", async ({
-    page,
-  }) => {
+test.describe("signed-out visitors", () => {
+  test("dashboard matches the auth configuration", async ({ page }) => {
     await page.goto("/dashboard")
-    await expect(page).toHaveURL(/\/login/)
-    await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible()
+    if (isAuthEnabled()) {
+      await expect(page).toHaveURL(/\/login/)
+      await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible()
+      return
+    }
+
+    await expect(page).toHaveURL(/\/dashboard/)
+    await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible()
   })
 
-  test("mock server redirects unauthenticated users to login", async ({
-    page,
-  }) => {
+  test("mock server matches the auth configuration", async ({ page }) => {
     await page.goto("/mock-server")
-    await expect(page).toHaveURL(/\/login/)
-    await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible()
+    if (isAuthEnabled()) {
+      await expect(page).toHaveURL(/\/login/)
+      await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible()
+      return
+    }
+
+    await expect(page).toHaveURL(/\/mock-server/)
   })
 
   test("a gated deep link is preserved for after sign-in", async ({ page }) => {
     await page.goto("/courses/foundation/istqb")
-    await expect(page).toHaveURL(
-      `/login?next=${encodeURIComponent("/courses/foundation/istqb")}`
-    )
+    if (isAuthEnabled()) {
+      await expect(page).toHaveURL(
+        `/login?next=${encodeURIComponent("/courses/foundation/istqb")}`
+      )
+      await expect(
+        page.getByRole("link", { name: "Create an account" })
+      ).toHaveAttribute(
+        "href",
+        `/signup?next=${encodeURIComponent("/courses/foundation/istqb")}`
+      )
+      return
+    }
+
+    await expect(page).toHaveURL(/\/courses\/foundation\/istqb/)
     await expect(
-      page.getByRole("link", { name: "Create an account" })
-    ).toHaveAttribute(
-      "href",
-      `/signup?next=${encodeURIComponent("/courses/foundation/istqb")}`
-    )
+      page.getByRole("heading", { name: "ISTQB Foundation" })
+    ).toBeVisible()
   })
 })
 
-test.describe("open app when auth is not configured", () => {
-  test.skip(AUTH_ENABLED, "Supabase is configured, so routes require a session")
+test.describe("signed-in session", () => {
+  test.use({ storageState: AUTH_STATE_PATH })
 
   test("sandbox hunter is reachable", async ({ page }) => {
     await page.goto("/sandbox")
