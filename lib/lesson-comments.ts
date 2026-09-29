@@ -16,20 +16,27 @@ export type LessonComment = {
   voteCount: number
   createdAt: string
   voted: boolean
+  hidden: boolean
 }
 
 export type LessonCommentThread = LessonComment & {
   replies: LessonComment[]
 }
 
+const COMMENT_COLUMNS =
+  "id, user_id, category, lesson_id, parent_id, body, author_name, vote_count, hidden_at, created_at"
+
 const MISSING_TABLE_MESSAGE =
-  "Discussion needs the lesson_comments table. Run supabase/migrations/20260904000006_lesson_comments.sql in the Supabase SQL Editor."
+  "Discussion needs the lesson comment tables. Run the lesson comment migrations in supabase/migrations/ in the Supabase SQL Editor."
 
 function isMissingTable(error: { code?: string; message?: string }) {
   return (
     error.code === "PGRST205" ||
     error.code === "42P01" ||
-    /lesson_comments|lesson_comment_votes/i.test(error.message ?? "")
+    error.code === "42703" ||
+    /lesson_comments|lesson_comment_votes|lesson_comment_reports/i.test(
+      error.message ?? ""
+    )
   )
 }
 
@@ -43,6 +50,7 @@ function mapComment(row: LessonCommentRow, votedIds: Set<string>): LessonComment
     voteCount: row.vote_count,
     createdAt: row.created_at,
     voted: votedIds.has(row.id),
+    hidden: row.hidden_at !== null,
   }
 }
 
@@ -135,7 +143,7 @@ export async function fetchLessonComments(category: string, lessonId: string) {
   const { data, error } = await client
     .from("lesson_comments")
     .select(
-      "id, user_id, category, lesson_id, parent_id, body, author_name, vote_count, created_at"
+      COMMENT_COLUMNS
     )
     .eq("category", category)
     .eq("lesson_id", lessonId)
@@ -155,22 +163,37 @@ export async function fetchLessonComments(category: string, lessonId: string) {
   const rows = (data ?? []) as LessonCommentRow[]
   const ids = rows.map((row) => row.id)
   const votedIds = new Set<string>()
+  const reportedIds = new Set<string>()
 
   if (user && ids.length > 0) {
-    const { data: votes } = await client
-      .from("lesson_comment_votes")
-      .select("comment_id")
-      .eq("user_id", user.id)
-      .in("comment_id", ids)
+    const [{ data: votes }, { data: reports }] = await Promise.all([
+      client
+        .from("lesson_comment_votes")
+        .select("comment_id")
+        .eq("user_id", user.id)
+        .in("comment_id", ids),
+      client
+        .from("lesson_comment_reports")
+        .select("comment_id")
+        .eq("user_id", user.id)
+        .in("comment_id", ids),
+    ])
 
     for (const vote of votes ?? []) {
       votedIds.add((vote as { comment_id: string }).comment_id)
+    }
+    for (const report of reports ?? []) {
+      reportedIds.add((report as { comment_id: string }).comment_id)
     }
   }
 
   return {
     ok: true as const,
-    threads: nestLessonComments(rows.map((row) => mapComment(row, votedIds))),
+    threads: nestLessonComments(
+      rows
+        .filter((row) => !reportedIds.has(row.id))
+        .map((row) => mapComment(row, votedIds))
+    ),
     userId: user?.id ?? null,
   }
 }
@@ -224,7 +247,7 @@ export async function postLessonComment({
       author_name: authorNameFromUser(user),
     })
     .select(
-      "id, user_id, category, lesson_id, parent_id, body, author_name, vote_count, created_at"
+      COMMENT_COLUMNS
     )
     .single()
 
@@ -280,6 +303,41 @@ export async function toggleLessonCommentVote(commentId: string, currentlyVoted:
         : isMissingTable(error)
           ? MISSING_TABLE_MESSAGE
           : "Could not update the vote. Try again in a moment.",
+    }
+  }
+
+  return { ok: true as const }
+}
+
+export async function reportLessonComment(commentId: string) {
+  const { client, user } = await getLessonCommentViewer()
+  if (!client || !user) {
+    return { ok: false as const, message: "Sign in to report a comment." }
+  }
+
+  try {
+    await getLearner(client)
+  } catch {
+    return {
+      ok: false as const,
+      message: "Could not verify your account. Try signing in again.",
+    }
+  }
+
+  const { error } = await client.from("lesson_comment_reports").insert({
+    comment_id: commentId,
+    user_id: user.id,
+  })
+
+  // A duplicate report means this learner already flagged it, which is the goal.
+  if (error && error.code !== "23505") {
+    return {
+      ok: false as const,
+      message: /report your own/i.test(error.message)
+        ? "You cannot report your own comment."
+        : isMissingTable(error)
+          ? MISSING_TABLE_MESSAGE
+          : "Could not report the comment. Try again in a moment.",
     }
   }
 

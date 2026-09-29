@@ -60,6 +60,7 @@ export type LessonCommentRow = {
   body: string
   author_name: string
   vote_count: number
+  hidden_at: string | null
   created_at: string
 }
 
