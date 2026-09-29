@@ -22,6 +22,9 @@ export type MockEndpointDraft = {
 
 const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 
+// Matches the mock_endpoints_response_body_size check in the database.
+export const MAX_RESPONSE_BODY_BYTES = 10240
+
 export function normalizeSlug(value: string) {
   return value.trim().toLowerCase().replaceAll(/[^a-z0-9-]/g, "")
 }
@@ -74,13 +77,19 @@ export function validateMockDraft(input: {
     return { ok: false, error: "Status code must be an integer from 100 to 599." }
   }
 
+  const responseBody = input.responseBody ?? {}
+  const bodyBytes = new TextEncoder().encode(JSON.stringify(responseBody)).length
+  if (bodyBytes > MAX_RESPONSE_BODY_BYTES) {
+    return { ok: false, error: "Response body must be 10 KB or smaller." }
+  }
+
   return {
     ok: true,
     draft: {
       slug,
       method: input.method,
       statusCode,
-      responseBody: input.responseBody ?? {},
+      responseBody,
     },
   }
 }

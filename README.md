@@ -196,6 +196,7 @@ Apply everything under `supabase/migrations/` in order (or via CLI). Highlights:
 - site bug reports
 - Pro membership columns
 - delete policies for **Reset progress**
+- daily Mock Interviewer quota + 10 KB cap on mock endpoint bodies
 
 ---
 
