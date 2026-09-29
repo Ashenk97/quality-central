@@ -3,6 +3,7 @@ import { Inter, JetBrains_Mono, Space_Grotesk } from "next/font/google"
 
 import { GridBackground } from "@/components/layout/grid-background"
 import { Providers } from "@/components/layout/providers"
+import { getSiteUrl } from "@/lib/env"
 
 import "./globals.css"
 
@@ -22,6 +23,7 @@ const jetbrainsMono = JetBrains_Mono({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL(getSiteUrl()),
   title: {
     default: "Quality Central",
     template: "%s · Quality Central",

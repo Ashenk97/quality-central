@@ -17,7 +17,14 @@ const PUBLIC_PATHS = new Set<string>([
 // - /auth completes the OAuth handshake before a session cookie exists.
 // - /api answers with its own status codes instead of an HTML redirect.
 // - /_next and /__nextjs are framework internals (assets, HMR, dev overlay).
-const PUBLIC_PREFIXES = ["/auth", "/api", "/_next", "/__nextjs"]
+// - /opengraph-image is fetched by link-preview crawlers that never sign in.
+const PUBLIC_PREFIXES = [
+  "/auth",
+  "/api",
+  "/_next",
+  "/__nextjs",
+  "/opengraph-image",
+]
 
 export function isPublicPath(pathname: string) {
   if (PUBLIC_PATHS.has(pathname)) {
