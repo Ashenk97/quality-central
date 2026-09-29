@@ -106,6 +106,7 @@ export type CatalogModule = {
   sectionTitle: string
   icon: LucideIcon
   difficulty?: Difficulty
+  beta?: boolean
   lessonId?: string
   category?: string
 }
@@ -124,6 +125,7 @@ export type TrackSummary = {
   href: string
   icon: LucideIcon
   difficulty?: Difficulty
+  beta?: boolean
   percent: number
   done: number
   total: number
@@ -171,6 +173,7 @@ function asCatalogModule(
       sectionTitle: section.title,
       icon: section.icon,
       difficulty: section.difficulty,
+      beta: section.beta,
     }
   }
 
@@ -184,6 +187,7 @@ function asCatalogModule(
     sectionTitle: section.title,
     icon: section.icon,
     difficulty: topic.difficulty ?? section.difficulty,
+    beta: section.beta,
     lessonId: topic.lessonId,
     category: section.category,
   }
@@ -278,6 +282,7 @@ export function resolveCatalog(progress: ProgressReader): {
         href: section.href,
         icon: section.icon,
         difficulty: section.difficulty,
+        beta: section.beta,
         percent,
         done,
         total,
@@ -318,6 +323,7 @@ export function resolveCatalog(progress: ProgressReader): {
       href: section.href,
       icon: section.icon,
       difficulty: section.difficulty,
+      beta: section.beta,
       percent,
       done,
       total: lessons.length,

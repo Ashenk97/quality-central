@@ -7,6 +7,7 @@ import {
   LockIcon,
 } from "lucide-react"
 
+import { BetaMark } from "@/components/beta-mark"
 import { DifficultyBadge } from "@/components/difficulty-badge"
 import { SuccessBar } from "@/components/progress-visuals"
 import { Badge } from "@/components/ui/badge"
@@ -75,6 +76,7 @@ export function ModuleCard({ module }: { module: ResolvedModule }) {
         </div>
 
         <div className="flex min-h-6 flex-wrap items-center gap-1.5">
+          {module.beta ? <BetaMark /> : null}
           {module.difficulty ? (
             <DifficultyBadge difficulty={module.difficulty} />
           ) : null}

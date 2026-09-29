@@ -3,6 +3,7 @@
 import { type FormEvent, useState } from "react"
 import { BugIcon, CheckIcon, PartyPopperIcon } from "lucide-react"
 
+import { BetaMark } from "@/components/beta-mark"
 import { DifficultyBadge } from "@/components/difficulty-badge"
 import { QaModeToggle } from "@/components/sandbox/qa-mode"
 import { Button } from "@/components/ui/button"
@@ -113,12 +114,13 @@ export function SandboxHunter() {
             The Sandbox
           </h1>
           <DifficultyBadge difficulty="advanced" />
+          <BetaMark />
           <span className="font-mono text-xs text-muted-foreground">
             {ready ? `${points} / ${MAX_SANDBOX_POINTS} pts` : "-"}
           </span>
         </div>
         <p className="max-w-2xl text-muted-foreground">
-          Hunt defects in this live Nimbus Outfitters checkout. Treat it like a
+          Hunt defects in this live GENKI Wardrobe checkout. Treat it like a
           production store: explore the UI, try odd inputs, and file what you
           find. Do not assume the happy path is clean.
         </p>

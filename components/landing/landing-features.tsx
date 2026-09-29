@@ -26,6 +26,7 @@ const tracks = getTrackSections().map((section) => ({
   title: section.title,
   icon: section.icon,
   difficulty: section.difficulty,
+  beta: section.beta,
   lessons: getSectionLessons(section).length,
 }))
 
@@ -62,6 +63,9 @@ function CurriculumPreview() {
           <span className="ml-auto shrink-0 text-[10px] text-muted-foreground">
             {track.lessons === 1 ? "1 lesson" : `${track.lessons} lessons`}
           </span>
+          {track.beta ? (
+            <BetaMark className="shrink-0 px-1.5 py-0 text-[10px]" />
+          ) : null}
           {track.difficulty ? (
             <DifficultyBadge
               difficulty={track.difficulty}

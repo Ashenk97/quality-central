@@ -38,6 +38,7 @@ export type CurriculumSection = {
   category?: string
   track?: Track
   difficulty?: Difficulty
+  beta?: boolean
   items?: CurriculumTopic[]
 }
 
@@ -272,6 +273,7 @@ export const curriculum: CurriculumSection[] = [
     category: "interview-prep",
     track: "interview",
     difficulty: "beginner",
+    beta: true,
     items: [
       {
         title: "Cracking the QA Intern Interview",
@@ -288,6 +290,7 @@ export const curriculum: CurriculumSection[] = [
     description: "Interactive bug hunting practice",
     icon: Bug,
     difficulty: "advanced",
+    beta: true,
   },
   {
     title: "Capstone",
@@ -297,6 +300,7 @@ export const curriculum: CurriculumSection[] = [
     category: "capstone",
     track: "capstone",
     difficulty: "advanced",
+    beta: true,
     items: [
       {
         title: "Capstone Project: The QA Sprint Simulation",
@@ -315,6 +319,7 @@ export const curriculum: CurriculumSection[] = [
     category: "next-gen",
     track: "next-gen",
     difficulty: "advanced",
+    beta: true,
     items: [
       {
         title: "AI in QA: Prompting & Test Generation",

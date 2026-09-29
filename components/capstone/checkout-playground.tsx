@@ -5,7 +5,7 @@ import { useState } from "react"
 import { CodeEditor } from "@/components/code-editor"
 import { HttpStatusBadge } from "@/components/http-status-badge"
 import { Button } from "@/components/ui/button"
-import { DEFAULT_INVALID_CHECKOUT } from "@/lib/capstone"
+import { DEFAULT_INVALID_CHECKOUT, DEFAULT_VALID_CHECKOUT } from "@/lib/capstone"
 
 type ResponseView = {
   status: number
@@ -17,7 +17,7 @@ type ResponseView = {
 export function CapstoneCheckoutPlayground({
   onStatus,
 }: {
-  onStatus: (status: number) => void
+  onStatus?: (status: number) => void
 }) {
   const [body, setBody] = useState(DEFAULT_INVALID_CHECKOUT)
   const [loading, setLoading] = useState(false)
@@ -48,10 +48,10 @@ export function CapstoneCheckoutPlayground({
         timeMs: Math.round(performance.now() - started),
         body: pretty,
       })
-      onStatus(result.status)
+      onStatus?.(result.status)
     } catch (caught) {
       setResponse(null)
-      onStatus(0)
+      onStatus?.(0)
       setError(
         caught instanceof Error
           ? caught.message
@@ -71,19 +71,35 @@ export function CapstoneCheckoutPlayground({
             POST /api/checkout
           </p>
         </div>
-        <Button
-          type="button"
-          onClick={sendRequest}
-          disabled={loading}
-          className="transition-transform duration-200 active:scale-[0.97]"
-        >
-          {loading ? "Sending…" : "Send"}
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setBody(DEFAULT_INVALID_CHECKOUT)}
+          >
+            Invalid example
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setBody(DEFAULT_VALID_CHECKOUT)}
+          >
+            Valid example
+          </Button>
+          <Button
+            type="button"
+            onClick={sendRequest}
+            disabled={loading}
+            className="transition-transform duration-200 active:scale-[0.97]"
+          >
+            {loading ? "Sending…" : "Send"}
+          </Button>
+        </div>
       </div>
       <div className="grid lg:grid-cols-2">
         <section className="border-b lg:border-r lg:border-b-0">
           <p className="px-3 pt-3 text-xs font-medium tracking-wide text-muted-foreground uppercase">
-            Invalid payload
+            JSON body
           </p>
           <CodeEditor
             language="json"
@@ -110,6 +126,12 @@ export function CapstoneCheckoutPlayground({
               </div>
             ) : null}
           </div>
+          {response && response.status >= 400 && response.status < 500 ? (
+            <p className="px-3 pt-2 text-xs text-muted-foreground">
+              {response.status} means this payload was rejected. Change the JSON
+              and send it again.
+            </p>
+          ) : null}
           <CodeEditor
             language={error ? "plaintext" : "json"}
             value={error ?? response?.body ?? "// Send the invalid payload."}

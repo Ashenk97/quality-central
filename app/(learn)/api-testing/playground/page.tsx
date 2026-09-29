@@ -14,8 +14,9 @@ export default function ApiPlaygroundPage() {
           Mock API Playground
         </h1>
         <p className="max-w-2xl text-muted-foreground">
-          Send GET and POST requests to the dummy Quality Central API. Status
-          codes 200, 404, and 500 are driven by the URL query or JSON{" "}
+          Send GET and POST requests to the practice GENKI catalog. A normal
+          call returns the hoodie and beanie. Status codes 200, 404, and 500
+          are driven by the URL query or JSON{" "}
           <code className="font-mono text-foreground">status</code> field.
         </p>
       </div>

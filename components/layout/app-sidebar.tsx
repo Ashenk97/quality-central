@@ -5,6 +5,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { HomeIcon } from "lucide-react"
 
+import { BetaMark } from "@/components/beta-mark"
 import { Brand } from "@/components/brand"
 import { DifficultyBadge } from "@/components/difficulty-badge"
 import { LessonCompleteIcon } from "@/components/lessons/lesson-complete-icon"
@@ -26,6 +27,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { curriculum } from "@/lib/curriculum"
+import { cn } from "@/lib/utils"
 
 export function AppSidebar() {
   const pathname = usePathname()
@@ -57,20 +59,41 @@ export function AppSidebar() {
                   <SidebarMenuButton
                     asChild
                     isActive={pathname === section.href}
-                    tooltip={section.title}
-                    className="transition-colors duration-200 data-active:bg-sidebar-primary/10 data-active:font-medium data-active:text-sidebar-primary"
+                    tooltip={
+                      section.beta ? `${section.title} (Beta)` : section.title
+                    }
+                    className={cn(
+                      "transition-colors duration-200 data-active:bg-sidebar-primary/10 data-active:font-medium data-active:text-sidebar-primary",
+                      section.beta &&
+                        "h-auto! items-start py-1.5 [&>span:last-child]:overflow-visible [&>span:last-child]:whitespace-normal"
+                    )}
                   >
                     <Link href={section.href}>
-                      <section.icon />
-                      <span className="flex min-w-0 flex-1 items-center gap-2">
-                        <span className="truncate">{section.title}</span>
-                        {section.difficulty ? (
-                          <DifficultyBadge
-                            difficulty={section.difficulty}
-                            className="ml-auto h-4 px-1.5 text-[10px] group-data-[collapsible=icon]:hidden"
-                          />
-                        ) : null}
-                      </span>
+                      <section.icon className={section.beta ? "mt-0.5" : undefined} />
+                      {section.beta ? (
+                        <span className="flex min-w-0 flex-1 flex-col gap-1">
+                          <span className="leading-snug">{section.title}</span>
+                          <span className="flex items-center gap-1 group-data-[collapsible=icon]:hidden">
+                            <BetaMark className="h-4 px-1.5 text-[10px]" />
+                            {section.difficulty ? (
+                              <DifficultyBadge
+                                difficulty={section.difficulty}
+                                className="h-4 px-1.5 text-[10px]"
+                              />
+                            ) : null}
+                          </span>
+                        </span>
+                      ) : (
+                        <span className="flex min-w-0 flex-1 items-center gap-2">
+                          <span className="truncate">{section.title}</span>
+                          {section.difficulty ? (
+                            <DifficultyBadge
+                              difficulty={section.difficulty}
+                              className="ml-auto h-4 px-1.5 text-[10px] group-data-[collapsible=icon]:hidden"
+                            />
+                          ) : null}
+                        </span>
+                      )}
                     </Link>
                   </SidebarMenuButton>
                   {section.items ? (

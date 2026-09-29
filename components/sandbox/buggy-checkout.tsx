@@ -27,8 +27,8 @@ import {
 import { cn } from "@/lib/utils"
 
 const CART_ITEMS = [
-  { id: "pack", name: "Trail Pack 22L", detail: "Slate / One size", price: 6400 },
-  { id: "socks", name: "Merino Crew Socks", detail: "Heather grey", price: 1200 },
+  { id: "hoodie", name: "GENKI Hoodie", detail: "Black / M", price: 6400 },
+  { id: "beanie", name: "GENKI Beanie", detail: "Black", price: 1200 },
 ] as const
 
 const SHIPPING_CENTS = 600
@@ -132,7 +132,7 @@ export function BuggyCheckout() {
             </span>
             <div className="leading-tight">
               <p className="font-heading text-sm font-semibold">
-                Nimbus Outfitters
+                GENKI Wardrobe
               </p>
               <p className="text-xs text-muted-foreground">Secure checkout</p>
             </div>

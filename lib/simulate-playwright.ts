@@ -1,4 +1,4 @@
-export type SimulatedRun = {
+export type SpecCheck = {
   ok: boolean
   output: string
 }
@@ -8,17 +8,16 @@ type TestCase = {
   line: number
 }
 
-export function simulatePlaywrightRun(source: string): SimulatedRun {
+export function checkPlaywrightSpec(source: string): SpecCheck {
   const syntax = findSyntaxError(source)
   if (syntax) {
     return {
       ok: false,
       output: [
-        `Error: ${syntax.message}`,
-        `    at example.spec.ts:${syntax.line}:1`,
+        `Syntax error: ${syntax.message}`,
+        `example.spec.ts:${syntax.line}`,
         "",
-        "  1 failed",
-        `    example.spec.ts:${syntax.line}:1 › (could not parse file)`,
+        "Fix the file, then check it again. No browser was opened.",
       ].join("\n"),
     }
   }
@@ -28,45 +27,28 @@ export function simulatePlaywrightRun(source: string): SimulatedRun {
     return {
       ok: false,
       output: [
-        "Error: No test() blocks found.",
-        "Add a Playwright test('name', async ({ page }) => { ... }) call.",
+        "No test() blocks found.",
+        "Add test('name', async ({ page }) => { ... }).",
         "",
-        "  0 passed",
+        "No browser was opened.",
       ].join("\n"),
     }
   }
 
-  const stamp = new Date().toLocaleTimeString()
   const lines = [
-    `[${stamp}] Running ${tests.length} test${tests.length === 1 ? "" : "s"} using 1 worker`,
+    `Parsed example.spec.ts`,
+    `Found ${tests.length} test${tests.length === 1 ? "" : "s"}:`,
+    ...tests.map(
+      (testCase, index) =>
+        `  ${index + 1}. ${testCase.name} (line ${testCase.line})`
+    ),
     "",
+    "Syntax check passed.",
+    "Assertions run after you install Playwright and execute this file. This page does not open a browser.",
   ]
 
-  let passed = 0
-  let failed = 0
-
-  tests.forEach((testCase, index) => {
-    const duration = 180 + index * 95
-    const shouldFail =
-      /\bfail\b/i.test(testCase.name) || /expect\(\s*false\s*\)/.test(source)
-
-    if (shouldFail) {
-      failed += 1
-      lines.push(
-        `  ✗  ${index + 1} ${testCase.name} (${duration}ms)`,
-        `     Error: Simulated assertion failed`
-      )
-      return
-    }
-
-    passed += 1
-    lines.push(`  ✓  ${index + 1} ${testCase.name} (${duration}ms)`)
-  })
-
-  lines.push("", `  ${passed} passed${failed ? `  ${failed} failed` : ""}`)
-
   return {
-    ok: failed === 0,
+    ok: true,
     output: lines.join("\n"),
   }
 }

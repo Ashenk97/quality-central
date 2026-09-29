@@ -73,7 +73,7 @@ export function validatePhase4Playwright(source: string): string | null {
     return "Write a Playwright spec for the GENKI hoodie checkout."
   }
   if (!PLAYWRIGHT_LOCATOR.test(source)) {
-    return "Use page.locator to target the GENKI cart controls."
+    return "Use page.locator to target the GENKI hoodie on the checkout."
   }
   if (!PLAYWRIGHT_EXPECT.test(source)) {
     return "Assert with expect(."
@@ -167,11 +167,18 @@ export function clearCapstoneClaim() {
 
 export const DEFAULT_CAPSTONE_SPEC = `import { test, expect } from "@playwright/test"
 
-test("GENKI hoodie checkout increases the cart counter", async ({ page }) => {
+test("GENKI hoodie is on the sandbox checkout", async ({ page }) => {
   await page.goto("/sandbox")
-  await page.locator('[data-testid="add-to-cart"]').click()
-  await expect(page.locator('[data-testid="cart-count"]')).toHaveText("1")
+  await expect(page.getByRole("heading", { name: "Checkout" })).toBeVisible()
+  await expect(page.locator("text=GENKI Hoodie")).toBeVisible()
 })
+`
+
+export const DEFAULT_VALID_CHECKOUT = `{
+  "email": "qa@genki.test",
+  "promoCode": "SAVE20",
+  "items": [{ "sku": "GENKI-HOODIE", "qty": 1 }]
+}
 `
 
 export const DEFAULT_INVALID_CHECKOUT = `{

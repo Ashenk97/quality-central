@@ -12,6 +12,7 @@ import { ResetProgressButton } from "@/components/dashboard/reset-progress-butto
 import { SkillTree } from "@/components/dashboard/skill-tree"
 import { CatalogFilterTabs } from "@/components/catalog/catalog-tabs"
 import { ModuleGrid } from "@/components/catalog/module-card"
+import { BetaMark } from "@/components/beta-mark"
 import { DifficultyBadge } from "@/components/difficulty-badge"
 import { RadialProgress, SuccessBar } from "@/components/progress-visuals"
 import { Badge } from "@/components/ui/badge"
@@ -241,9 +242,12 @@ export function DashboardProgress({
                     <track.icon className="size-4 text-success" />
                     <CardTitle>{track.title}</CardTitle>
                   </div>
-                  {track.difficulty ? (
-                    <DifficultyBadge difficulty={track.difficulty} />
-                  ) : null}
+                  <div className="flex shrink-0 items-center gap-1.5">
+                    {track.beta ? <BetaMark /> : null}
+                    {track.difficulty ? (
+                      <DifficultyBadge difficulty={track.difficulty} />
+                    ) : null}
+                  </div>
                 </div>
                 <CardDescription>{track.description}</CardDescription>
               </CardHeader>

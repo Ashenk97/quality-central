@@ -4,7 +4,7 @@ import { useState } from "react"
 
 import { CodeEditor } from "@/components/code-editor"
 import { Button } from "@/components/ui/button"
-import { simulatePlaywrightRun } from "@/lib/simulate-playwright"
+import { checkPlaywrightSpec } from "@/lib/simulate-playwright"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 
@@ -22,23 +22,24 @@ export function AutomationPlayground() {
   const [source, setSource] = useState(DEFAULT_PLAYWRIGHT_SCRIPT)
   const [running, setRunning] = useState(false)
   const [output, setOutput] = useState<string>(
-    "Click Run Test to parse the script and print a simulated Playwright report."
+    "Click Check spec to confirm the file parses and contains test() blocks."
   )
   const [passed, setPassed] = useState<boolean | null>(null)
 
   async function runTest() {
     setRunning(true)
-    setOutput("Running…")
-    await new Promise((resolve) => setTimeout(resolve, 700))
-    const result = simulatePlaywrightRun(source)
+    setOutput("Checking…")
+    const result = checkPlaywrightSpec(source)
     setPassed(result.ok)
     setOutput(result.output)
     setRunning(false)
     if (result.ok) {
-      toast.success("Simulated run passed")
+      toast.success("Spec parsed", {
+        description: "Syntax is valid. Assertions run in a local Playwright project.",
+      })
     } else {
-      toast.error("Simulated run failed", {
-        description: "Check the terminal output for parse details.",
+      toast.error("Spec needs a fix", {
+        description: "The terminal lists the parse problem.",
       })
     }
   }
@@ -55,7 +56,7 @@ export function AutomationPlayground() {
             Automation Playground
           </p>
           <p className="text-xs text-muted-foreground">
-            example.spec.ts, syntax is parsed locally; no browser is launched.
+            example.spec.ts. This page checks syntax. It does not open a browser.
           </p>
         </div>
         <Button
@@ -63,7 +64,7 @@ export function AutomationPlayground() {
           disabled={running}
           className="transition-transform duration-200 active:scale-[0.97]"
         >
-          {running ? "Running…" : "Run Test"}
+          {running ? "Checking…" : "Check spec"}
         </Button>
       </div>
 
@@ -82,7 +83,7 @@ export function AutomationPlayground() {
         <pre
           role="status"
           aria-live="polite"
-          aria-label="Simulated test output"
+          aria-label="Spec check output"
           className={cn(
             "max-h-64 overflow-auto p-3 font-mono text-xs leading-relaxed transition-colors duration-200",
             passed === false ? "text-qa-bug" : "text-qa-success"

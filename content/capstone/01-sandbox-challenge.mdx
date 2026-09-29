@@ -70,7 +70,7 @@ Open the live storefront: **[Sandbox checkout](/sandbox)**.
 Hunt at least:
 
 1. **Visual overlap**: on a **narrow viewport** (below 768px), Submit sits on top of CVC. You cannot complete a GENKI payment like a shopper on a phone.
-2. **Checkout total logic**: apply **SAVE20** more than once. The discount **stacks** instead of applying once, so the hoodie total is wrong.
+2. **Checkout total logic**: apply **SAVE20** more than once. The discount **stacks** instead of applying once, so the checkout total is wrong.
 
 Submit **one** report in Phase 2:
 
@@ -91,7 +91,9 @@ Submit **one** report in Phase 2:
 }
 ```
 
-An **invalid** payload (empty email, empty items, or a promo whose length is not 5-10) must return **400 Bad Request**. Practice that in the [API playground](/api-testing/playground) if you want a Postman-style send.
+An **invalid** payload (empty email, empty items, or a promo whose length is not 5-10) returns **400 Bad Request** and `orderStatus` Failed. The valid example returns **200** and `orderStatus` Pending. Send both from this page.
+
+<CheckoutPlayground />
 
 ### Mock schema and SQL
 
@@ -113,7 +115,7 @@ Paste your query into Phase 3.
 
 ## Phase 4: Automation
 
-The Sandbox playground does **not** launch Chrome. Write a spec the same way as [Your First Playwright Test](/courses/ui-automation/02-first-playwright-test): open the sandbox, add a **GENKI hoodie** to the cart, and assert the cart counter.
+The [Automation Playground](/ui-automation/playground) checks that a spec parses. It does not launch Chrome. The [Sandbox](/sandbox) checkout already lists the **GENKI Hoodie**. Assert that line. There is no add-to-cart button on this page.
 
 The grader looks for `page.locator` and `expect(`.
 
@@ -122,10 +124,10 @@ Starter shape (edit in the Monaco editor in Phase 4):
 ```ts
 import { test, expect } from "@playwright/test"
 
-test("GENKI hoodie checkout increases the cart counter", async ({ page }) => {
+test("GENKI hoodie is on the sandbox checkout", async ({ page }) => {
   await page.goto("/sandbox")
-  await page.locator('[data-testid="add-to-cart"]').click()
-  await expect(page.locator('[data-testid="cart-count"]')).toHaveText("1")
+  await expect(page.getByRole("heading", { name: "Checkout" })).toBeVisible()
+  await expect(page.locator("text=GENKI Hoodie")).toBeVisible()
 })
 ```
 

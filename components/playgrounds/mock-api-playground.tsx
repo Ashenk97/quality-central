@@ -135,7 +135,9 @@ export function MockApiPlayground() {
                 "font-mono transition-colors duration-200",
                 example.status === 200
                   ? "text-success hover:text-success"
-                  : "text-destructive hover:text-destructive"
+                  : example.status === 404
+                    ? "text-warning hover:text-warning"
+                    : "text-destructive hover:text-destructive"
               )}
               onClick={() => {
                 setMethod(example.method)
@@ -224,6 +226,12 @@ export function MockApiPlayground() {
               </div>
             ) : null}
           </div>
+          {response && response.status >= 400 && response.status < 500 ? (
+            <p className="px-3 pt-2 text-xs text-muted-foreground">
+              {response.status} is the response for this request. You can edit
+              the call and send it again.
+            </p>
+          ) : null}
           <CodeEditor
             language={error ? "plaintext" : (response?.language ?? "json")}
             value={responseValue}

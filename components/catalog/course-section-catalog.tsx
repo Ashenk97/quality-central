@@ -2,6 +2,7 @@
 
 import { useMemo } from "react"
 
+import { BetaMark } from "@/components/beta-mark"
 import { CatalogNavTabs } from "@/components/catalog/catalog-tabs"
 import { ModuleGrid } from "@/components/catalog/module-card"
 import { DifficultyBadge } from "@/components/difficulty-badge"
@@ -64,6 +65,7 @@ export function CourseSectionCatalog({
             <h1 className="font-heading text-2xl font-semibold tracking-tight">
               {section.title}
             </h1>
+            {section.beta ? <BetaMark /> : null}
             {section.difficulty ? (
               <DifficultyBadge difficulty={section.difficulty} />
             ) : null}
