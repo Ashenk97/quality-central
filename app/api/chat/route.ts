@@ -8,6 +8,7 @@ import {
 
 import { getCurrentUser } from "@/lib/auth/session"
 import { isAiGatewayConfigured } from "@/lib/env"
+import { createSupabaseServerClient } from "@/lib/supabase/server"
 import {
   getInterviewQuestion,
   MOCK_INTERVIEW_SYSTEM_PROMPT,
@@ -92,6 +93,21 @@ export async function POST(request: Request) {
 
   if (answerLength > MAX_ANSWER_CHARS) {
     return jsonError(400, "Answer is too long.")
+  }
+
+  const supabase = await createSupabaseServerClient()
+  if (!supabase) {
+    return jsonError(503, "Interview practice is not available right now.")
+  }
+
+  const { data: allowed, error: quotaError } = await supabase.rpc("consume_chat_quota")
+  if (quotaError) {
+    console.error("consume_chat_quota failed", quotaError)
+    return jsonError(503, "Interview practice is not available right now.")
+  }
+
+  if (allowed !== true) {
+    return jsonError(429, "You have used today's interview practice. Come back tomorrow.")
   }
 
   const result = streamText({

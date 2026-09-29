@@ -81,6 +81,9 @@ export async function saveMockEndpoint(
     if (error.code === "23505") {
       throw new Error("That slug and method are already taken.")
     }
+    if (error.code === "23514") {
+      throw new Error("Response body must be 10 KB or smaller.")
+    }
     throw error
   }
 
