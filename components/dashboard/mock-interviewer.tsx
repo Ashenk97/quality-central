@@ -5,6 +5,7 @@ import { useChat } from "@ai-sdk/react"
 import { DefaultChatTransport } from "ai"
 import { BriefcaseIcon, RotateCcwIcon, SendIcon } from "lucide-react"
 
+import { BetaMark } from "@/components/beta-mark"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -61,7 +62,7 @@ function MockInterviewChat({ question }: { question: InterviewQuestion }) {
         {messages.length === 0 ? (
           <p className="rounded-lg border border-dashed border-border/80 bg-muted/40 px-3 py-2 text-sm text-muted-foreground">
             Type your answer below. I will grade clarity, edge cases, and ISTQB
-            thinking — then tell you hire / lean hire / no hire.
+            thinking, then tell you hire / lean hire / no hire.
           </p>
         ) : null}
         {messages.map((message) => {
@@ -154,6 +155,7 @@ export function MockInterviewer() {
       >
         <BriefcaseIcon data-icon="inline-start" />
         Practice Interview
+        <BetaMark />
       </Button>
 
       <Sheet open={open} onOpenChange={setOpen}>
@@ -164,7 +166,10 @@ export function MockInterviewer() {
           <SheetHeader className="border-b border-border/80">
             <div className="flex items-start justify-between gap-3 pr-8">
               <div className="space-y-1">
-                <SheetTitle>Mock interviewer</SheetTitle>
+                <div className="flex items-center gap-2">
+                  <SheetTitle>Mock interviewer</SheetTitle>
+                  <BetaMark />
+                </div>
                 <SheetDescription>
                   Strict Senior QA Hiring Manager. Answer the prompt, then get a
                   score.

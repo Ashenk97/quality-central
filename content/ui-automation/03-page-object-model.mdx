@@ -11,7 +11,7 @@ track: automation
 
 ## What this lesson covers
 
-The **Page Object Model (POM)** is a design pattern: one class per screen (or major widget) owns locators and user actions. Specs call those methods and then **assert**. When the login email field changes from `#email` to `#user-email`, you edit **one** page class — not every spec that still copies `page.fill("#email", ...)`.
+The **Page Object Model (POM)** is a design pattern: one class per screen (or major widget) owns locators and user actions. Specs call those methods and then **assert**. When the login email field changes from `#email` to `#user-email`, you edit **one** page class, not every spec that still copies `page.fill("#email", ...)`.
 
 - What POM is and why it kills duplication
 - Selectors in a **page class**, assertions in a **test spec**
@@ -39,7 +39,7 @@ await page.fill("#password", process.env.QA_PASSWORD ?? "test-only")
 await page.click('button[type="submit"]')
 ```
 
-That block appears in checkout specs, dashboard specs, and "wrong password" specs. Six months later the designer wraps the email field and the id becomes `#user-email`. CI goes red in **every** file that still says `#email`. The bug is not the product — it is **copy-paste architecture**.
+That block appears in checkout specs, dashboard specs, and "wrong password" specs. Six months later the designer wraps the email field and the id becomes `#user-email`. CI goes red in **every** file that still says `#email`. The bug is not the product, it is **copy-paste architecture**.
 
 | Symptom | Cause |
 | --- | --- |
@@ -53,8 +53,8 @@ That block appears in checkout specs, dashboard specs, and "wrong password" spec
 
 POM is **separation of concerns** applied to UI tests:
 
-1. **Page class** — locators (how to find the email field) and actions (how a user signs in).
-2. **Spec** — Arrange / Act / Assert for a *scenario* (happy path, wrong password, locked account).
+1. **Page class**: locators (how to find the email field) and actions (how a user signs in).
+2. **Spec**: Arrange / Act / Assert for a *scenario* (happy path, wrong password, locked account).
 
 When eight specs call `login.signIn(...)`, they share **one** implementation. A selector change is one pull request, not a hunt through `grep "#email"`.
 
@@ -66,7 +66,7 @@ That is the primary architectural benefit: **centralize UI coupling** so tests s
 
 ## Step by step: page class vs spec
 
-Walk this in order. Do not start by rewriting every file — extract **login** first (it is the most duplicated screen).
+Walk this in order. Do not start by rewriting every file, extract **login** first (it is the most duplicated screen).
 
 ### 1. Name the screen and the file
 
@@ -81,7 +81,7 @@ e2e/
     checkout.spec.ts
 ```
 
-One class per file. `LoginPage` maps to the `/login` route. Checkout gets `CheckoutPage` later — do not dump the whole app into `AppPage`.
+One class per file. `LoginPage` maps to the `/login` route. Checkout gets `CheckoutPage` later, do not dump the whole app into `AppPage`.
 
 ### 2. Move selectors into the class
 
@@ -108,7 +108,7 @@ Replace the pasted `fill` / `click` block with `new LoginPage(page)`. Repeat unt
 
 ## LoginPage in TypeScript
 
-Page class — locators and actions only. Paste as `e2e/pages/login.page.ts`:
+Page class, locators and actions only. Paste as `e2e/pages/login.page.ts`:
 
 ```ts
 import { type Locator, type Page } from "@playwright/test"
@@ -180,14 +180,14 @@ test("wrong password shows an error and stays on login", async ({ page }) => {
 })
 ```
 
-Compare to the duplicated version from the previous lesson: the Act steps are one line. The Assert steps are still explicit, so a failure points at URL, alert, or heading — not at a generic `signIn` timeout unless the click itself never became actionable.
+Compare to the duplicated version from the previous lesson: the Act steps are one line. The Assert steps are still explicit, so a failure points at URL, alert, or heading, not at a generic `signIn` timeout unless the click itself never became actionable.
 
 | Layer | Owns | Example |
 | --- | --- | --- |
 | `LoginPage` | Selectors and gestures | `goto`, `signIn`, `errorAlert` |
 | `login.spec.ts` | Scenarios and oracles | dashboard URL, error text |
 
-Checkout can do `await login.signIn(...)` then `new CheckoutPage(page)` — still no copied `#email`.
+Checkout can do `await login.signIn(...)` then `new CheckoutPage(page)`, still no copied `#email`.
 
 ## What good POM is not
 
@@ -198,7 +198,7 @@ Checkout can do `await login.signIn(...)` then `new CheckoutPage(page)` — stil
 | Specs still calling `page.fill("#email")` | You did not adopt POM; you added a class nobody uses |
 | Returning `void` from every getter | Specs cannot `expect(login.errorAlert)` without extra methods |
 
-Expose **locators** you need to assert on (`errorAlert`). Keep **workflows** as methods (`signIn`). Do not invent `verifyLoginSuccess()` unless a huge suite already standardized on assertion helpers — even then, keep them out of the locator file if you can.
+Expose **locators** you need to assert on (`errorAlert`). Keep **workflows** as methods (`signIn`). Do not invent `verifyLoginSuccess()` unless a huge suite already standardized on assertion helpers, even then, keep them out of the locator file if you can.
 
 <Info title="Fixtures vs constructors">
 Teams often wrap `new LoginPage(page)` in a Playwright fixture so specs receive `login` already built. That is still POM: the class owns the UI; the fixture only injects it. Start with `new LoginPage(page)` until the pattern is boring.
@@ -208,7 +208,7 @@ Teams often wrap `new LoginPage(page)` in a Playwright fixture so specs receive 
 
 1. Copy `LoginPage` into a local Playwright project (or paste the spec shape into the [Automation Playground](/ui-automation/playground) to check `test()` syntax).
 2. Change the email locator **only** in the page class and confirm both specs still compile.
-3. Add a third spec that needs a logged-in user: call `login.signIn`, then assert something on the dashboard — do not paste `#password` again.
+3. Add a third spec that needs a logged-in user: call `login.signIn`, then assert something on the dashboard, do not paste `#password` again.
 
 ```json
 {
@@ -249,7 +249,7 @@ Teams often wrap `new LoginPage(page)` in a Playwright fixture so specs receive 
       options: [
         "All eight specs plus the config file",
         "Only the LoginPage class that owns the email locator",
-        "None — POM ignores locator changes",
+        "None: POM ignores locator changes",
         "Every Markdown lesson in Foundation"
       ],
       correctAnswer: 1,

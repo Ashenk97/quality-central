@@ -17,7 +17,7 @@ const LOGS = [
   { id: "ui", text: "[PASS] Compiling UI components", pass: true },
   { id: "session", text: "[PASS] Validating session state", pass: true },
   { id: "progress", text: "[PASS] Hydrating progress store", pass: true },
-  { id: "done", text: "Suite passed — revealing route", pass: false },
+  { id: "done", text: "Suite passed, revealing route", pass: false },
 ] as const
 
 export function RouteLoading({

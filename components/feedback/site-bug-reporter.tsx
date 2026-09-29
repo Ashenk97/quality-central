@@ -68,7 +68,7 @@ export function SiteBugReporter() {
     }
 
     toast.success("Bug filed", {
-      description: "Thanks — we logged this against the live platform.",
+      description: "Thanks. We logged this against the live platform.",
     })
     setOpen(false)
     reset()
@@ -111,7 +111,7 @@ export function SiteBugReporter() {
             <SheetHeader className="border-b border-white/10">
               <SheetTitle>Report a platform bug</SheetTitle>
               <SheetDescription>
-                Use this for real defects on Quality Central — broken pages,
+                Use this for real defects on Quality Central, broken pages,
                 auth, progress, or the editor. Sandbox training bugs stay in QA
                 Mode.
               </SheetDescription>

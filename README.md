@@ -4,7 +4,7 @@
 
 <img
   src="https://readme-typing-svg.demolab.com?font=Space+Grotesk&weight=600&size=26&duration=3200&pause=900&color=22C55E&center=true&vCenter=true&multiline=true&width=720&height=90&lines=Zero+%E2%86%92+Advanced+QA+Engineering;Hunt+bugs.+Ship+confidence.+Level+up."
-  alt="Zero to Advanced QA Engineering — Hunt bugs. Ship confidence. Level up."
+  alt="Zero to Advanced QA Engineering: Hunt bugs. Ship confidence. Level up."
 />
 
 <br />
@@ -31,12 +31,12 @@
 
 ## ✨ What’s inside?
 
-Quality Central is not a pile of PDFs — it’s a **hands-on QA career path** with progress unlocks, playgrounds, and a buggy sandbox that wants to be broken.
+Quality Central is not a pile of PDFs. It is a **hands-on QA career path** with progress unlocks, playgrounds, and a buggy sandbox that wants to be broken.
 
 | 🎮 Feature | 💬 What you get |
 | --- | --- |
 | 📚 **MDX lessons** | Foundation → API → Technical Core → UI Automation → Interview → Capstone → Next-Gen |
-| 🔒 **Sequential unlocks** | Finish a module to open the next — no skipping ahead |
+| 🔒 **Sequential unlocks** | Finish a module to open the next, no skipping ahead |
 | 🧪 **The Sandbox** | Seeded defects to hunt, report, and score |
 | 📡 **API Playground** | Hit endpoints live and inspect responses |
 | 🖥️ **Automation Playground** | Write / explore Playwright-style flows |
@@ -49,7 +49,7 @@ Quality Central is not a pile of PDFs — it’s a **hands-on QA career path** w
 | 📊 **Dashboard** | Progress rings, tracks, quiz averages, sandbox score |
 | 🔄 **Reset progress** | Wipe lessons / quizzes / sandbox / badges and start over |
 | ♿ **A11y linting** | `lint:a11y` + CI so accessibility stays in the build |
-| 💎 **Pro (feature-flagged)** | Stripe checkout + premium lesson gating — off by default |
+| 💎 **Pro (feature-flagged)** | Stripe checkout + premium lesson gating, off by default |
 
 ---
 
@@ -79,7 +79,7 @@ Quality Central is not a pile of PDFs — it’s a **hands-on QA career path** w
 
 <img
   src="https://readme-typing-svg.demolab.com?font=Space+Grotesk&size=16&duration=3500&pause=800&color=38BDF8&center=true&vCenter=true&width=620&height=36&lines=From+first+test+case+to+capstone+sprint+%E2%80%94+one+path.+Lots+of+bugs."
-  alt="From first test case to capstone sprint — one path. Lots of bugs."
+  alt="From first test case to capstone sprint, one path. Lots of bugs."
 />
 
 ---
@@ -102,7 +102,7 @@ Quality Central is not a pile of PDFs — it’s a **hands-on QA career path** w
 # 1. Install
 npm install
 
-# 2. Env — copy and fill Supabase keys
+# 2. Env: copy and fill Supabase keys
 cp .env.example .env.local
 
 # 3. Apply SQL migrations in your Supabase project

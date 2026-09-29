@@ -23,7 +23,7 @@ track: automation
 After this lesson you will be able to explain when a UI test is the right layer, and name one journey you would automate on Nimbus before you automate the About page.
 
 <Info title="Playground">
-The [Automation Playground](/ui-automation/playground) lets you edit a Playwright `test()` shape. It checks syntax — it does not launch a browser yet. Use it after you can read a spec.
+The [Automation Playground](/ui-automation/playground) lets you edit a Playwright `test()` shape. It checks syntax, it does not launch a browser yet. Use it after you can read a spec.
 </Info>
 
 ## What a UI test actually does
@@ -47,7 +47,7 @@ Automate **high-value, stable** user journeys:
 
 1. Login (if the product has it)
 2. Checkout / pay
-3. Apply one promo code (`SAVE10`) — the rule you already tested by hand and by API
+3. Apply one promo code (`SAVE10`), the rule you already tested by hand and by API
 4. A smoke path after every deploy ("can a guest add a mug?")
 
 Do **not** start with:
@@ -64,7 +64,7 @@ If checkout is still changing daily, a UI test will fail daily. Stabilize the pr
 ## Step-by-step: pick one Nimbus journey
 
 1. **Name the risk.** "Second `SAVE10` must not stack; Pay must stay honest."
-2. **Decide the layer.** Stacking is an API rule — still add **one** UI test that shows the total on screen, because users see the label.
+2. **Decide the layer.** Stacking is an API rule, still add **one** UI test that shows the total on screen, because users see the label.
 3. **Write the user steps** the same way you write a bug report: given, when, then.
 4. **Choose locators** next lesson (role and name, not a 12-part CSS chain).
 5. **Run in CI** on a known build, not only on your laptop.
@@ -100,7 +100,7 @@ Next: the **DOM** (how the page is built), then **frameworks** (Playwright vs th
     "Captchas and 2FA prompts"
   ]}
   correctIndex={1}
-  explanation="Early automation pays off on journeys that are both important and relatively stable — checkout, not the weekly landing-page experiment."
+  explanation="Early automation pays off on journeys that are both important and relatively stable, checkout, not the weekly landing-page experiment."
   questions={[
     {
       question: "Why keep API tests even if you have UI automation?",
@@ -117,7 +117,7 @@ Next: the **DOM** (how the page is built), then **frameworks** (Playwright vs th
       question: "A UI test that fails every time design moves a div is usually:",
       options: [
         "Proof the product is untestable forever",
-        "Coupled to incidental layout instead of user-facing meaning — fix locators and scope",
+        "Coupled to incidental layout instead of user-facing meaning, fix locators and scope",
         "A reason to delete all API tests",
         "A 500 from the kitchen API"
       ],

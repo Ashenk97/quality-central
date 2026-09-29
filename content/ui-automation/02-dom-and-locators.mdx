@@ -11,7 +11,7 @@ track: automation
 
 ## What this lesson covers
 
-The **DOM (Document Object Model)** is the tree of elements the browser builds from HTML. Automation does not "see" the pretty screenshot first — it queries this tree (and the **accessibility tree** derived from it).
+The **DOM (Document Object Model)** is the tree of elements the browser builds from HTML. Automation does not "see" the pretty screenshot first, it queries this tree (and the **accessibility tree** derived from it).
 
 - DOM vs what you see
 - Why long CSS/XPath chains flake
@@ -23,7 +23,7 @@ The **DOM (Document Object Model)** is the tree of elements the browser builds f
 After this lesson you will be able to choose a locator that still works after a designer rearranges classes. Prefer role and name (see the Playwright examples below) over a long CSS chain such as `div > div > span.btn-3`.
 
 <Info title="Accessibility is a test oracle">
-If a button has no accessible name, a screen-reader user cannot find it — and neither can a good locator. Filing "missing name" is both a11y and automation hygiene.
+If a button has no accessible name, a screen-reader user cannot find it, and neither can a good locator. Filing "missing name" is both a11y and automation hygiene.
 </Info>
 
 ## The page is a tree
@@ -40,13 +40,13 @@ Testers care about:
 
 | Idea | Why it matters |
 | --- | --- |
-| Roles | `button`, `textbox`, `link` — how the control is used |
+| Roles | `button`, `textbox`, `link`, how the control is used |
 | Accessible name | The label or button text a user hears |
 | Test id | `data-testid` when the UI has no stable name |
 | Hidden nodes | `display: none` may still exist in the DOM |
 
 <Warning title="Visible is not the same as in the DOM">
-An overlay can cover Pay. The button is in the tree and "enabled" in HTML, but the user cannot click it. QA Mode in the Sandbox outlines spots like this — your UI test should click the real control, not a covered one.
+An overlay can cover Pay. The button is in the tree and "enabled" in HTML, but the user cannot click it. QA Mode in the Sandbox outlines spots like this, your UI test should click the real control, not a covered one.
 </Warning>
 
 ## Locators that survive redesign
@@ -94,7 +94,7 @@ That chain is coupled to **incidental structure**. One wrapper div from a CSS-in
 ## Debugging a flake
 
 1. Screenshot on failure (Playwright does this in CI).
-2. Print `page.getByRole('button').allTextContents()` — did the name change?
+2. Print `page.getByRole('button').allTextContents()`, did the name change?
 3. Check overlays (the Sandbox CVC/Pay overlap is a **product** bug, not a locator puzzle).
 4. Wait for **readiness** (next Playwright lesson), not `sleep(5000)`.
 

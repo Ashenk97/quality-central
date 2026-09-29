@@ -19,7 +19,7 @@ The **software testing life cycle** is the tester's operating system. SDLC decid
 
 ## Outcome
 
-After this lesson you will be able to run a test cycle with a plan, a design, evidence, and a closure note — not just a pile of tickets.
+After this lesson you will be able to run a test cycle with a plan, a design, evidence, and a closure note, not just a pile of tickets.
 
 <Info title="STLC is not a waterfall tax">
 In Scrum you still plan, design, execute, and close. You just do it in hours or days per story, and you keep a thin suite living across sprints. The phases are activities, not calendar months.
@@ -87,7 +87,7 @@ Black-box samples:
 | ID | Idea | Expected |
 | --- | --- | --- |
 | QC-D1 | Apply SAVE20 once | 20% off subtotal, tax on discounted amount |
-| QC-D2 | Apply SAVE20 twice | Still a single 20% — no stack |
+| QC-D2 | Apply SAVE20 twice | Still a single 20%, no stack |
 | QC-D3 | Clear coupon | Original subtotal restored |
 | QC-D4 | Viewport 375px | CVC and Submit both usable |
 
@@ -107,7 +107,7 @@ You run QC-D2 and the total drops again. That is a **failure**. You file a defec
 
 A useful closure paragraph:
 
-> Executed 4 of 4 P0 cases. QC-D2 failed (discount stacking) — open Sev-2. QC-D4 passed on 375px. Gift cards still out of scope. Recommend blocking release of the coupon flag until QC-D2 is retested.
+> Executed 4 of 4 P0 cases. QC-D2 failed (discount stacking), open Sev-2. QC-D4 passed on 375px. Gift cards still out of scope. Recommend blocking release of the coupon flag until QC-D2 is retested.
 
 That paragraph is what stakeholders actually need. Screenshots live in the defect, not in the summary.
 
@@ -119,7 +119,7 @@ ISTQB splits **planning** (decide) from **control** (steer). During execution yo
 Planned P0: 12
 Executed:   9
 Blocked:    2 (payment sandbox)
-Deferred:   1 (gift card — out of scope after analysis)
+Deferred:   1 (gift card, out of scope after analysis)
 ```
 
 Numbers like these belong in standup. They are STLC monitoring, not bureaucracy.
@@ -149,7 +149,7 @@ Numbers like these belong in standup. They are STLC monitoring, not bureaucracy.
         "Developers merge to main"
       ],
       correctAnswer: 2,
-      explanation: "Closure wraps evidence, open risks, and next actions — not just 'we ran some tests'."
+      explanation: "Closure wraps evidence, open risks, and next actions, not just 'we ran some tests'."
     },
     {
       question: "A payment sandbox is down and every checkout case would fail for the same reason. The correct STLC move is:",

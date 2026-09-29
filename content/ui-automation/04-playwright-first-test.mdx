@@ -74,13 +74,13 @@ test("SAVE10 does not stack", async ({ page }) => {
 })
 ```
 
-If the Sandbox still contains the seeded stacking bug, this test **should fail** until you are hunting it as a learner — that is a good fail. Do not "fix" the product to make the spec green if the bug is planted on purpose.
+If the Sandbox still contains the seeded stacking bug, this test **should fail** until you are hunting it as a learner, that is a good fail. Do not "fix" the product to make the spec green if the bug is planted on purpose.
 
 ## When it fails
 
 1. Open the **trace** (Playwright Trace Viewer) or the screenshot on the CI artifact.
 2. Check the locator name against the snapshot.
-3. Check you waited for the right network (cart totals) — `expect` on the total, not a random `sleep`.
+3. Check you waited for the right network (cart totals), `expect` on the total, not a random `sleep`.
 4. If Pay is covered by another control, you found a **product** defect; assert the overlap or file a manual bug.
 
 ```json
@@ -102,7 +102,7 @@ If the Sandbox still contains the seeded stacking bug, this test **should fail**
   question="Why does Playwright encourage expect(locator).toBeVisible() instead of sleep(5000)?"
   options={[
     "Sleep is illegal in JavaScript",
-    "Assertions retry until the condition is true or timeout — faster and less flaky than a fixed sleep",
+    "Assertions retry until the condition is true or timeout, faster and less flaky than a fixed sleep",
     "Visible always means the API returned 200",
     "Sleep is required for GET requests"
   ]}

@@ -114,7 +114,7 @@ export function SandboxHunter() {
           </h1>
           <DifficultyBadge difficulty="advanced" />
           <span className="font-mono text-xs text-muted-foreground">
-            {ready ? `${points} / ${MAX_SANDBOX_POINTS} pts` : "—"}
+            {ready ? `${points} / ${MAX_SANDBOX_POINTS} pts` : "-"}
           </span>
         </div>
         <p className="max-w-2xl text-muted-foreground">
@@ -148,7 +148,7 @@ export function SandboxHunter() {
                 <DialogTitle>Report a defect</DialogTitle>
                 <DialogDescription>
                   Log what you found. Reports are checked against the seeded
-                  Sandbox coordinates — only a matching, specific write-up is
+                  Sandbox coordinates, only a matching, specific write-up is
                   credited.
                 </DialogDescription>
               </DialogHeader>

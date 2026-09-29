@@ -183,7 +183,7 @@ export function HeroTestRunner() {
           <span className="size-2.5 rounded-full bg-[#FEBC2E]" />
           <span className="size-2.5 rounded-full bg-[#28C840]" />
           <span className="ml-2 truncate font-mono text-[11px] tracking-wide text-zinc-500">
-            playwright — test runner
+            playwright, test runner
           </span>
         </div>
 

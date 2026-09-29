@@ -140,7 +140,7 @@ export const curriculum: CurriculumSection[] = [
         href: courseHref("api-testing", "01-introduction-to-api-testing"),
         lessonId: "01-introduction-to-api-testing",
         difficulty: "intermediate",
-        description: "Client, waiter, kitchen — and how JSON carries the plate",
+        description: "Client, waiter, kitchen: and how JSON carries the plate",
       },
       {
         title: "HTTP Methods & Status Codes",
@@ -303,7 +303,7 @@ export const curriculum: CurriculumSection[] = [
         href: courseHref("capstone", "01-sandbox-challenge"),
         lessonId: "01-sandbox-challenge",
         difficulty: "advanced",
-        description: "Four-phase GENKI Wardrobe sprint — certificate on pass",
+        description: "Four-phase GENKI Wardrobe sprint: certificate on pass",
       },
     ],
   },

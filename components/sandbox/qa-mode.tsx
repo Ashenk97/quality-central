@@ -148,7 +148,7 @@ function QaModeDrawer() {
           <SheetTitle>Instructor QA Mode</SheetTitle>
           <SheetDescription>
             Reveals the three seeded defects in place. This is not part of the
-            student scenario — do not repair the checkout.
+            student scenario, do not repair the checkout.
           </SheetDescription>
         </SheetHeader>
 
@@ -166,14 +166,14 @@ function QaModeDrawer() {
             aria-label="Highlight seeded defects"
             onClick={() => setQaMode(!qaMode)}
             className={cn(
-              "relative h-6 w-11 shrink-0 rounded-full transition-colors focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
+              "relative h-6 w-11 shrink-0 rounded-full p-0 transition-colors focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
               qaMode ? "bg-destructive" : "bg-muted"
             )}
           >
             <span
               aria-hidden
               className={cn(
-                "absolute top-0.5 size-5 rounded-full bg-white shadow transition-transform",
+                "absolute top-0.5 left-0 size-5 rounded-full bg-white shadow transition-transform",
                 qaMode ? "translate-x-5" : "translate-x-0.5"
               )}
             />

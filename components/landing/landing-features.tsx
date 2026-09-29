@@ -11,6 +11,7 @@ import {
   type LucideIcon,
 } from "lucide-react"
 
+import { BetaMark } from "@/components/beta-mark"
 import { DifficultyBadge } from "@/components/difficulty-badge"
 import {
   getAllTopics,
@@ -298,6 +299,7 @@ type Feature = {
   icon: LucideIcon
   span: string
   preview: ReactNode
+  beta?: boolean
 }
 
 const features: Feature[] = [
@@ -354,6 +356,7 @@ const features: Feature[] = [
     icon: MessagesSquareIcon,
     span: "lg:col-span-3",
     preview: <MockInterviewPreview />,
+    beta: true,
   },
   {
     title: "Capstone and certificate",
@@ -383,6 +386,7 @@ export function LandingFeatures() {
                 <feature.icon className="size-4" aria-hidden />
               </span>
               {feature.title}
+              {feature.beta ? <BetaMark /> : null}
             </h3>
             <p className="text-sm text-muted-foreground">
               {feature.description}

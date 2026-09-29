@@ -56,7 +56,7 @@ test.describe("sandbox", () => {
     await page.getByLabel("Bug category").click()
     await page.getByRole("option", { name: "Calculation / pricing" }).click()
     await page.getByLabel("Where did you observe it?").click()
-    await page.getByRole("option", { name: "Order summary — promo code" }).click()
+    await page.getByRole("option", { name: "Order summary: promo code" }).click()
     await page.getByLabel("Steps to reproduce").fill(
       "Apply SAVE20 once, then apply SAVE20 a second time on the promo field."
     )

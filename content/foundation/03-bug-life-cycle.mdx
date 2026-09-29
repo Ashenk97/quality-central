@@ -16,7 +16,7 @@ A high-quality bug report allows developers to reproduce and fix an issue **with
 You will learn:
 
 - What a defect report is for (and what "vague" looks like)
-- The **anatomy** of a useful ticket — title, environment, severity, priority, steps, expected vs actual
+- The **anatomy** of a useful ticket: title, environment, severity, priority, steps, expected vs actual
 - How **severity** (technical impact) differs from **priority** (business urgency)
 - A simple **defect life cycle**: New through Closed, including retest
 
@@ -72,7 +72,7 @@ No live card numbers, passwords, or private customer data. Use test accounts and
 
 **Title.** Searchable and specific. `[Checkout]` tells the squad *where*. "reduces total below $0" tells them *what*. Avoid "Checkout broken" and "ASAP."
 
-**Environment.** If it only fails on Safari 17, the developer who uses Chrome needs to know that on line one — not after three Slack pings.
+**Environment.** If it only fails on Safari 17, the developer who uses Chrome needs to know that on line one, not after three Slack pings.
 
 **Steps.** Start from a known state (empty cart, logged-out guest, named build). Number them. One action per line when you file for real.
 
@@ -82,7 +82,7 @@ No live card numbers, passwords, or private customer data. Use test accounts and
 
 These two get swapped in stand-up every day. Keep them separate.
 
-**Definition:** *Severity* is how badly the **system** is broken — user harm, data, money, a blocked journey. It is mostly a technical-impact judgment.
+**Definition:** *Severity* is how badly the **system** is broken, user harm, data, money, a blocked journey. It is mostly a technical-impact judgment.
 
 **Definition:** *Priority* is how soon the **business** needs a fix. It is mostly an urgency judgment (launch date, number of users, legal exposure).
 
@@ -99,9 +99,9 @@ A simple severity scale for this course:
 
 | Severity | Use when |
 | --- | --- |
-| Critical | Core journey blocked, or money/data is wrong with no workaround |
-| Major | Core journey broken but a workaround exists, or a wrong total that is visible |
-| Minor | Incorrect behavior in a secondary flow, or cosmetic that still changes meaning |
+| Critical | Money or stored data is wrong, or a primary journey is blocked and there is no workaround |
+| Major | A journey is broken but a workaround exists, or a crash hits a tool that is not the primary path |
+| Minor | Cosmetic, or wrong behavior that does not block a journey and does not change money or data |
 
 <Info title="Inflation makes the scale useless">
 If every ticket is Critical and High, the board cannot rank work. Match the label to the example in the table, not to how annoyed you feel.
@@ -123,7 +123,7 @@ If every ticket is Critical and High, the board cannot rank work. Match the labe
 
 **Fixed is a claim. Verified is evidence.** Closing without a retest is how escaped defects return in production.
 
-Analogy: a doctor's visit. You describe symptoms with enough detail to examine (the report). Treatment happens. The doctor says it should be resolved (Fixed). You live a week and confirm the symptom is gone (Verified) — or you come back (Reopened).
+Analogy: a doctor's visit. You describe symptoms with enough detail to examine (the report). Treatment happens. The doctor says it should be resolved (Fixed). You live a week and confirm the symptom is gone (Verified), or you come back (Reopened).
 
 ### Step-by-step: `SAVE10` through the cycle
 
@@ -131,15 +131,15 @@ Analogy: a doctor's visit. You describe symptoms with enough detail to examine (
 2. **Reproduce twice.** Same steps, same actual. If it is flaky, write the rate (for example two times in five).
 3. **File New** with the anatomy table filled in.
 4. **Developer fixes** the double-apply handler and marks Fixed.
-5. **You retest** on that build: original steps plus a cousin case (remove code, apply once — one discount should work).
-6. **Verified**, then **Closed** — or **Reopened** with the new actual if the total is still wrong.
+5. **You retest** on that build: original steps plus a cousin case (remove code, apply once, one discount should work).
+6. **Verified**, then **Closed**: or **Reopened** with the new actual if the total is still wrong.
 
 ```json
 {
   "retest": "SAVE10-double-apply",
   "build": "sandbox-after-fix",
-  "originalSteps": "pass — second apply shows Already used",
-  "cousinCase": "remove code then apply once — pass",
+  "originalSteps": "pass, second apply shows Already used",
+  "cousinCase": "remove code then apply once, pass",
   "decision": "verified"
 }
 ```

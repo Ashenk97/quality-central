@@ -55,7 +55,7 @@ export function AutomationPlayground() {
             Automation Playground
           </p>
           <p className="text-xs text-muted-foreground">
-            example.spec.ts — syntax is parsed locally; no browser is launched.
+            example.spec.ts, syntax is parsed locally; no browser is launched.
           </p>
         </div>
         <Button

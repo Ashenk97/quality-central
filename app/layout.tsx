@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     template: "%s · Quality Central",
   },
   description:
-    "Zero to Advanced QA Engineering — a structured learning hub for manual QA, API testing, UI automation, and hands-on bug hunting.",
+    "Zero to Advanced QA Engineering, a structured learning hub for manual QA, API testing, UI automation, and hands-on bug hunting.",
 }
 
 export const viewport: Viewport = {

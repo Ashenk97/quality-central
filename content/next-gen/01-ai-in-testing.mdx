@@ -13,7 +13,7 @@ track: next-gen
 
 Modern QA work now has two AI jobs at once. You **use** large language models to go faster on fixtures and first-draft specs. You also **test** products whose answers are not the same every run.
 
-- How testers prompt LLMs for mock JSON and exhaustive **boundary** lists
+- How testers prompt LLMs for mock JSON and a complete **boundary** list
 - **Deterministic** vs **probabilistic** outputs when the product itself is a model
 - Prompt habits that produce usable Playwright boilerplate
 - A quiz on exact-match asserts versus judging AI text
@@ -70,7 +70,7 @@ Example fixture the model should be able to emit (you still verify lengths):
 ]
 ```
 
-Use the same trick for ages, qty, and currency. Ask for **just outside**, **on**, and **just inside** each limit — the [BVA lesson](/courses/foundation/02-test-design-techniques) still applies. The model is a typist with a checklist, not a replacement for ISTQB design.
+Use the same trick for ages, qty, and currency. Ask for **just outside**, **on**, and **just inside** each limit. The [BVA lesson](/courses/foundation/02-test-design-techniques) still applies. The model is a typist with a checklist, not a replacement for ISTQB design.
 
 <Warning title="Hallucinated boundaries">
 If you forget to state the min and max, the model will guess. A guessed 3-to-12 rule will give you a beautiful table for the wrong product. Paste the acceptance criteria verbatim.
@@ -87,13 +87,13 @@ A GENKI cart counter that goes from `0` to `1` is **deterministic**: the same cl
 
 **Definitions**
 
-- **Deterministic:** given the same input and environment, the system yields the same result. Flakes here are usually races, data, or env — not "the model felt creative."
+- **Deterministic:** given the same input and environment, the system yields the same result. Flakes here are usually races, data, or env, not "the model felt creative."
 - **Probabilistic:** the system draws from many acceptable replies. Exact-match on one golden sentence fails when the product is working.
 
 When you test an AI feature, split the contract:
 
-1. **Deterministic shell** — auth, 400 on empty body, JSON keys, latency budget, "I cannot help with that" for a blocked topic
-2. **Probabilistic core** — required facts (order id appears), forbidden claims, tone rubric, semantic similarity, or a human sample
+1. **Deterministic shell**: auth, 400 on empty body, JSON keys, latency budget, "I cannot help with that" for a blocked topic
+2. **Probabilistic core**: required facts (order id appears), forbidden claims, tone rubric, semantic similarity, or a human sample
 
 Do not throw away automation. Move the assert from "this exact paragraph" to "these properties hold."
 
@@ -137,7 +137,7 @@ test("GENKI hoodie increases the cart counter", async ({ page }) => {
 })
 ```
 
-That counter assert is **deterministic**. If you later automate a "describe this hoodie" AI blurb, do not paste one recorded caption into `toHaveText`. Assert that the blurb is non-empty, mentions "hoodie" or "GENKI", and stays under a length cap — or score it with a rubric.
+That counter assert is **deterministic**. If you later automate a "describe this hoodie" AI blurb, do not paste one recorded caption into `toHaveText`. Assert that the blurb is non-empty, mentions "hoodie" or "GENKI", and stays under a length cap, or score it with a rubric.
 
 ## Knowledge check
 
@@ -159,7 +159,7 @@ That counter assert is **deterministic**. If you later automate a "describe this
       question: "The GENKI cart total is a fixed $42.00 on this seeded hoodie. Which assertion belongs here?",
       options: [
         "Accept any number because language models are probabilistic",
-        "Assert the exact formatted total — this path is deterministic",
+        "Assert the exact formatted total. This path is deterministic",
         "Skip the total and only screenshot the page",
         "Ask an LLM whether the total feels right and skip expect"
       ],
@@ -175,7 +175,7 @@ That counter assert is **deterministic**. If you later automate a "describe this
         "They are two names for flaky locators"
       ],
       correctAnswer: 1,
-      explanation: "Deterministic contracts (status codes, totals, labels) support exact asserts. Probabilistic contracts (chat, summaries) need properties, evals, or humans — not one frozen string."
+      explanation: "Deterministic contracts (status codes, totals, labels) support exact asserts. Probabilistic contracts (chat, summaries) need properties, evals, or humans, not one frozen string."
     }
   ]}
 />

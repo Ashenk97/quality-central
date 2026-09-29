@@ -74,7 +74,7 @@ Paste the token from your environment variable, not from a chat screenshot.
 Authorization: Bearer {{token}}
 ```
 
-Send once **without** the token and expect **401**. Send as a tester on an admin route and expect **403**. That is still the previous lesson — Postman is how you execute it.
+Send once **without** the token and expect **401**. Send as a tester on an admin route and expect **403**. That is still the previous lesson. Postman is how you execute it.
 
 <Warning title="Never commit live tokens">
 Environment files with secrets stay out of git. Rotate anything that was pasted into a ticket. Use a throwaway staging user.
@@ -124,7 +124,7 @@ Use **201** for a creating POST if that is the contract.
 const json = pm.response.json();
 ```
 
-If the body is not JSON, this throws — that is a failed test, which is what you want when `Content-Type` promised JSON.
+If the body is not JSON, this throws, that is a failed test, which is what you want when `Content-Type` promised JSON.
 
 ### Assert a JSON property value
 
@@ -161,7 +161,7 @@ pm.test("roles include tester", function () {
 | Matcher | Use when |
 | --- | --- |
 | `.to.eql(value)` | Deep equality (numbers, strings, objects) |
-| `.to.equal(value)` | Strict reference equality — prefer `eql` for JSON fields |
+| `.to.equal(value)` | Strict reference equality, prefer `eql` for JSON fields |
 | `.to.be.true` / `.to.be.false` | Booleans, not the strings `"true"` |
 | `.to.be.a("string")` | Type without a frozen example value |
 | `.that.includes("tester")` | Membership in an array |
@@ -228,7 +228,7 @@ If `name` comes back as `"Alex"` only, the second test **fails**. That is a good
 5. Change the expected name to `"Wrong"`. Send. Confirm **red**. Change it back.
 6. Duplicate the request. Remove the token. Expect **401** in a new test.
 
-That loop — **see it, freeze it, break it on purpose** — is how you trust the Tests tab.
+That loop, **see it, freeze it, break it on purpose**: is how you trust the Tests tab.
 
 ## Knowledge check
 

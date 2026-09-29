@@ -15,14 +15,14 @@ Quality work lives in two loops at once: **the sprint** (who is blocked, what we
 
 This lesson complements [Agile and Scrum QA](/courses/foundation/04-agile-and-scrum-qa) (stories, AC, Definition of Done). Here the focus is **ceremonies in tester language**, **Git you need to run locally**, and the **pull request (PR)** as a quality gate.
 
-- Daily Standup, Sprint Planning, Backlog Refinement, Retrospective — what you say and ask
+- Daily Standup, Sprint Planning, Backlog Refinement, Retrospective, what you say and ask
 - Why QA uses Git: clone, fetch, checkout, pull
 - PR lifecycle and code review as a tester
 - Standup's three beats (the quiz)
 
 ## Outcome
 
-After this lesson you will be able to give a 60-second standup, check out the branch under test, and leave a PR comment that cites an AC — not "LGTM" with no evidence.
+After this lesson you will be able to give a 60-second standup, check out the branch under test, and leave a PR comment that cites an AC, not "LGTM" with no evidence.
 
 <Info title="Git vs GitHub">
 **Git** is the version-control tool on your machine. **GitHub** (or GitLab, Bitbucket) hosts the remote, PRs, and CI. You clone with Git. You review in the host's UI. Both matter.
@@ -70,7 +70,7 @@ If planning only counts "dev days," you will "run out of time to test" on purpos
 
 QA habits:
 
-- Circle numbers, "must," "never," and error text — those become cases
+- Circle numbers, "must," "never," and error text, those become cases
 - Ask how to **observe** success (UI, API, [SQL](/courses/technical-core/01-sql-for-qa))
 - Split "and also migrate historical orders" off a UI story if it cannot be tested together
 - Flag missing oracles: "success toast" with no row in `orders` is not Done
@@ -96,7 +96,7 @@ A useful retro item is a **change** (seed users in CI, smaller stories, review c
 | Refinement | AC you can pass or fail |
 | Retro | Evidence, then one process change |
 
-Sprint Review (the demo) still matters — watch as a user — but the quiz is about **standup**, not the demo.
+Sprint Review (the demo) still matters, watch as a user, but the quiz is about **standup**, not the demo.
 
 ## Why QA uses Git
 
@@ -159,13 +159,13 @@ Preview deploys (Vercel, Netlify, GitHub Environments) are Git too: the host bui
 
 Typical lifecycle:
 
-1. **Open** — developer pushes a branch and opens a PR with a description (what, why, how to test).
-2. **CI** — automated checks (lint, unit tests, build). Red CI is a blocker; do not "QA around" a failing pipeline unless the team agreed the job is unrelated.
-3. **Review** — people comment on the diff. QA may not own every line of TypeScript, but you **do** own "does this meet AC?"
-4. **QA on the change** — preview URL or local branch; execute the story's cases; [SQL](/courses/technical-core/01-sql-for-qa) if persistence is in play.
-5. **Changes requested or approved** — more commits, or the PR is ready.
-6. **Merge** — squash or merge commit lands on `main`.
-7. **After merge** — smoke on staging/production per the team's DoD; close the loop on bugs filed against the PR.
+1. **Open**: developer pushes a branch and opens a PR with a description (what, why, how to test).
+2. **CI**: automated checks (lint, unit tests, build). Red CI is a blocker; do not "QA around" a failing pipeline unless the team agreed the job is unrelated.
+3. **Review**: people comment on the diff. QA may not own every line of TypeScript, but you **do** own "does this meet AC?"
+4. **QA on the change**: preview URL or local branch; execute the story's cases; [SQL](/courses/technical-core/01-sql-for-qa) if persistence is in play.
+5. **Changes requested or approved**: more commits, or the PR is ready.
+6. **Merge**: squash or merge commit lands on `main`.
+7. **After merge**: smoke on staging/production per the team's DoD; close the loop on bugs filed against the PR.
 
 ### How QA fits in code review
 
@@ -204,7 +204,7 @@ That is review **and** testing. GitHub's "Request changes" vs "Comment" vs "Appr
     "What I did, what I will do next, and any blockers",
     "A full retrospective of every escaped bug from last quarter",
     "Only Git commit hashes with no story or environment context",
-    "Nothing — testers wait until the sprint demo to speak"
+    "Nothing, testers wait until the sprint demo to speak"
   ]}
   correctIndex={0}
   explanation="Standup is did / will do / blocked. It is not a retro, not a git log dump, and testers are not silent until the demo. Environment and AC blockers belong here so the team can help the same day."

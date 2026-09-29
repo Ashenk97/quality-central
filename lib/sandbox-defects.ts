@@ -85,7 +85,7 @@ export const SANDBOX_COORDINATES: SandboxCoordinate[] = [
   {
     id: "payment-cvc-submit",
     defectId: "visual-overlap",
-    label: "Payment — CVC and Submit order",
+    label: "Payment: CVC and Submit order",
     region: "Payment",
     selector: "#sandbox-cvc",
     viewport: "below 768px",
@@ -93,14 +93,14 @@ export const SANDBOX_COORDINATES: SandboxCoordinate[] = [
   {
     id: "contact-email",
     defectId: "validation-bypass",
-    label: "Contact — Email",
+    label: "Contact: Email",
     region: "Email",
     selector: "#sandbox-email",
   },
   {
     id: "summary-promo",
     defectId: "discount-stacking",
-    label: "Order summary — promo code",
+    label: "Order summary: promo code",
     region: "Promo",
     selector: "#sandbox-promo",
   },

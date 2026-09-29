@@ -96,7 +96,7 @@ const title = titleParts.join(" ").trim() || titleFromSlug(lessonId)
 const template = fs.readFileSync(templatePath, "utf8")
 const body = render(template, {
   title,
-  description: `${title} — replace this description.`,
+  description: `${title}. Replace this description.`,
   category,
   lessonId,
   track,

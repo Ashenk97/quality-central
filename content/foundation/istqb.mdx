@@ -11,7 +11,7 @@ readingTime: 12
 
 ## What this lesson covers
 
-The **ISTQB Foundation** syllabus is the shared vocabulary of professional testing. You do not need the certificate to use the ideas — you need the language so you can argue about risk with developers and product managers without talking past each other.
+The **ISTQB Foundation** syllabus is the shared vocabulary of professional testing. You do not need the certificate to use the ideas, you need the language so you can argue about risk with developers and product managers without talking past each other.
 
 - The difference between error, defect, and failure
 - Seven testing principles that still hold on agile teams
@@ -54,7 +54,7 @@ A developer mistypes a discount rule (error). The cart applies `SAVE20` twice (d
 
 ### Practical example: clustering
 
-You are testing a checkout. Last week's production incidents were all payment and tax. ISTQB does not tell you to ignore the product gallery — it tells you to **weight** payment and tax more heavily this sprint, then rotate charters so the pesticide paradox does not set in.
+You are testing a checkout. Last week's production incidents were all payment and tax. ISTQB does not tell you to ignore the product gallery, it tells you to **weight** payment and tax more heavily this sprint, then rotate charters so the pesticide paradox does not set in.
 
 ## Test levels
 
@@ -70,20 +70,20 @@ Levels answer **where in the stack** you are looking.
 Levels are not a waterfall. In continuous delivery you may run unit tests on every commit, contract tests on every merge, and a thin acceptance set before a canary.
 
 <Info title="ISTQB vs your sprint board">
-If the team says "QA will test it" after code-complete, you are treating system testing as a phase instead of a level. Levels can run in parallel. Phases are a schedule. Do not confuse them — STLC in the next lesson is the schedule.
+If the team says "QA will test it" after code-complete, you are treating system testing as a phase instead of a level. Levels can run in parallel. Phases are a schedule. Do not confuse them. The STLC lesson is the schedule.
 </Info>
 
 ## Test types
 
 Types answer **what kind of risk** you are targeting. A single test case can serve more than one type, but you should know the primary goal.
 
-- **Functional** — does it do what the spec (or the user) expects?
-- **Non-functional** — performance, security, usability, reliability
-- **White-box** — designed with knowledge of structure (branches, APIs, schemas)
-- **Black-box** — designed from the outside (equivalence, boundaries, states)
-- **Confirmation** — did this fix actually fix it?
-- **Regression** — did this fix break a neighbor?
-- **Maintenance** — does the change still hold after a patch, migration, or retirement?
+- **Functional**: does it do what the spec (or the user) expects?
+- **Non-functional**: performance, security, usability, reliability
+- **White-box**: designed with knowledge of structure (branches, APIs, schemas)
+- **Black-box**: designed from the outside (equivalence, boundaries, states)
+- **Confirmation**: did this fix actually fix it?
+- **Regression**: did this fix break a neighbor?
+- **Maintenance**: does the change still hold after a patch, migration, or retirement?
 
 ### Practical example: choosing a type
 
@@ -117,15 +117,15 @@ Work these before you mark the lesson complete. They match how interviews and st
   title="ISTQB Foundation check"
   questions={[
     {
-      question: "A tester enters an expired card and the UI shows 'Payment failed' as designed. Which ISTQB term describes the expired-card mistake by the user?",
+      question: "A tester enters an expired card and the UI shows 'Payment failed' as designed. What did the test observe?",
       options: [
         "A defect in the payment service",
         "A failure of the checkout",
-        "An error that may or may not reveal a defect",
+        "Specified behavior: the invalid card was rejected, so this is not a product failure",
         "Proof that exhaustive testing happened"
       ],
       correctAnswer: 2,
-      explanation: "The user made an error. If the product handles it as specified, you observed correct behavior — not a product failure. A defect would be the product doing the wrong thing with that input."
+      explanation: "In this lesson an error is a human mistake in requirements, design, or code. Here the product did what the spec asked, so there is no failure and no defect. A defect would be accepting the expired card or showing the wrong message."
     },
     {
       question: "Which statement matches the principle 'testing shows presence of defects, not absence'?",
@@ -147,7 +147,7 @@ Work these before you mark the lesson complete. They match how interviews and st
         "Maintenance testing after retirement"
       ],
       correctAnswer: 1,
-      explanation: "You are verifying the interface between two components or services — classic integration, even if no browser is involved."
+      explanation: "You are verifying the interface between two components or services, classic integration, even if no browser is involved."
     },
     {
       question: "You rerun the exact same 40 UI scripts after every commit and find nothing new for three sprints. Which principle is biting you?",
@@ -158,7 +158,7 @@ Work these before you mark the lesson complete. They match how interviews and st
         "Absence-of-errors fallacy"
       ],
       correctAnswer: 2,
-      explanation: "Unchanging tests lose power. Refresh data, paths, and oracles — or add charters that explore the new risk."
+      explanation: "Unchanging tests lose power. Refresh data, paths, and oracles, or add charters that explore the new risk."
     }
   ]}
 />
