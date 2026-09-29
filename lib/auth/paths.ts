@@ -1,11 +1,17 @@
 export const HOME_PATH = "/"
 export const LOGIN_PATH = "/login"
 export const SIGNUP_PATH = "/signup"
+export const PRIVACY_PATH = "/privacy"
 export const DEFAULT_AUTH_NEXT = "/dashboard"
 
 // Only these routes render without a session. Everything else is protected, so
 // a newly added route is gated by default instead of shipping public by accident.
-const PUBLIC_PATHS = new Set<string>([HOME_PATH, LOGIN_PATH, SIGNUP_PATH])
+const PUBLIC_PATHS = new Set<string>([
+  HOME_PATH,
+  LOGIN_PATH,
+  SIGNUP_PATH,
+  PRIVACY_PATH,
+])
 
 // Namespaces that must never be redirected:
 // - /auth completes the OAuth handshake before a session cookie exists.

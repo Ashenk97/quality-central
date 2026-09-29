@@ -102,10 +102,20 @@ export default async function HomePage() {
 
             <LandingFeatures />
           </section>
-
-
         </main>
       </PageTransition>
+
+      <footer className="border-t border-border/80">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-6 text-sm text-muted-foreground md:px-8">
+          <span>Quality Central</span>
+          <Link
+            href="/privacy"
+            className="underline-offset-4 hover:text-foreground hover:underline"
+          >
+            Privacy
+          </Link>
+        </div>
+      </footer>
     </div>
   )
 }
