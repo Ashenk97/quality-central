@@ -1,8 +1,8 @@
 import { resolveDummyStatus } from "@/lib/dummy-api"
 
 const catalog = [
-  { id: "order-1001", sku: "TRAIL-PACK", price: 64 },
-  { id: "order-1002", sku: "MERINO-SOCKS", price: 12 },
+  { id: "order-1001", sku: "GENKI-HOODIE", name: "GENKI Hoodie", price: 64 },
+  { id: "order-1002", sku: "GENKI-BEANIE", name: "GENKI Beanie", price: 12 },
 ]
 
 export async function GET(request: Request) {
@@ -24,10 +24,10 @@ export async function POST(request: Request) {
     } catch {
       return Response.json(
         {
-          error: "Internal Server Error",
-          message: "The dummy API could not parse the JSON payload.",
+          error: "Bad Request",
+          message: "Send valid JSON. The playground stays on this page so you can fix the body and send it again.",
         },
-        { status: 500 }
+        { status: 400 }
       )
     }
   }
@@ -58,7 +58,7 @@ function dummyResponse(
     return Response.json(
       {
         error: "Internal Server Error",
-        message: "The dummy API simulated a server crash.",
+        message: "The server could not complete this request.",
         ...extra,
       },
       { status: 500 }

@@ -99,7 +99,7 @@ Do not throw away automation. Move the assert from "this exact paragraph" to "th
 
 ## 3. Prompting Playwright boilerplate
 
-LLMs write plausible `test()` blocks. They also invent `getByTestId("magic")` that does not exist on [GENKI's sandbox](/sandbox). Your prompt has to pin **route**, **roles**, **AAA**, and **what to assert**.
+LLMs write plausible `test()` blocks. They also invent `getByTestId("add-to-cart")` controls that are not on the [GENKI checkout](/sandbox). Your prompt has to pin **route**, **roles**, and **text that is on the page**.
 
 **Best practices**
 
@@ -114,12 +114,9 @@ LLMs write plausible `test()` blocks. They also invent `getByTestId("magic")` th
 
 ```text
 Write a Playwright TypeScript spec only. No explanation.
-Journey: add a GENKI hoodie on /sandbox and assert the cart counter.
-Use: import { test, expect } from "@playwright/test"
-Use page.locator('[data-testid="add-to-cart"]') and page.locator('[data-testid="cart-count"]').
-Arrange: goto /sandbox, expect cart text "0".
-Act: click add to cart.
-Assert: cart text "1".
+Journey: open /sandbox and assert the GENKI Hoodie line is visible.
+Use page.getByRole("heading", { name: "Checkout" }) and page.locator("text=GENKI Hoodie").
+The checkout already contains the hoodie. Do not click add-to-cart. That button is not on the page.
 Do not use waitForTimeout. Do not invent extra pages.
 ```
 
@@ -128,16 +125,14 @@ A model following that prompt should land close to:
 ```ts
 import { test, expect } from "@playwright/test"
 
-test("GENKI hoodie increases the cart counter", async ({ page }) => {
+test("GENKI hoodie is on the sandbox checkout", async ({ page }) => {
   await page.goto("/sandbox")
-  const cart = page.locator('[data-testid="cart-count"]')
-  await expect(cart).toHaveText("0")
-  await page.locator('[data-testid="add-to-cart"]').click()
-  await expect(cart).toHaveText("1")
+  await expect(page.getByRole("heading", { name: "Checkout" })).toBeVisible()
+  await expect(page.locator("text=GENKI Hoodie")).toBeVisible()
 })
 ```
 
-That counter assert is **deterministic**. If you later automate a "describe this hoodie" AI blurb, do not paste one recorded caption into `toHaveText`. Assert that the blurb is non-empty, mentions "hoodie" or "GENKI", and stays under a length cap, or score it with a rubric.
+The hoodie label and the **$82.00** total (before a promo) are **deterministic**. If you later automate a "describe this hoodie" AI blurb, do not paste one recorded caption into `toHaveText`. Assert that the blurb is non-empty, mentions "hoodie" or "GENKI", and stays under a length cap, or score it with a rubric.
 
 ## Knowledge check
 
@@ -156,7 +151,7 @@ That counter assert is **deterministic**. If you later automate a "describe this
       explanation: "Probabilistic text will drift. Pinning one golden sentence makes a flake, not a quality signal. Assert facts, schema, or a rubric instead."
     },
     {
-      question: "The GENKI cart total is a fixed $42.00 on this seeded hoodie. Which assertion belongs here?",
+      question: "The GENKI checkout total is a fixed $82.00 before any promo. Which assertion belongs here?",
       options: [
         "Accept any number because language models are probabilistic",
         "Assert the exact formatted total. This path is deterministic",

@@ -7,6 +7,7 @@ import { LessonComments } from "@/components/lessons/lesson-comments"
 import { MarkCompleteButton } from "@/components/lessons/mark-complete-button"
 import { PremiumLessonBody } from "@/components/lessons/premium-lesson-body"
 import { DifficultyBadge } from "@/components/difficulty-badge"
+import { BetaMark } from "@/components/beta-mark"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { getLesson, getLessonParams } from "@/lib/content"
@@ -62,6 +63,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
           <Badge variant="secondary" className="capitalize">
             {lesson.track}
           </Badge>
+          {topic?.section.beta ? <BetaMark /> : null}
           {difficulty ? <DifficultyBadge difficulty={difficulty} /> : null}
           {lesson.readingTime ? (
             <Badge variant="outline" className="gap-1 text-slate-600 dark:text-slate-300">

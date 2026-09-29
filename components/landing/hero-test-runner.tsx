@@ -183,7 +183,7 @@ export function HeroTestRunner() {
           <span className="size-2.5 rounded-full bg-[#FEBC2E]" />
           <span className="size-2.5 rounded-full bg-[#28C840]" />
           <span className="ml-2 truncate font-mono text-[11px] tracking-wide text-zinc-500">
-            playwright, test runner
+            sample output
           </span>
         </div>
 
@@ -209,7 +209,7 @@ export function HeroTestRunner() {
 
         <div className="flex items-center justify-between gap-3 border-t border-white/10 bg-white/[0.02] px-3 py-2 font-mono text-[10px] text-zinc-500">
           <span className="truncate">
-            {running ? "Running…" : "Run complete"} · 4 workers
+            {running ? "Sample running…" : "Sample illustration"} · 4 workers
           </span>
           <span className="flex shrink-0 items-center gap-2">
             <span className="text-qa-success">{passedSoFar} passed</span>

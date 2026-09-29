@@ -196,8 +196,8 @@ export function CapstoneSubmit() {
 
         <TabsContent value="automation" className="mt-4 space-y-3">
           <PhaseHint error={errors.automation}>
-            Script the GENKI hoodie add-to-cart path. The grader looks for
-            page.locator and expect(.
+            Assert the GENKI Hoodie already on the sandbox checkout. The grader
+            looks for page.locator and expect(.
           </PhaseHint>
           <CodeEditor
             language="typescript"
