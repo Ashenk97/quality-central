@@ -3,7 +3,7 @@
 import { useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { HomeIcon, LockIcon } from "lucide-react"
+import { HomeIcon, LockIcon, ScrollTextIcon } from "lucide-react"
 
 import { BetaMark } from "@/components/beta-mark"
 import { Brand } from "@/components/brand"
@@ -159,6 +159,18 @@ export function AppSidebar() {
               <Link href="/">
                 <HomeIcon />
                 <span>Home</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              asChild
+              tooltip="Privacy"
+              className="transition-colors duration-200"
+            >
+              <Link href="/privacy">
+                <ScrollTextIcon />
+                <span>Privacy</span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>

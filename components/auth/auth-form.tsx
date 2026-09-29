@@ -8,7 +8,12 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
-import { DEFAULT_AUTH_NEXT, LOGIN_PATH, SIGNUP_PATH } from "@/lib/auth/paths"
+import {
+  DEFAULT_AUTH_NEXT,
+  LOGIN_PATH,
+  PRIVACY_PATH,
+  SIGNUP_PATH,
+} from "@/lib/auth/paths"
 import { getAuthCallbackUrl, isSupabaseConfigured } from "@/lib/env"
 import { createSupabaseBrowserClient } from "@/lib/supabase/client"
 
@@ -196,6 +201,19 @@ export function AuthForm({
           </>
         )}
       </p>
+
+      {mode === "signup" ? (
+        <p className="text-xs text-muted-foreground">
+          By creating an account you agree to how we handle your data in the{" "}
+          <Link
+            href={PRIVACY_PATH}
+            className="underline underline-offset-4 hover:text-foreground"
+          >
+            privacy notice
+          </Link>
+          .
+        </p>
+      ) : null}
     </div>
   )
 }

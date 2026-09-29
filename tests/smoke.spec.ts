@@ -47,6 +47,14 @@ test.describe("core routing smoke", () => {
     ).toBeVisible()
   })
 
+  test("privacy page is public", async ({ page }) => {
+    await gotoWithoutUncaughtExceptions(page, "/privacy")
+    await expect(page).toHaveURL("/privacy")
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Privacy" })
+    ).toBeVisible()
+  })
+
   test("dashboard route loads without uncaught exceptions", async ({ page }) => {
     await gotoWithoutUncaughtExceptions(page, "/dashboard")
     await expect(page).toHaveURL(/\/(dashboard|login)/)
