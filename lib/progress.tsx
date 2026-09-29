@@ -57,6 +57,7 @@ function writeStorage(next: ProgressMap) {
 const listeners = new Set<() => void>()
 let snapshot: ProgressMap = EMPTY_PROGRESS
 let hydrated = false
+let synced = false
 let persistChain: Promise<void> = Promise.resolve()
 let syncState: SyncState = {
   source: "local",
@@ -190,6 +191,10 @@ function subscribe(listener: () => void) {
     snapshot = readStorage()
     startAuthListener()
     enqueuePersist(hydrateFromSupabase)
+    enqueuePersist(async () => {
+      synced = true
+      emit()
+    })
   }
 
   const onStorage = (event: StorageEvent) => {
@@ -217,6 +222,14 @@ function getServerSnapshot() {
 
 function getSyncSnapshot() {
   return syncState
+}
+
+function getSyncedSnapshot() {
+  return synced
+}
+
+function getServerSyncedSnapshot() {
+  return false
 }
 
 const SERVER_SYNC: SyncState = { source: "local", error: null }
@@ -329,6 +342,8 @@ async function resetAllProgressEntries(): Promise<void> {
 
 type ProgressContextValue = {
   ready: boolean
+  /** True once the first account sync has finished (or was not needed). */
+  synced: boolean
   entries: ProgressMap
   source: ProgressSource
   syncError: string | null
@@ -364,6 +379,11 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
     subscribeNoop,
     () => true,
     () => false
+  )
+  const synced = useSyncExternalStore(
+    subscribe,
+    getSyncedSnapshot,
+    getServerSyncedSnapshot
   )
 
   const isComplete = useCallback(
@@ -428,6 +448,7 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
   const value = useMemo(
     () => ({
       ready,
+      synced,
       entries,
       source: sync.source,
       syncError: sync.error,
@@ -443,6 +464,7 @@ export function ProgressProvider({ children }: { children: React.ReactNode }) {
     }),
     [
       ready,
+      synced,
       entries,
       sync.source,
       sync.error,

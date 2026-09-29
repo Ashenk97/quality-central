@@ -2,6 +2,7 @@ import { AppSidebar } from "@/components/layout/app-sidebar"
 import { BetaWelcome } from "@/components/feedback/beta-welcome"
 import { FeedbackWidget } from "@/components/feedback/feedback-widget"
 import { LearnHeader } from "@/components/layout/learn-header"
+import { ModuleLockGate } from "@/components/lessons/module-lock-gate"
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { requireUser } from "@/lib/auth/session"
 import { getVisibleProMembership } from "@/lib/premium"
@@ -27,7 +28,9 @@ export default async function LearnLayout({
             isProMember={membership.isProMember}
           />
         </div>
-        <div className="flex flex-1 flex-col p-4 md:p-6 print:p-0">{children}</div>
+        <div className="flex flex-1 flex-col p-4 md:p-6 print:p-0">
+          <ModuleLockGate>{children}</ModuleLockGate>
+        </div>
         <div className="print:hidden">
           <BetaWelcome />
           <FeedbackWidget />

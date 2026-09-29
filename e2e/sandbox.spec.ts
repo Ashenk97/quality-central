@@ -1,9 +1,11 @@
 import { expect, test } from "@playwright/test"
 
 import { AUTH_STATE_PATH } from "../playwright/auth"
+import { unlockAllLessons } from "../playwright/progress"
 
 test.describe("sandbox", () => {
   test.use({ storageState: AUTH_STATE_PATH })
+  test.beforeEach(({ page }) => unlockAllLessons(page))
 
   test("QA Mode drawer is always available and outlines seeded defects", async ({
     page,

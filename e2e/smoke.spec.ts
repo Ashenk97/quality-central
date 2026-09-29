@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test"
 
 import { AUTH_STATE_PATH, isAuthEnabled } from "../playwright/auth"
+import { startWithNoProgress, unlockAllLessons } from "../playwright/progress"
 
 test.describe("smoke", () => {
   test("home introduces the learning hub", async ({ page }) => {
@@ -33,7 +34,8 @@ test.describe("smoke", () => {
   test("home previews what a sign-in unlocks", async ({ page }) => {
     await page.goto("/")
 
-    const features = page.locator("#features")
+    // Streaming briefly leaves a hidden copy of the page in the DOM; getByText sees it.
+    const features = page.locator("#features").filter({ visible: true })
     await expect(
       features.getByRole("heading", { name: /What you unlock when you sign in/i })
     ).toBeVisible()
@@ -63,7 +65,9 @@ test.describe("smoke", () => {
     await expect(curriculumCard.getByText(/lessons?$/).first()).toBeVisible()
 
     // Counts are derived from the curriculum, so they should never render empty.
-    await expect(page.getByText("Guided lessons")).toBeVisible()
+    await expect(
+      page.getByText("Guided lessons").filter({ visible: true })
+    ).toBeVisible()
     await expect(
       page.getByRole("link", { name: /Create a free account/i })
     ).toBeVisible()
@@ -158,8 +162,35 @@ test.describe("signed-out visitors", () => {
   })
 })
 
+test.describe("lesson order", () => {
+  test.use({ storageState: AUTH_STATE_PATH })
+  test.beforeEach(({ page }) => startWithNoProgress(page))
+
+  test("later lessons stay locked in the sidebar and by URL", async ({ page }) => {
+    await page.goto("/courses/foundation/istqb")
+
+    const locked = page.getByRole("region", { name: "ISTQB Foundation" })
+    await expect(locked.getByText("Locked", { exact: true })).toBeVisible()
+    await expect(
+      page.getByRole("heading", { name: "Error, defect, failure" })
+    ).toHaveCount(0)
+
+    const sidebar = page.locator("[data-sidebar='sidebar']")
+    await expect(
+      sidebar.getByRole("link", { name: "ISTQB Foundation", disabled: true })
+    ).toBeVisible()
+    await expect(
+      sidebar.getByRole("link", { name: "Introduction to Software QA & STLC" })
+    ).toHaveAttribute("href", "/courses/foundation/01-introduction-to-qa")
+
+    await locked.getByRole("link", { name: /^Continue:/ }).click()
+    await expect(page).toHaveURL(/\/courses\/foundation\/01-introduction-to-qa$/)
+  })
+})
+
 test.describe("signed-in session", () => {
   test.use({ storageState: AUTH_STATE_PATH })
+  test.beforeEach(({ page }) => unlockAllLessons(page))
 
   test("sandbox hunter is reachable", async ({ page }) => {
     await page.goto("/sandbox")
