@@ -1,0 +1,31 @@
+name: Supabase keep-alive
+
+# Free Supabase projects pause after a week without database activity.
+on:
+  schedule:
+    - cron: "17 3 */3 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ping:
+    name: Query Supabase
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL }}
+      SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+
+    steps:
+      - name: Read one module row
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
+            echo "::error::Set the NEXT_PUBLIC_SUPABASE_URL variable and NEXT_PUBLIC_SUPABASE_ANON_KEY secret."
+            exit 1
+          fi
+          curl --fail-with-body --silent --show-error --max-time 30 \
+            "$SUPABASE_URL/rest/v1/modules?select=id&limit=1" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
+            -H "Authorization: Bearer $SUPABASE_ANON_KEY"
