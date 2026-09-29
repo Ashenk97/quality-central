@@ -55,6 +55,18 @@ test.describe("core routing smoke", () => {
     ).toBeVisible()
   })
 
+  test("brand icons and link preview image are public", async ({ request }) => {
+    for (const path of [
+      "/favicon.ico",
+      "/icon.svg",
+      "/apple-icon.png",
+      "/opengraph-image",
+    ]) {
+      const response = await request.get(path, { maxRedirects: 0 })
+      expect(response.status(), `${path} should be served directly`).toBe(200)
+    }
+  })
+
   test("dashboard route loads without uncaught exceptions", async ({ page }) => {
     await gotoWithoutUncaughtExceptions(page, "/dashboard")
     await expect(page).toHaveURL(/\/(dashboard|login)/)
