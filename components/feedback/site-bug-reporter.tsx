@@ -117,7 +117,7 @@ export function SiteBugReporter() {
               </SheetDescription>
             </SheetHeader>
 
-            <div className="grid flex-1 gap-4 p-4">
+            <div className="grid flex-1 content-start gap-4 p-4">
               <div className="grid gap-1.5">
                 <Label htmlFor="site-bug-title">Summary</Label>
                 <Input
@@ -139,13 +139,13 @@ export function SiteBugReporter() {
                 <div
                   role="radiogroup"
                   aria-label="Bug severity"
-                  className="flex flex-wrap gap-2"
+                  className="flex flex-wrap items-center gap-2"
                 >
                   {SITE_BUG_SEVERITIES.map((level) => (
                     <label
                       key={level}
                       className={cn(
-                        "inline-flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-1.5 text-xs capitalize",
+                        "inline-flex h-8 cursor-pointer items-center gap-2 self-center rounded-lg border px-3 text-xs capitalize",
                         severity === level
                           ? "border-qa-primary/50 bg-qa-primary/10 text-foreground"
                           : "border-white/10 text-muted-foreground"

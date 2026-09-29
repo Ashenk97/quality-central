@@ -3,7 +3,7 @@
 import { useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { HomeIcon } from "lucide-react"
+import { HomeIcon, LockIcon } from "lucide-react"
 
 import { BetaMark } from "@/components/beta-mark"
 import { Brand } from "@/components/brand"
@@ -27,11 +27,13 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { curriculum } from "@/lib/curriculum"
+import { useModuleLocks } from "@/lib/use-module-locks"
 import { cn } from "@/lib/utils"
 
 export function AppSidebar() {
   const pathname = usePathname()
   const { setOpenMobile } = useSidebar()
+  const { ready, locked } = useModuleLocks()
 
   useEffect(() => {
     setOpenMobile(false)
@@ -98,22 +100,46 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                   {section.items ? (
                     <SidebarMenuSub className="mt-1 border-sidebar-border/80 py-1">
-                      {section.items.map((topic) => (
-                        <SidebarMenuSubItem key={topic.href}>
-                          <SidebarMenuSubButton
-                            asChild
-                            isActive={pathname === topic.href}
-                            className="h-auto min-h-7 items-start overflow-visible py-1.5 whitespace-normal [&>span:last-child]:overflow-visible [&>span:last-child]:text-clip [&>span:last-child]:whitespace-normal transition-colors duration-200 data-active:bg-sidebar-primary/10 data-active:text-sidebar-primary"
-                          >
-                            <Link href={topic.href} className="items-start">
-                              <span className="min-w-0 flex-1 leading-snug whitespace-normal">
-                                {topic.title}
-                              </span>
-                              <LessonCompleteIcon href={topic.href} />
-                            </Link>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                      ))}
+                      {section.items.map((topic) => {
+                        const lock = ready ? locked.get(topic.href) : undefined
+                        return (
+                          <SidebarMenuSubItem key={topic.href}>
+                            <SidebarMenuSubButton
+                              asChild
+                              isActive={pathname === topic.href}
+                              className={cn(
+                                "h-auto min-h-7 items-start overflow-visible py-1.5 whitespace-normal [&>span:last-child]:overflow-visible [&>span:last-child]:text-clip [&>span:last-child]:whitespace-normal transition-colors duration-200 data-active:bg-sidebar-primary/10 data-active:text-sidebar-primary",
+                                lock &&
+                                  "cursor-not-allowed text-sidebar-foreground/50 hover:bg-transparent hover:text-sidebar-foreground/50"
+                              )}
+                            >
+                              {lock ? (
+                                <span
+                                  role="link"
+                                  aria-disabled="true"
+                                  title={lock.unlockHint}
+                                  className="items-start"
+                                >
+                                  <span className="min-w-0 flex-1 leading-snug whitespace-normal">
+                                    {topic.title}
+                                  </span>
+                                  <LockIcon
+                                    className="mt-0.5 size-3.5 shrink-0"
+                                    aria-label="Locked"
+                                  />
+                                </span>
+                              ) : (
+                                <Link href={topic.href} className="items-start">
+                                  <span className="min-w-0 flex-1 leading-snug whitespace-normal">
+                                    {topic.title}
+                                  </span>
+                                  <LessonCompleteIcon href={topic.href} />
+                                </Link>
+                              )}
+                            </SidebarMenuSubButton>
+                          </SidebarMenuSubItem>
+                        )
+                      })}
                     </SidebarMenuSub>
                   ) : null}
                 </SidebarMenuItem>
