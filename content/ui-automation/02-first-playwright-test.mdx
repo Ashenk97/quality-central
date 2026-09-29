@@ -11,7 +11,7 @@ track: automation
 
 ## What this lesson covers
 
-**Playwright** drives a real browser from TypeScript. A spec is not a pile of clicks — it is **Arrange**, **Act**, **Assert** (AAA). Playwright **auto-waits**: `expect(locator).toBeVisible()` retries until the element is ready or the timeout hits. That is cheaper and less flaky than `sleep(5000)`.
+**Playwright** drives a real browser from TypeScript. A spec is not a pile of clicks, it is **Arrange**, **Act**, **Assert** (AAA). Playwright **auto-waits**: `expect(locator).toBeVisible()` retries until the element is ready or the timeout hits. That is cheaper and less flaky than `sleep(5000)`.
 
 - Setting up Playwright
 - AAA on a login journey
@@ -107,7 +107,7 @@ test("guest can sign in and see the dashboard", async ({ page }) => {
   await page.fill("#password", process.env.QA_PASSWORD ?? "test-only")
   await page.click('button[type="submit"]')
 
-  // Assert — auto-waits; do not sleep
+  // Assert, auto-waits; do not sleep
   await expect(page).toHaveURL(/\/dashboard/)
   await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible()
   await expect(page.getByText("qa@nimbus.test")).toBeVisible()
@@ -133,13 +133,13 @@ test("wrong password shows an error and stays on login", async ({ page }) => {
 
 After Sign in, the dashboard heading is **not** in the DOM on the same tick. The browser is navigating, JS is hydrating, a spinner may show. `toBeVisible()` **retries** until the heading is visible or `expect` timeout (default often 5s, configurable).
 
-`waitForTimeout(5000)` always waits five seconds, even when the heading appeared at 200ms — and still flakes when CI is slower than five seconds.
+`waitForTimeout(5000)` always waits five seconds, even when the heading appeared at 200ms, and still flakes when CI is slower than five seconds.
 
 | Approach | Behavior |
 | --- | --- |
 | `expect(locator).toBeVisible()` | Poll until visible or fail with a useful timeout error |
 | `expect(page).toHaveURL(/dashboard/)` | Poll until the URL matches |
-| `page.waitForTimeout(5000)` | Fixed sleep — slow and still racy |
+| `page.waitForTimeout(5000)` | Fixed sleep, slow and still racy |
 
 Actions (`click`, `fill`) also auto-wait for actionability (visible, enabled, stable). You still **assert** the outcome; a click without `expect` is a script, not a test.
 
@@ -178,8 +178,8 @@ Actions (`click`, `fill`) also auto-wait for actionability (visible, enabled, st
       question: "In Arrange-Act-Assert, filling the password field and clicking Sign in is:",
       options: [
         "Arrange only",
-        "Act — the user gestures under test",
-        "Assert — outcomes belong in fill",
+        "Act, the user gestures under test",
+        "Assert, outcomes belong in fill",
         "A Playwright config file"
       ],
       correctAnswer: 1,

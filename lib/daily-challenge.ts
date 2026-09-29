@@ -87,7 +87,7 @@ export const DAILY_CHALLENGES: DailyChallengeItem[] = [
       "Whether the bug is reproducible",
     ],
     answer: "How urgently the business wants a fix",
-    explanation: "Severity is technical impact. Priority is business urgency — they can disagree.",
+    explanation: "Severity is technical impact. Priority is business urgency, they can disagree.",
   },
   {
     id: "http-404",
@@ -106,7 +106,7 @@ export const DAILY_CHALLENGES: DailyChallengeItem[] = [
   {
     id: "sql-failed",
     topic: "SQL",
-    prompt: "Complete the filter: WHERE order_status = ___",
+    prompt: "GENKI stores payment outcome on orders.order_status, not the Nimbus orders.status column. Complete the filter: WHERE order_status = ___",
     kind: "text",
     answer: "'Failed'",
     accepted: ["'failed'", "failed", "\"failed\"", "\"Failed\""],

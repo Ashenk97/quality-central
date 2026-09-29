@@ -25,7 +25,7 @@ You will learn:
 After this lesson you will be able to explain an API in one sentence, map it to waiter / kitchen / diner, and read a small JSON object field by field.
 
 <Info title="The UI is only one diner">
-The screen you click is one client. A mobile app, a partner, and your test tool are other diners using the same waiter. If the waiter brings the wrong plate, every diner is wrong — even if the menu looks pretty.
+The screen you click is one client. A mobile app, a partner, and your test tool are other diners using the same waiter. If the waiter brings the wrong plate, every diner is wrong, even if the menu looks pretty.
 </Info>
 
 ## The restaurant model
@@ -78,8 +78,8 @@ Read that object like a tester:
 | --- | --- | --- |
 | `user_id` | `101` | Number (not the string `"101"` unless the spec says so) |
 | `name` | `Alex Smith` | String |
-| `is_active` | `true` | Boolean — `true`/`false`, not `"yes"` |
-| `roles` | `admin`, `tester` | Array of strings; order may or may not matter — ask |
+| `is_active` | `true` | Boolean, `true`/`false`, not `"yes"` |
+| `roles` | `admin`, `tester` | Array of strings; order may or may not matter, ask |
 
 Analogy: JSON is the written ticket and the receipt. The waiter does not invent fields. If `is_active` is missing, that is a contract bug, not "the kitchen was busy."
 
@@ -132,7 +132,7 @@ Next lessons: HTTP methods and status codes (what the ticket is allowed to say),
     "The printed menu on the wall"
   ]}
   correctIndex={2}
-  explanation="The client orders, the server cooks, the API is the messenger in between — request in, response out."
+  explanation="The client orders, the server cooks, the API is the messenger in between, request in, response out."
   questions={[
     {
       question: "JSON is best described as:",
@@ -154,7 +154,7 @@ Next lessons: HTTP methods and status codes (what the ticket is allowed to say),
         "Any JSON at all means the kitchen is fine"
       ],
       correctAnswer: 1,
-      explanation: "Testers assert types and values the contract promised — not only that a body exists."
+      explanation: "Testers assert types and values the contract promised, not only that a body exists."
     }
   ]}
 />

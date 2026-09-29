@@ -1,6 +1,6 @@
 ---
 title: "Capstone Project: The QA Sprint Simulation"
-description: "Plan BVA cases, hunt Sandbox bugs, prove a Failed GENKI order in SQL, and script a Playwright cart assertion — then claim QA Intern Ready."
+description: "Plan BVA cases, hunt Sandbox bugs, prove a Failed GENKI order in SQL, and script a Playwright cart assertion: then claim QA Intern Ready."
 category: "Capstone"
 level: "Advanced"
 estimatedTime: "60 mins"
@@ -26,7 +26,7 @@ The GENKI checkout contains **seeded defects on purpose**. Report them. Do not "
 ## The sprint story
 
 ```text
-Story GENKI-88 — Apply a merch promo at GENKI hoodie checkout
+Story GENKI-88: Apply a merch promo at GENKI hoodie checkout
 As a shopper, I want to enter a discount code of 5 to 10 characters on checkout
 so that a valid campaign code reduces my GENKI hoodie total.
 
@@ -40,7 +40,7 @@ Acceptance criteria
 
 ISTQB lens: this is **black-box** design on the code field (see [BVA](/courses/foundation/02-test-design-techniques)), then **confirmation** in UI, data, and automation.
 
-## Phase 1 — Test planning (ISTQB)
+## Phase 1: Test planning (ISTQB)
 
 Write **at least three** critical test cases for the GENKI hoodie discount **length** rule using **Boundary Value Analysis**.
 
@@ -48,36 +48,36 @@ The valid partition is length 5 through 10. Boundaries that matter:
 
 | Length | Partition | Typical expected (format) |
 | --- | --- | --- |
-| 4 | Invalid — below min | Reject / 400 / validation error |
+| 4 | Invalid, below min | Reject / 400 / validation error |
 | 5 | Valid min | Format accepted (pricing may still fail if the code is unknown) |
 | 10 | Valid max / Boundary | Format accepted |
-| 11 | Invalid — above max | Reject |
+| 11 | Invalid, above max | Reject |
 
 Paste **one case per line** into Phase 1. The grader requires **three rows** and a keyword such as **Valid**, **Invalid**, or **Boundary**.
 
 Example shape:
 
 ```text
-TC-01 Valid: GENKI hoodie checkout with 5-char code SAVE2 — format accepted
-TC-02 Invalid: GENKI hoodie checkout with 4-char code ABCD — rejected below min
-TC-03 Boundary: GENKI hoodie checkout with 10-char code GENKI10MAX — format accepted
+TC-01 Valid: GENKI hoodie checkout with 5-char code SAVE2, format accepted
+TC-02 Invalid: GENKI hoodie checkout with 4-char code ABCD, rejected below min
+TC-03 Boundary: GENKI hoodie checkout with 10-char code GENKI10MAX, format accepted
 ```
 
-## Phase 2 — Manual bug hunting
+## Phase 2: Manual bug hunting
 
 Open the live storefront: **[Sandbox checkout](/sandbox)**.
 
 Hunt at least:
 
-1. **Visual overlap** — on a **narrow viewport** (below 768px), Submit sits on top of CVC. You cannot complete a GENKI payment like a shopper on a phone.
-2. **Checkout total logic** — apply **SAVE20** more than once. The discount **stacks** instead of applying once, so the hoodie total is wrong.
+1. **Visual overlap**: on a **narrow viewport** (below 768px), Submit sits on top of CVC. You cannot complete a GENKI payment like a shopper on a phone.
+2. **Checkout total logic**: apply **SAVE20** more than once. The discount **stacks** instead of applying once, so the hoodie total is wrong.
 
 Submit **one** report in Phase 2:
 
-- **Severity** and **Priority** (impact vs urgency — [bug lesson](/courses/foundation/03-bug-life-cycle))
+- **Severity** and **Priority** (impact vs urgency, [bug lesson](/courses/foundation/03-bug-life-cycle))
 - A description of **at least 20 characters** (title, steps, expected, and actual are still the professional bar)
 
-## Phase 3 — Backend and API
+## Phase 3: Backend and API
 
 ### Mock checkout API
 
@@ -111,7 +111,7 @@ WHERE order_status = 'Failed';
 
 Paste your query into Phase 3.
 
-## Phase 4 — Automation
+## Phase 4: Automation
 
 The Sandbox playground does **not** launch Chrome. Write a spec the same way as [Your First Playwright Test](/courses/ui-automation/02-first-playwright-test): open the sandbox, add a **GENKI hoodie** to the cart, and assert the cart counter.
 

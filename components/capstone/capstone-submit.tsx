@@ -31,10 +31,10 @@ import { useProgress } from "@/lib/progress"
 import { cn } from "@/lib/utils"
 
 const PHASES: { id: CapstonePhaseId; label: string; short: string }[] = [
-  { id: "planning", label: "Phase 1 — Test cases", short: "Planning" },
-  { id: "bug", label: "Phase 2 — Bug report", short: "Bugs" },
-  { id: "sql", label: "Phase 3 — SQL", short: "SQL" },
-  { id: "automation", label: "Phase 4 — Playwright", short: "Automation" },
+  { id: "planning", label: "Phase 1: Test cases", short: "Planning" },
+  { id: "bug", label: "Phase 2: Bug report", short: "Bugs" },
+  { id: "sql", label: "Phase 3: SQL", short: "SQL" },
+  { id: "automation", label: "Phase 4: Playwright", short: "Automation" },
 ]
 
 export function CapstoneSubmit() {
@@ -85,7 +85,7 @@ export function CapstoneSubmit() {
     <section className="my-10 space-y-5 rounded-2xl border border-indigo-500/20 bg-card p-4 shadow-sm sm:p-6">
       <div>
         <p className="font-heading text-lg font-semibold">
-          GENKI Wardrobe — capstone submission
+          GENKI Wardrobe capstone submission
         </p>
         <p className="text-sm text-muted-foreground">
           Four phases for the hoodie checkout: BVA cases, a bug report, a Failed
@@ -129,7 +129,7 @@ export function CapstoneSubmit() {
             onChange={(event) => setTestCases(event.target.value)}
             rows={8}
             className="font-mono text-sm"
-            placeholder={`TC-01 Valid: GENKI hoodie checkout with 5-char code SAVE2 — format accepted\nTC-02 Invalid: GENKI hoodie checkout with 4-char code ABCD — rejected below min\nTC-03 Boundary: GENKI hoodie checkout with 10-char code GENKI10MAX — format accepted`}
+            placeholder={`TC-01 Valid: GENKI hoodie checkout with 5-char code SAVE2, format accepted\nTC-02 Invalid: GENKI hoodie checkout with 4-char code ABCD, rejected below min\nTC-03 Boundary: GENKI hoodie checkout with 10-char code GENKI10MAX, format accepted`}
             aria-invalid={Boolean(errors.planning)}
           />
         </TabsContent>

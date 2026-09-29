@@ -70,10 +70,10 @@ Clarify: email + password, no SSO, intern staging, Chrome.
 
 **Non-functional**
 
-- Page usable on a slow 3G-style throttle (time to interactive — you can say "I would measure," not invent a number)
+- Page usable on a slow 3G-style throttle (time to interactive, you can say "I would measure," not invent a number)
 - HTTPS, no password in the URL or in server logs you can see
 - Rate limit after N failures
-- Screen reader can complete login (role and name — from [DOM locators](/courses/ui-automation/01-dom-and-locators) if you have that lesson)
+- Screen reader can complete login (role and name, from [DOM locators](/courses/ui-automation/01-dom-and-locators) if you have that lesson)
 
 Close with priority: intern interviewers want **valid, invalid, empty** spoken first. Security and a11y show seniority without stealing the clock.
 
@@ -81,11 +81,11 @@ Close with priority: intern interviewers want **valid, invalid, empty** spoken f
 
 Clarify: snacks + drinks, cash, one slot, no card. Physical object, same three columns.
 
-**UI** — can the shopper read prices, see "sold out," reach the coin slot, understand which button is which.
+**UI**: can the shopper read prices, see "sold out," reach the coin slot, understand which button is which.
 
-**Functional** — exact change; overpay and change; wrong button; sold-out selection; coin return; jam; power cycle after coin insert.
+**Functional**: exact change; overpay and change; wrong button; sold-out selection; coin return; jam; power cycle after coin insert.
 
-**Non-functional** — vend within a few seconds; machine stable if kicked; coins not easily fished; hygiene and electrical safety if they want "non-functional" in the real world.
+**Non-functional**: vend within a few seconds; machine stable if kicked; coins not easily fished; hygiene and electrical safety if they want "non-functional" in the real world.
 
 Say: "I would not boil the ocean. First I prove pay-and-vend, then sold-out, then change. Then I would ask about card payments if they exist."
 
@@ -110,11 +110,11 @@ They are scoring **curiosity + evidence**, not volume.
 
 A calm sequence you can memorize:
 
-1. **Assume good intent.** "Thanks for looking — I may have a different build or data."
+1. **Assume good intent.** "Thanks for looking: I may have a different build or data."
 2. **Match environments.** Browser, URL, account, feature flag, time zone, "I used the preview for PR 412."
 3. **Re-run with a script they can copy.** Numbered steps, test user, exact payload if API.
 4. **Add artifacts.** Screenshot or short clip, console or network log, [SQL](/courses/technical-core/01-sql-for-qa) row if persistence is the claim.
-5. **Offer a 10-minute huddle** (screen share) if it still dies on their machine only — that is data (local vs CI), not a personality clash.
+5. **Offer a 10-minute huddle** (screen share) if it still dies on their machine only, that is data (local vs CI), not a personality clash.
 6. **Escalate with a summary**, not a rant, only if the product risk is real and the thread is stuck. PO or lead sees *user impact*, not "dev was rude."
 
 What not to say in an interview (or on Slack):
@@ -127,7 +127,7 @@ What not to say in an interview (or on Slack):
 If they were **correct** (works on current `main`, you tested an old preview), say so and close or update the ticket. That is professionalism.
 
 <Warning title="Not Reproducible is a request for a better experiment">
-It is not a personal grade. The diplomatic move is: better steps, environment, screenshots, logs — then a short ask to retry. The quiz is this exact situation.
+It is not a personal grade. The diplomatic move is: better steps, environment, screenshots, logs, then a short ask to retry. The quiz is this exact situation.
 </Warning>
 
 ## Technical screen: three pairs
@@ -151,7 +151,7 @@ They can diverge. Do not say they are the same.
 | --- | --- | --- |
 | Shape | **Wide and shallow** | **Narrow and deep** |
 | When | New build: "is this even testable?" | After a small change or a fix in one area |
-| Example | Open login, open catalog, add one item — no deep payment matrix | Only the promo-code field after a SAVE20 fix |
+| Example | Open login, open catalog, add one item, no deep payment matrix | Only the promo-code field after a SAVE20 fix |
 | Fail means | Reject the build; do not start a full cycle | This slice still does not make sense; maybe skip the huge pack |
 
 Smoke is a **build verification** gate. Sanity is a **focused confidence** check. Do not swap the words.
@@ -162,7 +162,7 @@ Smoke is a **build verification** gate. Sanity is a **focused confidence** check
 | --- | --- | --- |
 | Question | Did **this** failed case pass after the fix? | Did **other** behavior still pass? |
 | Scope | The exact bug (or the exact failed tests) | Nearby journeys, smoke, or the agreed pack |
-| Example | Promo no longer stacks — rerun that case | After the promo fix, does guest checkout still pay? |
+| Example | Promo no longer stacks, rerun that case | After the promo fix, does guest checkout still pay? |
 
 Retesting is **confirmation**. Regression is **side-effect hunting**. You usually do **both** after a fix: confirm the bug, then a small regression around it.
 

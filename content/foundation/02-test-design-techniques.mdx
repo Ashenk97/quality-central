@@ -16,8 +16,8 @@ Instead of testing every single input value (which is impossible), QA engineers 
 Black-box means you choose data from the *rules of the field*, not from reading the source code.
 
 - Why exhaustive testing fails
-- **Equivalence Partitioning (EP)** — one value stands for a whole group
-- **Boundary Value Analysis (BVA)** — defects love the edges
+- **Equivalence Partitioning (EP)**: one value stands for a whole group
+- **Boundary Value Analysis (BVA)**: defects love the edges
 - A worked **age** field (18 to 60), then the same ideas on a 1 to 100 field
 
 ## Outcome
@@ -25,7 +25,7 @@ Black-box means you choose data from the *rules of the field*, not from reading 
 After this lesson you will be able to split one input into valid and invalid partitions, list the BVA values, and explain why `0, 1, 100, 101` is a BVA set for 1 to 100.
 
 <Info title="Black-box, not a crystal ball">
-You still need an oracle — the spec, a calculation, or an error message — so you know whether `25` should pass. Design techniques choose *which* data to try. They do not invent the expected result.
+You still need an oracle, the spec, a calculation, or an error message, so you know whether `25` should pass. Design techniques choose *which* data to try. They do not invent the expected result.
 </Info>
 
 ## Why we do not test every value
@@ -47,8 +47,8 @@ If the product should treat every member of a group the same, extra members in t
 | Partition | Meaning | Example to test |
 | --- | --- | --- |
 | Valid | 18 through 60 | `25` |
-| Invalid — too young | Less than 18 | `12` |
-| Invalid — too old | Greater than 60 | `75` |
+| Invalid, too young | Less than 18 | `12` |
+| Invalid, too old | Greater than 60 | `75` |
 
 Three tests now cover the *idea* of the field. You did not need ages 18, 19, 20, … 60 as separate EP cases.
 
@@ -60,7 +60,7 @@ If age 18–25 is "student" and 26–60 is "adult," those are **two valid partit
 
 1. Underline the numbers in the spec (here: 18 and 60).
 2. Name the valid group (inside the range, correct type).
-3. Name each invalid group (below, above, empty, letters, decimals — if the field can receive them).
+3. Name each invalid group (below, above, empty, letters, decimals, if the field can receive them).
 4. Pick **one representative** per group.
 5. Write the expected result from the spec (accept vs error), not from "whatever today's build does."
 
@@ -114,7 +114,7 @@ EP says "one typical valid age is enough for the middle." BVA says "still test 1
 1. Keep your valid representative (`25`).
 2. Add the four on-boundary valids: min, min+1, max−1, max.
 3. Add the two invalids hugging the range: min−1 and max+1.
-4. Execute invalids after you know a valid age still works — so a broken form is not mistaken for a range bug.
+4. Execute invalids after you know a valid age still works, so a broken form is not mistaken for a range bug.
 
 ```json
 {
@@ -140,7 +140,7 @@ Interviewers love this range. If an input accepts values from **1 to 100**:
 | BVA (edges) | `0`, `1`, `100`, `101` | On and just around 1 and 100 |
 | BVA (full set) | `0`, `1`, `2`, `99`, `100`, `101` | Also min+1 and max−1 |
 
-`5, 50, 95` are all *inside* the valid partition — useful as extras, not as BVA. `1, 2, 3, 4` never touch the top boundary. `-10, 50, 200` is EP-ish (low, mid, high) but skips the actual edges `1` and `100`.
+`5, 50, 95` are all *inside* the valid partition, useful as extras, not as BVA. `1, 2, 3, 4` never touch the top boundary. `-10, 50, 200` is EP-ish (low, mid, high) but skips the actual edges `1` and `100`.
 
 ## Knowledge check
 
@@ -149,7 +149,7 @@ Interviewers love this range. If an input accepts values from **1 to 100**:
   question="If an input accepts values from 1 to 100, which set of test data represents BVA?"
   options={["0, 1, 100, 101", "5, 50, 95", "-10, 50, 200", "1, 2, 3, 4"]}
   correctIndex={0}
-  explanation="Boundary Value Analysis focuses on values directly on and around the boundaries (1 and 100)."
+  explanation="This is the edge set from the lesson: on and just outside 1 and 100 (0, 1, 100, 101). The full set also adds 2 and 99. The other options never sit on both boundaries."
   questions={[
     {
       question: "An age field accepts 18 through 60. Which value is the best single Equivalence Partitioning pick for the valid group?",
@@ -160,7 +160,7 @@ Interviewers love this range. If an input accepts values from **1 to 100**:
         "The empty field only"
       ],
       correctAnswer: 1,
-      explanation: "EP uses one value to stand for a partition. 25 sits inside the valid group. 18 and 60 are still needed — that is BVA, not extra EP duplicates of the middle."
+      explanation: "EP uses one value to stand for a partition. 25 sits inside the valid group. 18 and 60 are still needed, that is BVA, not extra EP duplicates of the middle."
     },
     {
       question: "For the same 18-60 age field, which list is the BVA set taught in this lesson?",

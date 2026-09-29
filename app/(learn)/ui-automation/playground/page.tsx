@@ -15,7 +15,7 @@ export default function AutomationPlaygroundPage() {
         </h1>
         <p className="max-w-2xl text-muted-foreground">
           Edit a Playwright spec and run a simulated report. This playground
-          checks syntax and test() shape — it does not launch a browser yet.
+          checks syntax and test() shape, it does not launch a browser yet.
         </p>
       </div>
       <AutomationPlayground />

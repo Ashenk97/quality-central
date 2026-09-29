@@ -16,7 +16,7 @@ setup("save a signed-in storage state", async ({ page }) => {
   const user = getE2EUser()
   if (!user) {
     throw new Error(
-      "Auth is on, so signed-in tests need E2E_USER_EMAIL and E2E_USER_PASSWORD in .env.local. Use a confirmed email/password account — GitHub OAuth cannot be automated here."
+      "Auth is on, so signed-in tests need E2E_USER_EMAIL and E2E_USER_PASSWORD in .env.local. Use a confirmed email/password account. GitHub OAuth cannot be automated here."
     )
   }
 

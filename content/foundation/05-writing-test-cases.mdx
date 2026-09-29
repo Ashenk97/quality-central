@@ -11,12 +11,12 @@ track: manual
 
 ## What this lesson covers
 
-A **test scenario** is a one-line *what* ("Forgot password for a registered user"). A **test case** is the *how*: id, title, pre-conditions, numbered steps, expected result — plus actual result and status filled **when you run it**.
+A **test scenario** is a one-line *what* ("Forgot password for a registered user"). A **test case** is the *how*: id, title, pre-conditions, numbered steps, expected result, plus actual result and status filled **when you run it**.
 
 This lesson turns [BVA and Equivalence Partitioning](/courses/foundation/02-test-design-techniques) into documents another tester can execute without a meeting.
 
 - Anatomy of a complete test case (id through status)
-- **Positive**, **negative**, and **edge** testing — and why you need all three
+- **Positive**, **negative**, and **edge** testing, and why you need all three
 - A worked **Forgot Password** suite for Nimbus
 - Scenario vs case (the quiz)
 
@@ -76,7 +76,7 @@ Same case as structured notes you can paste into TestRail, Zephyr, Azure Test Pl
 
 **Test Steps.** Another person (or you in three months) follows them cold. "Reset as usual" is not a step.
 
-**Expected Result.** Comes from the requirement or a reasonable oracle — not from "whatever yesterday's build did."
+**Expected Result.** Comes from the requirement or a reasonable oracle, not from "whatever yesterday's build did."
 
 **Actual Result.** The evidence. If it fails, this paragraph should be enough to file a defect using the [bug report anatomy](/courses/foundation/03-bug-life-cycle) (steps, expected, actual).
 
@@ -96,7 +96,7 @@ You do not "test forgot password" once. You sample **three kinds of intent**.
 | **Negative testing** | Does the product reject invalid, missing, or unauthorized input? | Empty email, bad format, unknown address, wrong HTTP method if you also test the API. |
 | **Edge cases** | What happens at limits, timing, and "almost valid"? | Expired token, already-used link, max-length email, rapid resend (rate limit). |
 
-**Definition:** *Positive testing* confirms the product does what the spec allows. *Negative testing* confirms it refuses what the spec forbids. *Edge cases* sit on boundaries — time, length, reuse, concurrency — where off-by-one and expiry bugs live.
+**Definition:** *Positive testing* confirms the product does what the spec allows. *Negative testing* confirms it refuses what the spec forbids. *Edge cases* sit on boundaries (time, length, reuse, concurrency) where off-by-one and expiry bugs live.
 
 Positive tests that always pass while negative tests are missing is how "reset works in the demo" and "anyone can reset the CEO" both exist.
 
@@ -129,7 +129,7 @@ That sentence is **not** executable. The cases below are.
 | TC-FP-07 | Edge | Used reset link cannot be reused |
 | TC-FP-08 | Edge | Rapid resend is rate-limited |
 
-### TC-FP-01 — full anatomy (positive, request)
+### TC-FP-01: full anatomy (positive, request)
 
 | Field | Content |
 | --- | --- |
@@ -141,7 +141,7 @@ That sentence is **not** executable. The cases below are.
 | **Actual Result** | *(blank until execution)* |
 | **Status** | Not Run |
 
-### TC-FP-02 — full anatomy (positive, complete the reset)
+### TC-FP-02: full anatomy (positive, complete the reset)
 
 | Field | Content |
 | --- | --- |
@@ -153,7 +153,7 @@ That sentence is **not** executable. The cases below are.
 | **Actual Result** | *(blank until execution)* |
 | **Status** | Not Run |
 
-### TC-FP-03 — negative (empty email)
+### TC-FP-03: negative (empty email)
 
 | Field | Content |
 | --- | --- |
@@ -165,16 +165,16 @@ That sentence is **not** executable. The cases below are.
 | **Actual Result** | *(blank until execution)* |
 | **Status** | Not Run |
 
-### TC-FP-04 and TC-FP-05 — negative (unknown and malformed)
+### TC-FP-04 and TC-FP-05: negative (unknown and malformed)
 
 | ID | Pre-conditions | Steps (short) | Expected Result |
 | --- | --- | --- | --- |
-| TC-FP-04 | Address `nobody-unknown@nimbus.test` is **not** a user | Submit that address on Forgot password | Same generic success (or same generic error) as a real user — **do not** show "User not found." No mail to a real mailbox you control unless the product truly sent nothing. |
-| TC-FP-05 | — | Enter `not-an-email` and submit | Client or server validation; no send. |
+| TC-FP-04 | Address `nobody-unknown@nimbus.test` is **not** a user | Submit that address on Forgot password | Same generic success (or same generic error) as a real user, **do not** show "User not found." No mail to a real mailbox you control unless the product truly sent nothing. |
+| TC-FP-05 | n/a | Enter `not-an-email` and submit | Client or server validation; no send. |
 
-TC-FP-04 is security-aware negative testing: a case that "fails" by revealing *whether the email is registered* is a **Fail** against an anti-enumeration requirement — even if the page "looks helpful."
+TC-FP-04 is security-aware negative testing: a case that "fails" by revealing *whether the email is registered* is a **Fail** against an anti-enumeration requirement, even if the page "looks helpful."
 
-### TC-FP-06, TC-FP-07, TC-FP-08 — edge
+### TC-FP-06, TC-FP-07, TC-FP-08: edge
 
 | ID | Edge | How to set it up | Expected Result |
 | --- | --- | --- | --- |
@@ -212,7 +212,7 @@ Story or requirement → scenario → cases → bugs. `TC-FP-04` failing should 
 
 1. Pick another Nimbus slice (promo code, change password while logged in). Write **one scenario** and at least one positive, one negative, and one edge **case** with every anatomy field.
 2. Execute `TC-FP-03` on the [Sandbox](/sandbox) or a local build if you have forgot-password; fill Actual Result and Status for real.
-3. If it fails, file a defect from the case — do not paste a new vague paragraph. Reuse steps, expected, and actual.
+3. If it fails, file a defect from the case, do not paste a new vague paragraph. Reuse steps, expected, and actual.
 
 ## Knowledge check
 
@@ -234,7 +234,7 @@ Story or requirement → scenario → cases → bugs. `TC-FP-04` failing should 
         "During design, by copying Expected Result so the case looks complete",
         "During or after execution, with what this build actually did",
         "Only in the ISTQB handbook, never in a spreadsheet",
-        "Never — testers only set Status"
+        "Never. Testers only set Status"
       ],
       correctAnswer: 1,
       explanation: "Expected Result is the oracle written up front. Actual Result is evidence from the run. Status follows that comparison."
@@ -243,7 +243,7 @@ Story or requirement → scenario → cases → bugs. `TC-FP-04` failing should 
       question: "A Forgot Password form rejects an empty email and sends no mail. That case is best classified as:",
       options: [
         "Positive testing of the happy path only",
-        "Negative testing — invalid or missing input should be refused",
+        "Negative testing: invalid or missing input should be refused",
         "An edge case about token expiry only",
         "A Test Scenario with no steps or id"
       ],

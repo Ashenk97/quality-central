@@ -11,7 +11,7 @@ track: manual
 
 ## What this lesson covers
 
-**Software Quality Assurance (QA)** is not just about finding bugs — it is the process of ensuring that a product meets defined quality standards before reaching users.
+**Software Quality Assurance (QA)** is not just about finding bugs. It is the process of ensuring that a product meets defined quality standards before reaching users.
 
 You will learn:
 
@@ -36,7 +36,7 @@ Finding bugs is one of those activities. It is not the whole job.
 | If someone says… | A tester hears… |
 | --- | --- |
 | "QA means breaking things" | Testing *investigates* the product. Breaking it is a side effect, not the goal. |
-| "Ship it; we'll test later" | Late testing is still testing — it is also more expensive. |
+| "Ship it; we'll test later" | Late testing is still testing. It is also more expensive. |
 | "Zero bugs" | Quality is *fitness for purpose*, not a magic certificate of perfection. |
 
 ### Real-world analogy: a bakery
@@ -46,7 +46,7 @@ Baking the bread is **development**. Tasting a loaf, checking the allergen label
 QA is the kitchen *system*. Testing is the flashlight you turn on a specific loaf.
 
 <Warning title="Passing tests never prove the product is perfect">
-A green run means: in the cases you tried, the product behaved as expected. Untested cases still exist. That is why STLC includes planning and coverage — not only clicking until you get tired.
+A green run means: in the cases you tried, the product behaved as expected. Untested cases still exist. That is why STLC includes planning and coverage, not only clicking until you get tired.
 </Warning>
 
 ## SDLC vs. STLC
@@ -59,7 +59,7 @@ Requirement Analysis → Design → Development → Testing → Deployment → M
 
 **Definition:** *STLC (Software Testing Life Cycle)* is a subset of SDLC that focuses strictly on testing work. It has its own phases so testing is not "whatever we do in the last week."
 
-Analogy: SDLC is building a house (plans, frame, plumbing, move-in, repairs). STLC is the inspection path (what to inspect, the checklist, the walkthrough, the punch list, the sign-off). You cannot inspect a house that was never designed — but you also should not wait until the family has moved in to look at the wiring.
+Analogy: SDLC is building a house (plans, frame, plumbing, move-in, repairs). STLC is the inspection path (what to inspect, the checklist, the walkthrough, the punch list, the sign-off). You cannot inspect a house that was never designed, but you also should not wait until the family has moved in to look at the wiring.
 
 | | SDLC | STLC |
 | --- | --- | --- |
@@ -71,33 +71,33 @@ On this site, **SDLC** and **STLC** each get a later lesson. Here you only need 
 
 ## The six STLC phases
 
-Walk these as a checklist, not as six calendar months. In a two-week sprint you still touch each idea — sometimes in hours, not weeks.
+Walk these as a checklist, not as six calendar months. In a two-week sprint you still touch each idea, sometimes in hours, not weeks.
 
-### 1. Requirement Analysis — identifying what needs to be tested
+### 1. Requirement Analysis: identifying what needs to be tested
 
 Read the story, the mock, the API contract. Ask: what could hurt a shopper if it is wrong? Circle numbers, "must," and "never."
 
 Nimbus example: "One promo code per order; `SAVE20` is 20 percent off merchandise."
 
-### 2. Test Planning — estimating scope, tools, and resource allocation
+### 2. Test Planning: estimating scope, tools, and resource allocation
 
 Decide *how much* to test, on *which builds*, with *which accounts*, and what "done" means for this slice. Planning is a risk conversation, not a novel.
 
 Nimbus example: "We will cover one-code happy path, a second-code reject, and guest checkout on the sandbox build."
 
-### 3. Test Case Development — writing step-by-step verification procedures
+### 3. Test Case Development: writing step-by-step verification procedures
 
 Each case has data, steps, and an **expected result** (your oracle). You cannot test every cart, so you sample (next lesson: test design).
 
-### 4. Environment Setup — preparing servers, databases, and test builds
+### 4. Environment Setup: preparing servers, databases, and test builds
 
 No environment, no honest test. You need a known build, test users, and data that is safe to break.
 
-### 5. Test Execution — running tests and logging defects
+### 5. Test Execution: running tests and logging defects
 
 This is the phase people picture when they say "testing": run the cases, compare actual to expected, **log bugs**, and **verify fixes** when a new build arrives.
 
-### 6. Test Closure — analyzing results, coverage, and metrics
+### 6. Test Closure: analyzing results, coverage, and metrics
 
 What did we cover? What did we skip? What escaped? Closure is how the next cycle gets smarter.
 
@@ -118,7 +118,7 @@ What did we cover? What did we skip? What escaped? Closure is how the next cycle
 ```
 
 <Info title="Where bugs are born vs where they are logged">
-A wrong requirement is an error in phase 1 thinking. The defect may sit in code from Development (SDLC). You usually *observe* the failure during **Test Execution**. Logging and retesting live there — not in Test Planning.
+A wrong requirement is an error in phase 1 thinking. The defect may sit in code from Development (SDLC). You usually *observe* the failure during **Test Execution**. Logging and retesting live there, not in Test Planning.
 </Info>
 
 ## Step-by-step: one Nimbus pass through STLC

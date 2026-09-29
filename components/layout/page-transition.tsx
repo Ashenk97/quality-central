@@ -7,7 +7,7 @@ export function PageTransition({ children }: { children: React.ReactNode }) {
 
   return (
     <motion.div
-      // Avoid Y transforms here — they break position:sticky descendants.
+      // Avoid Y transforms here, they break position:sticky descendants.
       // The initial state has to stay the same on the server and on the first
       // client render, so reduced motion collapses the duration instead.
       initial={{ opacity: 0 }}

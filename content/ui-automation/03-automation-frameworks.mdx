@@ -1,6 +1,6 @@
 ---
 title: "Automation Frameworks"
-description: "Playwright, Cypress, and Selenium — how to choose, page objects, and what a maintainable suite looks like."
+description: "Playwright, Cypress, and Selenium: how to choose, page objects, and what a maintainable suite looks like."
 category: "UI Automation"
 level: "Beginner"
 estimatedTime: "16 mins"
@@ -47,7 +47,7 @@ A bad locator strategy in Playwright is still a bad suite. Framework choice matt
 **Definition:** A *page object* hides locators and user actions behind a small API so specs read like the journey.
 
 ```ts
-// checkout.page.ts — locators live here
+// checkout.page.ts, locators live here
 export class CheckoutPage {
   constructor(private readonly page: Page) {}
 
@@ -63,7 +63,7 @@ export class CheckoutPage {
 ```
 
 ```ts
-// checkout.spec.ts — behavior lives here
+// checkout.spec.ts, behavior lives here
 test("SAVE10 does not stack", async ({ page }) => {
   const checkout = new CheckoutPage(page)
   await checkout.applyPromo("SAVE10")

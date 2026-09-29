@@ -116,7 +116,7 @@ export function DailyChallenge() {
               )}
             />
             <span className="font-mono">
-              {ready ? streak.streakCount : "—"}
+              {ready ? streak.streakCount : "-"}
             </span>
             <span className="text-xs font-normal">
               {streak.streakCount === 1 ? "day" : "day streak"}
@@ -203,7 +203,7 @@ export function DailyChallenge() {
               )}
             >
               <p className="text-xs font-medium tracking-wide text-indigo-500 uppercase">
-                {correct ? "Nice — that matches" : "Answer"}
+                {correct ? "Nice, that matches" : "Answer"}
               </p>
               <p className="font-heading text-xl font-semibold">{challenge.answer}</p>
               <p className="text-sm leading-relaxed text-muted-foreground">

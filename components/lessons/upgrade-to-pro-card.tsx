@@ -6,6 +6,7 @@ import { SparklesIcon } from "lucide-react"
 import { toast } from "sonner"
 
 import { createCheckoutSession } from "@/app/actions/stripe"
+import { BetaMark } from "@/components/beta-mark"
 import { Button } from "@/components/ui/button"
 import { loginUrl } from "@/lib/auth/paths"
 
@@ -63,6 +64,7 @@ export function UpgradeToProCard({
       <p className="mb-2 inline-flex items-center gap-1.5 font-mono text-[11px] tracking-[0.18em] text-qa-primary uppercase">
         <SparklesIcon className="size-3.5" aria-hidden />
         Pro
+        <BetaMark className="ml-1 normal-case tracking-wide" />
       </p>
       <h2 className="font-heading text-2xl font-semibold tracking-tight text-white">
         Upgrade to Pro

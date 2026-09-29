@@ -33,7 +33,7 @@ A **resource** is a thing with an identity, often a URL:
 - Collection: `/api/orders`
 - Member: `/api/orders/1082`
 
-A **representation** is how that thing is serialized today — usually JSON.
+A **representation** is how that thing is serialized today, usually JSON.
 
 ```http
 GET /api/orders/1082
@@ -108,7 +108,7 @@ If the docs mention an Idempotency-Key header, treat duplicate POSTs as a first-
 ## How contracts fail
 
 - Field renamed in the service; the UI still works because it was hardcoded
-- Extra fields added — usually OK — but a required field removed
+- Extra fields added, usually OK, but a required field removed
 - List endpoint starts wrapping items in `data`
 - Timezones shift from UTC strings to epoch seconds
 - Error body changes from a simple `message` to a nested object

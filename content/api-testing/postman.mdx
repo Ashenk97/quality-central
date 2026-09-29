@@ -66,7 +66,7 @@ Authorization: Bearer {{token}}
 `baseUrl` and `token` come from the environment. `orderId` is written by a previous request's test script.
 
 <Warning title="Hardcoded hosts rot">
-If every request says `http://localhost:3000`, the collection cannot run in CI against a preview deploy. Variables are not decoration — they are what make the suite portable.
+If every request says `http://localhost:3000`, the collection cannot run in CI against a preview deploy. Variables are not decoration, they are what make the suite portable.
 </Warning>
 
 ## The Tests tab is your oracle
@@ -113,9 +113,9 @@ Do not hide the entire business oracle in pre-request code. Future you will not 
 
 ## Collection runner, monitors, and Newman
 
-- **Collection runner** — local, optional data file, ordered folders
-- **Monitors** — scheduled runs in Postman Cloud (watch cost and secrets)
-- **Newman** — CLI for CI
+- **Collection runner**: local, optional data file, ordered folders
+- **Monitors**: scheduled runs in Postman Cloud (watch cost and secrets)
+- **Newman**: CLI for CI
 
 A CI sketch:
 
@@ -190,7 +190,7 @@ When you want a smaller loop, use [the API Playground](/api-testing/playground):
       question: "A request returns 200 but a pm.test on body.status fails. The collection run should:",
       options: [
         "Pass, because HTTP 200 always means success",
-        "Fail — assertions are part of the contract, not optional comments",
+        "Fail, assertions are part of the contract, not optional comments",
         "Skip remaining requests without recording the failure",
         "Upgrade the status to 201 automatically"
       ],

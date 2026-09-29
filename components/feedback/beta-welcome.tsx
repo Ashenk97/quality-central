@@ -77,7 +77,7 @@ export function BetaWelcome() {
         <DialogHeader>
           <DialogTitle>Welcome to the Quality Central beta</DialogTitle>
           <DialogDescription>
-            You are signed in. Use the sidebar to move around — start with
+            You are signed in. Use the sidebar to move around, start with
             Foundation before API, UI automation, or the Sandbox.
           </DialogDescription>
         </DialogHeader>

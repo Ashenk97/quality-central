@@ -183,7 +183,7 @@ export function DashboardProgress({
 
         <StatRingCard
           label="Path tracks"
-          value={ready ? `${tracksComplete} / ${lessonTracks.length}` : "—"}
+          value={ready ? `${tracksComplete} / ${lessonTracks.length}` : "-"}
           percent={
             ready && lessonTracks.length > 0
               ? Math.round((tracksComplete / lessonTracks.length) * 100)
@@ -196,9 +196,9 @@ export function DashboardProgress({
           value={
             ready
               ? quizScores.length === 0
-                ? "—"
+                ? "-"
                 : `${averageQuiz}%`
-              : "—"
+              : "-"
           }
           percent={ready ? averageQuiz : 0}
           hint={
@@ -209,7 +209,7 @@ export function DashboardProgress({
         />
         <StatRingCard
           label="Sandbox hunter"
-          value={ready ? `${sandboxPoints} / ${MAX_SANDBOX_POINTS}` : "—"}
+          value={ready ? `${sandboxPoints} / ${MAX_SANDBOX_POINTS}` : "-"}
           percent={ready ? sandboxPercent : 0}
           hint={
             ready

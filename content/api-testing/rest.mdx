@@ -50,10 +50,10 @@ Assert the **family** and the **specific code** the contract promised.
 
 | Family | Meaning for testers |
 | --- | --- |
-| 2xx | Success — still assert the body |
-| 3xx | Redirect — follow or forbid, per spec |
-| 4xx | Client problem — validate message and that the server did not mutate |
-| 5xx | Server problem — fail the build; do not treat as a "valid negative test" |
+| 2xx | Success, still assert the body |
+| 3xx | Redirect, follow or forbid, per spec |
+| 4xx | Client problem, validate message and that the server did not mutate |
+| 5xx | Server problem, fail the build; do not treat as a "valid negative test" |
 
 Common assertions:
 
@@ -66,7 +66,7 @@ Common assertions:
 - **404** no resource at that id (or hidden)
 - **409** conflict (duplicate coupon, stale version)
 - **422** semantically invalid (valid JSON, illegal business rule)
-- **429** rate limit — retry-after is part of the contract
+- **429** rate limit, retry-after is part of the contract
 
 <Warning title="200 with an error object is a smell">
 Some APIs return HTTP 200 and put `"success": false` in the body. Testers still must assert both layers, then file a contract bug: HTTP already has a status line. Clients and caches will get it wrong.
@@ -121,7 +121,7 @@ If the docs mention an Idempotency-Key header, treat duplicate POSTs as a first-
 ## How contracts fail
 
 - Field renamed in the service, UI still works because it was hardcoded
-- Extra fields added — usually OK — but a required field removed
+- Extra fields added, usually OK, but a required field removed
 - List endpoint starts wrapping items in `data`
 - Timezones shift from UTC strings to epoch seconds
 - Error body changes from a simple message field to RFC 7807 problem+json
@@ -153,7 +153,7 @@ Your regression pack should fail on those. Exploratory API testing then hunts au
         "The number of CSS files"
       ],
       correctAnswer: 1,
-      explanation: "Contracts fail in the body as often as they fail in the status line — assert both."
+      explanation: "Contracts fail in the body as often as they fail in the status line, assert both."
     },
     {
       question: "POST /api/orders returns 201 but the JSON body omits id. What should you do?",
@@ -170,7 +170,7 @@ Your regression pack should fail on those. Exploratory API testing then hunts au
       question: "An endpoint returns HTTP 200 with a body of success false and an error message. The strongest tester response is:",
       options: [
         "Ignore HTTP and only read the body",
-        "Assert both layers, then challenge the contract — HTTP status should match the outcome",
+        "Assert both layers, then challenge the contract. HTTP status should match the outcome",
         "Count it as a 5xx",
         "Skip negative tests on that API"
       ],

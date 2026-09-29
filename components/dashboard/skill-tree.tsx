@@ -293,7 +293,7 @@ function NextGenFootnote({
         </Badge>
       </Link>
       <p className="max-w-sm text-center text-xs text-muted-foreground">
-        After Capstone — AI prompting and next-wave QA practices.
+        After Capstone: AI prompting and next-wave QA practices.
       </p>
     </div>
   )

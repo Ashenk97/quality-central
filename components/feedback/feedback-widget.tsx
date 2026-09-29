@@ -79,7 +79,7 @@ export function FeedbackWidget() {
     }
 
     toast.success("Feedback sent", {
-      description: "Thanks — this helps us shape the beta.",
+      description: "Thanks: this helps us shape the beta.",
     })
     setOpen(false)
     reset()

@@ -198,8 +198,8 @@ export function LessonComments({
             Sign in to join the discussion
           </Link>
           <span className="text-muted-foreground">
-            {" "}
-            — questions, replies, and upvotes sync to your account.
+            { " " }
+            questions, replies, and upvotes sync to your account.
           </span>
         </p>
       )}

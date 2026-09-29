@@ -1,6 +1,6 @@
 ---
 title: "HTTP Methods & Status Codes"
-description: "GET, POST, PUT/PATCH, DELETE, status-code families, and a QA map of method to expected status — including 401 vs 403."
+description: "GET, POST, PUT/PATCH, DELETE, status-code families, and a QA map of method to expected status: including 401 vs 403."
 category: "API Testing"
 level: "Intermediate"
 estimatedTime: "20 mins"
@@ -35,7 +35,7 @@ Think **CRUD**: Create, Read, Update, Delete. HTTP already has verbs for that.
 | **GET** | Read | Fetch a representation. Must not change server state. | None |
 | **POST** | Create | Create a member, or trigger a process (apply coupon, start job). | JSON of the new thing |
 | **PUT** | Update (replace) | Send the **full** replacement of a member. | Complete resource |
-| **PATCH** | Update (partial) | Send a **delta** — only the fields that change. | Partial JSON |
+| **PATCH** | Update (partial) | Send a **delta**: only the fields that change. | Partial JSON |
 | **DELETE** | Remove | Delete a member. | Often none |
 
 ### GET (Read)
@@ -61,7 +61,7 @@ Content-Type: application/json
 }
 ```
 
-Expect **201 Created** when a new user is minted (often with a `Location` header or an `id` in the body). Some APIs return **200** instead — freeze what *your* spec says and assert it. Invalid JSON is **400**. Duplicate email might be **409**.
+Expect **201 Created** when a new user is minted (often with a `Location` header or an `id` in the body). Some APIs return **200** instead, freeze what *your* spec says and assert it. Invalid JSON is **400**. Duplicate email might be **409**.
 
 ### PUT and PATCH (Update)
 
@@ -91,7 +91,7 @@ Content-Type: application/json
 
 If PATCH with only `is_active` also wipes `roles`, the server is behaving like PUT. File it unless the docs say replace-on-PATCH.
 
-Unknown id: **404** (or an upsert **200/201** — the contract must say which).
+Unknown id: **404** (or an upsert **200/201**: the contract must say which).
 
 ### DELETE (Remove)
 
@@ -99,7 +99,7 @@ Unknown id: **404** (or an upsert **200/201** — the contract must say which).
 DELETE /api/users/101
 ```
 
-First call: **200** or **204** (no body). Second call: still **204** or **404**, never **500**. Then GET should be **404**.
+First call: **200** (a body is allowed) or **204** (no body). Second call: **204** or **404**, never **500**. Then GET should be **404**.
 
 <Warning title="GET that writes is a Critical bug">
 Prefetch, crawlers, and retries will replay GET. If GET `/api/pay` captures money, users get double-charged. Status 200 does not make that OK.
@@ -110,11 +110,11 @@ Prefetch, crawlers, and retries will replay GET. If GET `/api/pay` captures mone
 | Range | Name | Tester meaning |
 | --- | --- | --- |
 | **2xx** | Success | The request was understood and processed as a success. Still assert the body. |
-| **3xx** | Redirection | Go elsewhere (or do not follow — per spec). |
+| **3xx** | Redirection | Go elsewhere (or do not follow, per spec). |
 | **4xx** | Client error | *Your* request is the problem: auth, path, payload, or permission. |
 | **5xx** | Server error | The server failed. This is not a "valid negative test" unless you are chaos-testing. |
 
-### 2xx Success — 200, 201
+### 2xx Success: 200, 201
 
 | Code | When QA expects it |
 | --- | --- |
@@ -127,13 +127,13 @@ Also common: **204 No Content** on DELETE.
 
 The resource moved, or the client must call a different URL. Testers decide whether the client **follows** the redirect or treats it as a contract change. A login flow that 302s to an error page is still a finding if the spec promised 401.
 
-### 4xx Client errors — 400, 401, 403, 404
+### 4xx Client errors: 400, 401, 403, 404
 
 | Code | Meaning | QA example |
 | --- | --- | --- |
 | **400 Bad Request** | Malformed syntax or JSON the server cannot parse | POST body is truncated or not valid JSON |
-| **401 Unauthorized** | **Not authenticated** — missing, expired, or invalid credentials | No `Authorization` header; bad token |
-| **403 Forbidden** | **Authenticated but not allowed** — identity is known, permission is denied | Tester token on `DELETE /api/users/1` |
+| **401 Unauthorized** | **Not authenticated**: missing, expired, or invalid credentials | No `Authorization` header; bad token |
+| **403 Forbidden** | **Authenticated but not allowed**: identity is known, permission is denied | Tester token on `DELETE /api/users/1` |
 | **404 Not Found** | No resource at that URL (or hidden) | GET `/api/users/999999` |
 
 **401 vs 403** is the pair people swap. Memory hook:
@@ -141,9 +141,9 @@ The resource moved, or the client must call a different URL. Testers decide whet
 - **401** = the restaurant does not know *who you are* (no reservation name).
 - **403** = they know who you are and still will not seat you in the kitchen.
 
-A 401 body often invites you to log in. A 403 must **not** leak whether the hidden admin user exists if that would be an information leak — but many APIs still return 403 with a clear message. Assert what *your* spec promises, then challenge unsafe leaks.
+A 401 body often invites you to log in. A 403 must **not** leak whether the hidden admin user exists if that would be an information leak, but many APIs still return 403 with a clear message. Assert what *your* spec promises, then challenge unsafe leaks.
 
-### 5xx Server errors — 500, 503
+### 5xx Server errors: 500, 503
 
 | Code | Meaning | QA example |
 | --- | --- | --- |

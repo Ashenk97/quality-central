@@ -35,7 +35,7 @@ Rough pipeline:
 1. **Parse HTML** into a DOM tree (`html` → `body` → `form` → `button`).
 2. **Parse CSS** into rules; compute styles per node (the CSSOM).
 3. **Layout** (reflow): boxes, positions, overlap.
-4. **Paint** pixels. A button can be in the DOM and "enabled" but **covered** by another layer — the Sandbox Pay/CVC overlap is this class of bug.
+4. **Paint** pixels. A button can be in the DOM and "enabled" but **covered** by another layer, the Sandbox Pay/CVC overlap is this class of bug.
 
 ```html
 <form>
@@ -92,7 +92,7 @@ The first XPath is an id query in disguise (fine). The second is a **full path f
 
 ### Accessibility roles: `getByRole` and `getByText`
 
-These query how a **user** (and assistive tech) finds the control — not the class list.
+These query how a **user** (and assistive tech) finds the control, not the class list.
 
 ```ts
 page.getByRole("button", { name: "Apply" })
@@ -127,7 +127,7 @@ page.getByRole("form").getByRole("button", { name: "Apply" })
 ### Step-by-step: choose a locator for Apply
 
 1. Inspect the button. Note tag, visible text, `id`, `name`, `aria-*`, `data-testid`.
-2. If `id="apply-promo"` is unique and human — use it.
+2. If `id="apply-promo"` is unique and human, use it.
 3. Else use role `button` and name `Apply`, scoped to the form.
 4. Else ask the team for a `data-testid` rather than writing a 12-step XPath.
 5. Run the spec twice. If it flakes, you were matching the wrong Apply or a hidden duplicate.

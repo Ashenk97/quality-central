@@ -120,7 +120,7 @@ export function BuggyCheckout() {
       {qaMode ? (
         <div className="mb-4 rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
           QA Mode is on. Three seeded defects are outlined below. This banner is
-          for instructors — it is not part of the student scenario.
+          for instructors, it is not part of the student scenario.
         </div>
       ) : null}
 
