@@ -2,7 +2,7 @@
 
 import { type FormEvent, useCallback, useEffect, useId, useState } from "react"
 import Link from "next/link"
-import { ArrowBigUpIcon, MessageSquareIcon } from "lucide-react"
+import { ArrowBigUpIcon, FlagIcon, MessageSquareIcon } from "lucide-react"
 import { toast } from "sonner"
 
 import { Button } from "@/components/ui/button"
@@ -12,6 +12,7 @@ import { loginUrl } from "@/lib/auth/paths"
 import {
   fetchLessonComments,
   postLessonComment,
+  reportLessonComment,
   toggleLessonCommentVote,
   validateLessonCommentBody,
   type LessonComment,
@@ -130,6 +131,41 @@ export function LessonComments({
     }
   }
 
+  async function onReport(comment: LessonComment) {
+    if (!userId || comment.userId === userId) {
+      return
+    }
+
+    const confirmed = window.confirm(
+      "Report this comment as spam or abuse? It will be hidden for you, and for everyone once several learners report it."
+    )
+    if (!confirmed) {
+      return
+    }
+
+    const result = await reportLessonComment(comment.id)
+    if (!result.ok) {
+      toast.error("Report failed", {
+        description: result.message,
+        id: "lesson-report",
+      })
+      return
+    }
+
+    setThreads((current) =>
+      current
+        .filter((thread) => thread.id !== comment.id)
+        .map((thread) => ({
+          ...thread,
+          replies: thread.replies.filter((reply) => reply.id !== comment.id),
+        }))
+    )
+    toast.success("Comment reported", {
+      description: "Thanks. It is hidden for you now.",
+      id: "lesson-report",
+    })
+  }
+
   async function onPosted(comment: LessonComment) {
     if (comment.parentId) {
       setThreads((current) =>
@@ -224,6 +260,7 @@ export function LessonComments({
                   currentUserId={userId}
                   kind="question"
                   onVote={() => void onVote(thread)}
+                  onReport={() => void onReport(thread)}
                 />
                 <div className="mt-3 flex flex-wrap gap-2">
                   {userId ? (
@@ -267,6 +304,7 @@ export function LessonComments({
                             currentUserId={userId}
                             kind="answer"
                             onVote={() => void onVote(reply)}
+                            onReport={() => void onReport(reply)}
                           />
                         </article>
                       </li>
@@ -287,11 +325,13 @@ function CommentBody({
   currentUserId,
   kind,
   onVote,
+  onReport,
 }: {
   comment: LessonComment
   currentUserId: string | null
   kind: "question" | "answer"
   onVote: () => void
+  onReport: () => void
 }) {
   const own = comment.userId === currentUserId
   const voteLabel = comment.voted
@@ -314,6 +354,11 @@ function CommentBody({
               You
             </span>
           ) : null}
+          {own && comment.hidden ? (
+            <span className="rounded-full bg-qa-bug/15 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-qa-bug">
+              Hidden after reports
+            </span>
+          ) : null}
           <time
             dateTime={comment.createdAt}
             className="font-mono text-[11px] text-muted-foreground"
@@ -324,25 +369,40 @@ function CommentBody({
         <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">
           {comment.body}
         </p>
-        <Button
-          type="button"
-          variant="ghost"
-          size="xs"
-          aria-pressed={comment.voted}
-          aria-label={voteLabel}
-          disabled={!currentUserId || own}
-          onClick={onVote}
-          className={cn(
-            "mt-1 gap-1 text-muted-foreground",
-            comment.voted && "text-qa-primary"
-          )}
-        >
-          <ArrowBigUpIcon
-            className={cn("size-3.5", comment.voted && "fill-current")}
-            aria-hidden
-          />
-          {comment.voteCount}
-        </Button>
+        <div className="mt-1 flex flex-wrap items-center gap-1">
+          <Button
+            type="button"
+            variant="ghost"
+            size="xs"
+            aria-pressed={comment.voted}
+            aria-label={voteLabel}
+            disabled={!currentUserId || own}
+            onClick={onVote}
+            className={cn(
+              "gap-1 text-muted-foreground",
+              comment.voted && "text-qa-primary"
+            )}
+          >
+            <ArrowBigUpIcon
+              className={cn("size-3.5", comment.voted && "fill-current")}
+              aria-hidden
+            />
+            {comment.voteCount}
+          </Button>
+          {currentUserId && !own ? (
+            <Button
+              type="button"
+              variant="ghost"
+              size="xs"
+              aria-label={`Report this ${kind} by ${comment.authorName}`}
+              onClick={onReport}
+              className="gap-1 text-muted-foreground hover:text-qa-bug"
+            >
+              <FlagIcon className="size-3.5" aria-hidden />
+              Report
+            </Button>
+          ) : null}
+        </div>
       </div>
     </div>
   )

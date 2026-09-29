@@ -197,6 +197,7 @@ Apply everything under `supabase/migrations/` in order (or via CLI). Highlights:
 - Pro membership columns
 - delete policies for **Reset progress**
 - daily Mock Interviewer quota + 10 KB cap on mock endpoint bodies
+- comment reports (three reports hide a comment; clear `hidden_at` to restore it)
 
 ---
 
