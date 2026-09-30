@@ -50,7 +50,6 @@ export function PasswordField({
             visible ? `Hide ${label.toLowerCase()}` : `Show ${label.toLowerCase()}`
           }
           aria-pressed={visible}
-          aria-controls={id}
           onClick={() => setVisible((current) => !current)}
         >
           {visible ? <EyeOff /> : <Eye />}
