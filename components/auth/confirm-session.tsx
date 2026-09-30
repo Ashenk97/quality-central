@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 
 import { FORGOT_PASSWORD_PATH, safeNextPath } from "@/lib/auth/paths"
+import { isSupabaseConfigured } from "@/lib/env"
 import { createSupabaseBrowserClient } from "@/lib/supabase/client"
 
 const FLOW_ID_PATTERN = /^[a-zA-Z0-9_-]{8,64}$/
@@ -16,25 +17,21 @@ const pendingExchanges = new Map<
 
 export function ConfirmSession() {
   const router = useRouter()
-  const [error, setError] = useState("")
+  const searchParams = useSearchParams()
+  const code = searchParams.get("code")
+  const flowId = searchParams.get("sb_flow_id")
+  const next = safeNextPath(searchParams.get("next"))
+  const validFlowId = flowId && FLOW_ID_PATTERN.test(flowId) ? flowId : null
+  const configured = isSupabaseConfigured()
+  const [exchangeError, setExchangeError] = useState("")
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    const code = params.get("code")
-    const flowId = params.get("sb_flow_id")
-    const next = safeNextPath(params.get("next"))
-    const validFlowId = flowId && FLOW_ID_PATTERN.test(flowId) ? flowId : null
-
-    if (!code) {
-      setError(
-        "This link is incomplete. Request a new password reset and open it in this browser."
-      )
+    if (!code || !configured) {
       return
     }
 
     const client = createSupabaseBrowserClient()
     if (!client) {
-      setError("Supabase is not configured.")
       return
     }
 
@@ -49,12 +46,12 @@ export function ConfirmSession() {
     }
 
     let cancelled = false
-    exchange.then(({ error: exchangeError }) => {
+    exchange.then(({ error }) => {
       if (cancelled) {
         return
       }
-      if (exchangeError) {
-        setError(
+      if (error) {
+        setExchangeError(
           "Open the reset email in the same browser you used to request it. If you already did, request a new link and open that one here."
         )
         return
@@ -66,13 +63,19 @@ export function ConfirmSession() {
     return () => {
       cancelled = true
     }
-  }, [router])
+  }, [code, configured, next, router, validFlowId])
 
-  if (error) {
+  const message = !configured
+    ? "Supabase is not configured."
+    : !code
+      ? "This link is incomplete. Request a new password reset and open it in this browser."
+      : exchangeError
+
+  if (message) {
     return (
       <div className="grid gap-3">
         <p role="alert" className="text-sm text-destructive">
-          {error}
+          {message}
         </p>
         <p className="text-sm text-muted-foreground">
           <Link
@@ -86,7 +89,5 @@ export function ConfirmSession() {
     )
   }
 
-  return (
-    <p className="text-sm text-muted-foreground">Finishing sign-in…</p>
-  )
+  return <p className="text-sm text-muted-foreground">Finishing sign-in…</p>
 }

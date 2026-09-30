@@ -17,21 +17,22 @@ type Status = "checking" | "ready" | "expired" | "unconfigured"
 
 export function UpdatePasswordForm() {
   const router = useRouter()
-  const [status, setStatus] = useState<Status>("checking")
+  const configured = isSupabaseConfigured()
+  const [status, setStatus] = useState<Status>(
+    configured ? "checking" : "unconfigured"
+  )
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [error, setError] = useState("")
   const [pending, setPending] = useState(false)
 
   useEffect(() => {
-    if (!isSupabaseConfigured()) {
-      setStatus("unconfigured")
+    if (!configured) {
       return
     }
 
     const client = createSupabaseBrowserClient()
     if (!client) {
-      setStatus("unconfigured")
       return
     }
 
@@ -46,7 +47,7 @@ export function UpdatePasswordForm() {
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [configured])
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()

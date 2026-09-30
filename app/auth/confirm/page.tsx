@@ -1,3 +1,4 @@
+import { Suspense } from "react"
 import type { Metadata } from "next"
 
 import { ConfirmSession } from "@/components/auth/confirm-session"
@@ -30,7 +31,13 @@ export default function ConfirmPage() {
               This finishes the password reset or sign-in you just started.
             </p>
           </div>
-          <ConfirmSession />
+          <Suspense
+            fallback={
+              <p className="text-sm text-muted-foreground">Finishing sign-in…</p>
+            }
+          >
+            <ConfirmSession />
+          </Suspense>
         </div>
       </main>
     </div>
