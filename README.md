@@ -150,7 +150,7 @@ When Supabase is configured, add `E2E_USER_EMAIL` and `E2E_USER_PASSWORD` to `.e
 
 ```text
 app/
-  (auth)/              → login & signup
+  (auth)/              → login, signup, password reset
   (learn)/             → dashboard, tracks, lessons, sandbox, tools
   api/                 → route handlers (chat, checkout, mocks, webhooks)
   actions/             → server actions (Stripe, …)

@@ -17,7 +17,13 @@ export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request })
   let userId: string | null = null
 
-  if (env) {
+  // /auth finishes a sign-in that already stored a one-time code in the
+  // browser. Loading the session here can delete that code before the
+  // callback reads it, which breaks password-reset links.
+  const finishingAuth =
+    pathname === "/auth" || pathname.startsWith("/auth/")
+
+  if (env && !finishingAuth) {
     const supabase = createServerClient(env.url, env.anonKey, {
       cookies: {
         getAll() {

@@ -73,14 +73,48 @@ test.describe("smoke", () => {
     ).toBeVisible()
   })
 
-  test("login offers email and GitHub", async ({ page }) => {
+  test("login offers email, Google, and GitHub", async ({ page }) => {
     await page.goto("/login")
     await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible()
+    await expect(
+      page.getByRole("button", { name: "Continue with Google" })
+    ).toBeVisible()
     await expect(
       page.getByRole("button", { name: "Continue with GitHub" })
     ).toBeVisible()
     await expect(page.getByLabel("Email")).toBeVisible()
-    await expect(page.getByLabel("Password")).toBeVisible()
+    await expect(
+      page.getByRole("textbox", { name: "Password", exact: true })
+    ).toBeVisible()
+    await expect(
+      page.getByRole("button", { name: "Show password" })
+    ).toBeVisible()
+    await expect(
+      page.getByRole("link", { name: "Forgot password?" })
+    ).toBeVisible()
+  })
+
+  test("password reset pages stay available while signed out", async ({
+    page,
+  }) => {
+    await page.goto("/forgot-password")
+    await expect(
+      page.getByRole("heading", { name: "Reset your password" })
+    ).toBeVisible()
+    await expect(
+      page.getByRole("button", { name: "Send reset link" })
+    ).toBeVisible()
+
+    await page.goto("/update-password")
+    await expect(page).toHaveURL("/update-password")
+    await expect(
+      page.getByRole("heading", { name: "Choose a new password" })
+    ).toBeVisible()
+    if (isAuthEnabled()) {
+      await expect(
+        page.getByText("This reset link is invalid or has expired.")
+      ).toBeVisible()
+    }
   })
 
   test("signup page is available", async ({ page }) => {

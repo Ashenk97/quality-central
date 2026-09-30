@@ -1,6 +1,8 @@
 export const HOME_PATH = "/"
 export const LOGIN_PATH = "/login"
 export const SIGNUP_PATH = "/signup"
+export const FORGOT_PASSWORD_PATH = "/forgot-password"
+export const UPDATE_PASSWORD_PATH = "/update-password"
 export const PRIVACY_PATH = "/privacy"
 export const DEFAULT_AUTH_NEXT = "/dashboard"
 
@@ -10,6 +12,8 @@ const PUBLIC_PATHS = new Set<string>([
   HOME_PATH,
   LOGIN_PATH,
   SIGNUP_PATH,
+  FORGOT_PASSWORD_PATH,
+  UPDATE_PASSWORD_PATH,
   PRIVACY_PATH,
 ])
 
@@ -41,7 +45,11 @@ export function isProtectedPath(pathname: string) {
 }
 
 export function isAuthPath(pathname: string) {
-  return pathname === LOGIN_PATH || pathname === SIGNUP_PATH
+  return (
+    pathname === LOGIN_PATH ||
+    pathname === SIGNUP_PATH ||
+    pathname === FORGOT_PASSWORD_PATH
+  )
 }
 
 export function safeNextPath(

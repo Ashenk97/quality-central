@@ -22,7 +22,7 @@ export default async function LoginPage({
           Sign in
         </h1>
         <p className="text-sm text-muted-foreground">
-          Use GitHub or email to open your dashboard and sync progress.
+          Use Google, GitHub, or email to open your dashboard and sync progress.
         </p>
       </div>
       <AuthForm

@@ -44,7 +44,8 @@ export default function PrivacyPage() {
             <ul className="list-disc space-y-2 pl-5">
               <li>
                 <strong className="text-foreground">Account:</strong> your
-                email address, and your name if you sign in with GitHub.
+                email address, and your name if you sign in with Google or
+                GitHub.
               </li>
               <li>
                 <strong className="text-foreground">Learning progress:</strong>{" "}
@@ -100,8 +101,9 @@ export default function PrivacyPage() {
                 generate feedback. Do not include personal details in answers.
               </li>
               <li>
-                <strong className="text-foreground">GitHub</strong> shares your
-                name and email with us if you choose to sign in with it.
+                <strong className="text-foreground">Google</strong> and{" "}
+                <strong className="text-foreground">GitHub</strong> share your
+                name and email with us if you choose to sign in with them.
               </li>
             </ul>
             <p>
