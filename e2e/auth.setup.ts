@@ -22,7 +22,7 @@ setup("save a signed-in storage state", async ({ page }) => {
 
   await page.goto("/login")
   await page.getByLabel("Email").fill(user.email)
-  await page.getByLabel("Password").fill(user.password)
+  await page.getByRole("textbox", { name: "Password", exact: true }).fill(user.password)
   await page.getByRole("button", { name: "Sign in", exact: true }).click()
   await expect(page).toHaveURL(/\/dashboard/, { timeout: 15_000 })
   await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible()

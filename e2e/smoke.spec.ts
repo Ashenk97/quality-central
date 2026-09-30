@@ -83,7 +83,9 @@ test.describe("smoke", () => {
       page.getByRole("button", { name: "Continue with GitHub" })
     ).toBeVisible()
     await expect(page.getByLabel("Email")).toBeVisible()
-    await expect(page.getByLabel("Password")).toBeVisible()
+    await expect(
+      page.getByRole("textbox", { name: "Password", exact: true })
+    ).toBeVisible()
     await expect(
       page.getByRole("button", { name: "Show password" })
     ).toBeVisible()
