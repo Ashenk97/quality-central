@@ -17,7 +17,7 @@
     "@ai-sdk/react": "^4.0.130",
     "@monaco-editor/react": "^4.7.0",
     "@stripe/react-stripe-js": "^6.12.0",
-    "@stripe/stripe-js": "^9.17.0",
+    "@stripe/stripe-js": "^10.0.0",
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.117.2",
     "ai": "^7.0.92",
