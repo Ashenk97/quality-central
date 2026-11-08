@@ -3,14 +3,69 @@ import "server-only"
 import fs from "node:fs"
 import path from "node:path"
 
-import matter from "gray-matter"
-
 import type { Difficulty } from "@/lib/curriculum"
 import type { Track } from "@/lib/db/types"
 
 const CONTENT_DIR = path.join(process.cwd(), "content")
 const SLUG_PATTERN = /^[a-z0-9-]+$/
 const WORDS_PER_MINUTE = 200
+
+// gray-matter has no release that stops it from evaluating JavaScript front
+// matter. Lessons are YAML, so this parser never hands the block to eval.
+function parseLessonFile(raw: string) {
+  const match = raw.match(
+    /^---[ \t]*([^\r\n]*)\r?\n([\s\S]*?)\r?\n---[ \t]*(?:\r?\n)?/
+  )
+  if (!match) {
+    return { data: {}, content: raw }
+  }
+
+  const language = match[1].trim().toLowerCase()
+  if (language && language !== "yaml" && language !== "yml") {
+    throw new Error("Lesson front matter must be YAML.")
+  }
+
+  const data: Record<string, unknown> = {}
+  for (const line of match[2].split(/\r?\n/)) {
+    const trimmed = line.trim()
+    if (!trimmed || trimmed.startsWith("#")) {
+      continue
+    }
+
+    const separator = trimmed.indexOf(":")
+    if (separator === -1) {
+      continue
+    }
+
+    const key = trimmed.slice(0, separator).trim()
+    data[key] = parseFrontMatterValue(trimmed.slice(separator + 1).trim())
+  }
+
+  return { data, content: raw.slice(match[0].length) }
+}
+
+function parseFrontMatterValue(value: string) {
+  if (
+    (value.startsWith('"') && value.endsWith('"') && value.length >= 2) ||
+    (value.startsWith("'") && value.endsWith("'") && value.length >= 2)
+  ) {
+    return value.slice(1, -1)
+  }
+
+  if (/^-?\d+$/.test(value)) {
+    return Number(value)
+  }
+
+  if (value === "true") {
+    return true
+  }
+
+  if (value === "false") {
+    return false
+  }
+
+  return value
+}
 
 export type LessonFrontmatter = {
   title: string
@@ -160,7 +215,7 @@ export function getLesson(
   }
 
   const raw = fs.readFileSync(resolved, "utf8")
-  const { data, content } = matter(raw)
+  const { data, content } = parseLessonFile(raw)
   const frontmatter = data as LessonFrontmatter
 
   return {
